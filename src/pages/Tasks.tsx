@@ -1,0 +1,129 @@
+import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Plus, Search, Filter, Image as ImageIcon, X, Calendar } from 'lucide-react';
+import { useTask, Task } from '../context/TaskContext';
+import { useTheme } from '../context/ThemeContext';
+import { TaskCard } from '../components/TaskCard';
+import { AddTaskModal } from '../components/AddTaskModal';
+import toast from 'react-hot-toast';
+
+export function Tasks() {
+  const { tasks, toggleTask, deleteTask } = useTask();
+  const { themeConfig } = useTheme();
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterPriority, setFilterPriority] = useState<string>('all');
+  const [showAddModal, setShowAddModal] = useState(false);
+
+  const filteredTasks = tasks.filter(task => {
+    const matchesSearch = task.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         task.description.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesPriority = filterPriority === 'all' || task.priority === filterPriority;
+    return matchesSearch && matchesPriority;
+  });
+
+  const handleToggleTask = (id: string) => {
+    toggleTask(id);
+    toast.success('Task updated!');
+  };
+
+  const handleDeleteTask = (id: string) => {
+    deleteTask(id);
+    toast.success('Task deleted!');
+  };
+
+  return (
+    <div className="space-y-6">
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
+      >
+        <div>
+          <h1 className={`text-2xl md:text-3xl font-bold ${themeConfig.text}`}>Tasks</h1>
+          <p className={themeConfig.textSecondary}>
+            Manage your study tasks and assignments
+          </p>
+        </div>
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          onClick={() => setShowAddModal(true)}
+          className={`${themeConfig.primary} ${themeConfig.primaryHover} text-white px-4 md:px-6 py-2 md:py-3 rounded-lg font-medium flex items-center gap-2 shadow-lg text-sm md:text-base`}
+        >
+          <Plus className="w-4 md:w-5 h-4 md:h-5" />
+          Add Task
+        </motion.button>
+      </motion.div>
+
+      {/* Search and Filter */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.1 }}
+        className={`${themeConfig.card} p-3 md:p-4 rounded-xl shadow-sm border border-gray-100`}
+      >
+        <div className="flex flex-col md:flex-row gap-4">
+          <div className="flex-1 relative">
+            <Search className="absolute left-3 top-2.5 md:top-3 w-4 md:w-5 h-4 md:h-5 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Search tasks..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-8 md:pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm md:text-base"
+            />
+          </div>
+          <div className="flex items-center gap-2">
+            <Filter className="w-4 md:w-5 h-4 md:h-5 text-gray-400" />
+            <select
+              value={filterPriority}
+              onChange={(e) => setFilterPriority(e.target.value)}
+              className="px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm md:text-base"
+            >
+              <option value="all">All Priorities</option>
+              <option value="high">High</option>
+              <option value="medium">Medium</option>
+              <option value="low">Low</option>
+            </select>
+          </div>
+        </div>
+      </motion.div>
+
+      {/* Tasks Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+        <AnimatePresence>
+          {filteredTasks.map((task, index) => (
+            <TaskCard
+              key={task.id}
+              task={task}
+              index={index}
+              onToggle={handleToggleTask}
+              onDelete={handleDeleteTask}
+            />
+          ))}
+        </AnimatePresence>
+      </div>
+
+      {filteredTasks.length === 0 && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="text-center py-12"
+        >
+          <Calendar className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+          <p className={`text-lg ${themeConfig.textSecondary}`}>
+            {searchTerm || filterPriority !== 'all' ? 'No tasks match your filters' : 'No tasks yet'}
+          </p>
+          <p className={`text-sm ${themeConfig.textSecondary} mt-2`}>
+            {searchTerm || filterPriority !== 'all' ? 'Try adjusting your search or filters' : 'Create your first task to get started'}
+          </p>
+        </motion.div>
+      )}
+
+      <AddTaskModal
+        isOpen={showAddModal}
+        onClose={() => setShowAddModal(false)}
+      />
+    </div>
+  );
+}
