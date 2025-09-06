@@ -1,6 +1,12 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import { User } from '@supabase/supabase-js';
-import { supabase } from '../lib/supabase';
+ import React, { createContext, useContext, useState, useEffect } from 'react';
+import {
+  User,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  signOut as firebaseSignOut,
+  onAuthStateChanged
+} from 'firebase/auth';
+import { auth } from '../firebaseConfig'; // Import the auth instance
 import toast from 'react-hot-toast';
 
 interface AuthContextType {
@@ -18,66 +24,51 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null);
+    // Listen for auth state changes with Firebase
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
       setLoading(false);
     });
 
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        setUser(session?.user ?? null);
-        setLoading(false);
-      }
-    );
-
-    return () => subscription.unsubscribe();
+    // Cleanup subscription on unmount
+    return () => unsubscribe();
   }, []);
 
   const signUp = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        emailRedirectTo: window.location.origin
-      }
-    });
-
-    if (error) {
-      if (error.message.includes('User already registered')) {
+    try {
+      await createUserWithEmailAndPassword(auth, email, password);
+      toast.success('Account created successfully!');
+    } catch (error: any) {
+      // Handle Firebase specific errors
+      if (error.code === 'auth/email-already-in-use') {
         throw new Error('An account with this email already exists. Please try logging in instead.');
+      } else if (error.code === 'auth/weak-password') {
+        throw new Error('The password is too weak. Please choose a stronger password.');
       }
-      throw error;
+      throw new Error(error.message || 'Failed to create account.');
     }
-
-    toast.success('Account created successfully!');
   };
 
   const signIn = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password
-    });
-
-    if (error) {
-      if (error.message.includes('Invalid login credentials')) {
-        throw new Error('Invalid email or password. Please check your credentials or create an account if you don\'t have one.');
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+      toast.success('Welcome back!');
+    } catch (error: any) {
+      // Handle Firebase specific errors
+      if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
+        throw new Error('Invalid email or password. Please check your credentials or create an account.');
       }
-      throw error;
+      throw new Error(error.message || 'Failed to sign in.');
     }
-
-    toast.success('Welcome back!');
   };
 
   const signOut = async () => {
-    const { error } = await supabase.auth.signOut();
-    
-    if (error) {
-      throw error;
+    try {
+      await firebaseSignOut(auth);
+      toast.success('Signed out successfully');
+    } catch (error: any) {
+      throw new Error(error.message || 'Failed to sign out.');
     }
-
-    toast.success('Signed out successfully');
   };
 
   return (
