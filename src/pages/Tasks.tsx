@@ -60,25 +60,25 @@ export function Tasks() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
-        className={`${themeConfig.card} p-3 md:p-4 rounded-xl shadow-sm border border-gray-100`}
+        className={`${themeConfig.card} p-3 md:p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700`}
       >
         <div className="flex flex-col md:flex-row gap-4">
           <div className="flex-1 relative">
-            <Search className="absolute left-3 top-2.5 md:top-3 w-4 md:w-5 h-4 md:h-5 text-gray-400" />
+            <Search className={`absolute left-3 top-2.5 md:top-3 w-4 md:w-5 h-4 md:h-5 ${themeConfig.textSecondary}`} />
             <input
               type="text"
               placeholder="Search tasks..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-8 md:pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm md:text-base"
+              className={`w-full pl-8 md:pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm md:text-base ${themeConfig.background} ${themeConfig.text} dark:border-gray-600`}
             />
           </div>
           <div className="flex items-center gap-2">
-            <Filter className="w-4 md:w-5 h-4 md:h-5 text-gray-400" />
+            <Filter className={`w-4 md:w-5 h-4 md:h-5 ${themeConfig.textSecondary}`} />
             <select
               value={filterPriority}
               onChange={(e) => setFilterPriority(e.target.value)}
-              className="px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm md:text-base"
+              className={`px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm md:text-base ${themeConfig.background} ${themeConfig.text} dark:border-gray-600`}
             >
               <option value="all">All Priorities</option>
               <option value="high">High</option>
@@ -90,8 +90,8 @@ export function Tasks() {
       </motion.div>
 
       {/* Tasks Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-        <AnimatePresence>
+      <AnimatePresence>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
           {filteredTasks.map((task, index) => (
             <TaskCard
               key={task.id}
@@ -101,8 +101,8 @@ export function Tasks() {
               onDelete={handleDeleteTask}
             />
           ))}
-        </AnimatePresence>
-      </div>
+        </div>
+      </AnimatePresence>
 
       {filteredTasks.length === 0 && (
         <motion.div
@@ -110,7 +110,7 @@ export function Tasks() {
           animate={{ opacity: 1 }}
           className="text-center py-12"
         >
-          <Calendar className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+          <Calendar className="w-16 h-16 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
           <p className={`text-lg ${themeConfig.textSecondary}`}>
             {searchTerm || filterPriority !== 'all' ? 'No tasks match your filters' : 'No tasks yet'}
           </p>

@@ -96,15 +96,25 @@ const achievements = [
     progress: 78,
     unlocked: false,
     points: 800
+  },
+  {
+    id: 'code-ninja',
+    title: 'Code Ninja',
+    description: 'Solve 10 programming challenges',
+    icon: Zap,
+    gradient: 'from-gray-400 via-gray-500 to-gray-600',
+    progress: 0,
+    unlocked: false,
+    points: 500
   }
 ];
 
 const levels = [
-  { name: 'Beginner', min: 0, max: 999, color: 'text-gray-600' },
-  { name: 'Student', min: 1000, max: 2999, color: 'text-blue-600' },
-  { name: 'Scholar', min: 3000, max: 5999, color: 'text-purple-600' },
-  { name: 'Expert', min: 6000, max: 9999, color: 'text-orange-600' },
-  { name: 'Master', min: 10000, max: Infinity, color: 'text-gold-600' }
+  { name: 'Beginner', min: 0, max: 999, color: 'text-gray-600 dark:text-gray-400' },
+  { name: 'Student', min: 1000, max: 2999, color: 'text-blue-600 dark:text-blue-400' },
+  { name: 'Scholar', min: 3000, max: 5999, color: 'text-purple-600 dark:text-purple-400' },
+  { name: 'Expert', min: 6000, max: 9999, color: 'text-orange-600 dark:text-orange-400' },
+  { name: 'Master', min: 10000, max: Infinity, color: 'text-yellow-500 dark:text-yellow-400' }
 ];
 
 export function Achievements() {
@@ -122,7 +132,6 @@ export function Achievements() {
 
   return (
     <div className="space-y-4 pb-20">
-      {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -136,14 +145,13 @@ export function Achievements() {
         </p>
       </motion.div>
 
-      {/* Level Progress */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
         className="mx-4"
       >
-        <div className={`${themeConfig.card} p-4 rounded-2xl shadow-sm border border-gray-100`}>
+        <div className={`${themeConfig.card} p-4 rounded-2xl shadow-sm border dark:border-gray-700`}>
           <div className="flex items-center justify-between mb-3">
             <div>
               <h3 className={`text-lg font-bold ${currentLevel.color}`}>
@@ -155,11 +163,11 @@ export function Achievements() {
             </div>
             <div className="text-right">
               <div className="text-2xl font-bold text-yellow-500">⭐</div>
-              <p className="text-xs text-gray-500">Level {levels.indexOf(currentLevel) + 1}</p>
+              <p className={`text-xs ${themeConfig.textSecondary}`}>Level {levels.indexOf(currentLevel) + 1}</p>
             </div>
           </div>
           
-          <div className="w-full bg-gray-200 rounded-full h-3 mb-2">
+          <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3 mb-2">
             <motion.div
               className="bg-gradient-to-r from-yellow-400 to-orange-500 h-3 rounded-full"
               initial={{ width: 0 }}
@@ -169,14 +177,13 @@ export function Achievements() {
           </div>
           
           {nextLevel && (
-            <p className="text-xs text-gray-500 text-center">
+            <p className={`text-xs ${themeConfig.textSecondary} text-center`}>
               {nextLevel.min - totalPoints} points to {nextLevel.name}
             </p>
           )}
         </div>
       </motion.div>
 
-      {/* Achievements Grid */}
       <div className="px-4 space-y-4">
         {achievements.map((achievement, index) => (
           <motion.div
@@ -191,11 +198,10 @@ export function Achievements() {
             <div className={`bg-gradient-to-r ${achievement.gradient} rounded-2xl p-1 shadow-lg ${
               !achievement.unlocked ? 'opacity-60' : ''
             }`}>
-              <div className="bg-white rounded-xl p-4 relative overflow-hidden">
-                {/* Shimmer effect for unlocked badges */}
+              <div className={`${themeConfig.card} rounded-xl p-4 relative overflow-hidden`}>
                 {achievement.unlocked && (
                   <motion.div
-                    className="absolute inset-0 bg-gradient-to-r from-transparent via-white to-transparent opacity-30"
+                    className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-30"
                     animate={{ x: ['-100%', '100%'] }}
                     transition={{ 
                       duration: 2,
@@ -207,10 +213,9 @@ export function Achievements() {
                 )}
 
                 <div className="flex items-center justify-between relative z-10">
-                  {/* Left side - Text content */}
                   <div className="flex-1 pr-4">
                     <div className="flex items-center gap-2 mb-1">
-                      <h3 className="text-lg font-bold text-gray-800">
+                      <h3 className={`text-lg font-bold ${themeConfig.text}`}>
                         {achievement.title}
                       </h3>
                       {achievement.unlocked && (
@@ -223,20 +228,19 @@ export function Achievements() {
                         </motion.div>
                       )}
                     </div>
-                    <p className="text-sm text-gray-600 mb-2">
+                    <p className={`text-sm ${themeConfig.textSecondary} mb-2`}>
                       {achievement.description}
                     </p>
                     <div className="flex items-center gap-2">
-                      <span className="text-xs font-medium text-yellow-600">
+                      <span className="text-xs font-medium text-yellow-600 dark:text-yellow-400">
                         {achievement.points} pts
                       </span>
-                      <span className="text-xs text-gray-500">
+                      <span className={`text-xs ${themeConfig.textSecondary}`}>
                         {achievement.progress}% complete
                       </span>
                     </div>
                   </div>
 
-                  {/* Right side - Icon */}
                   <div className="relative">
                     <motion.div
                       className={`bg-gradient-to-br ${achievement.gradient} p-4 rounded-2xl shadow-lg relative`}
@@ -244,43 +248,12 @@ export function Achievements() {
                       transition={{ duration: 0.2 }}
                     >
                       <achievement.icon className="w-8 h-8 text-white" />
-                      
-                      {/* Sparkle effects for unlocked badges */}
-                      {achievement.unlocked && (
-                        <>
-                          <motion.div
-                            className="absolute -top-1 -right-1 w-3 h-3 bg-yellow-300 rounded-full"
-                            animate={{ 
-                              scale: [0, 1, 0],
-                              opacity: [0, 1, 0]
-                            }}
-                            transition={{ 
-                              duration: 2,
-                              repeat: Infinity,
-                              delay: index * 0.3
-                            }}
-                          />
-                          <motion.div
-                            className="absolute -bottom-1 -left-1 w-2 h-2 bg-white rounded-full"
-                            animate={{ 
-                              scale: [0, 1, 0],
-                              opacity: [0, 1, 0]
-                            }}
-                            transition={{ 
-                              duration: 2,
-                              repeat: Infinity,
-                              delay: index * 0.3 + 0.5
-                            }}
-                          />
-                        </>
-                      )}
                     </motion.div>
                   </div>
                 </div>
 
-                {/* Progress Bar */}
                 <div className="mt-4 relative z-10">
-                  <div className="w-full bg-gray-200 rounded-full h-2">
+                  <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                     <motion.div
                       className={`h-2 bg-gradient-to-r ${achievement.gradient} rounded-full`}
                       initial={{ width: 0 }}
@@ -290,9 +263,8 @@ export function Achievements() {
                   </div>
                 </div>
 
-                {/* Lock overlay for locked achievements */}
                 {!achievement.unlocked && (
-                  <div className="absolute inset-0 bg-gray-100 bg-opacity-50 rounded-xl flex items-center justify-center">
+                  <div className={`absolute inset-0 ${themeConfig.background} bg-opacity-50 dark:bg-opacity-70 rounded-xl flex items-center justify-center`}>
                     <div className="text-4xl opacity-30">🔒</div>
                   </div>
                 )}
@@ -302,14 +274,13 @@ export function Achievements() {
         ))}
       </div>
 
-      {/* Stats Summary */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.8 }}
         className="mx-4"
       >
-        <div className={`${themeConfig.card} rounded-2xl p-4 shadow-sm border border-gray-100`}>
+        <div className={`${themeConfig.card} rounded-2xl p-4 shadow-sm border dark:border-gray-700`}>
           <h3 className={`text-lg font-semibold ${themeConfig.text} mb-3 text-center`}>
             Achievement Stats
           </h3>
@@ -319,46 +290,45 @@ export function Achievements() {
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
                 transition={{ delay: 1, type: "spring", stiffness: 200 }}
-                className="text-2xl font-bold text-yellow-600 mb-1"
+                className="text-2xl font-bold text-yellow-600 dark:text-yellow-400 mb-1"
               >
                 {achievements.filter(a => a.unlocked).length}
               </motion.div>
-              <p className="text-xs text-gray-600">Unlocked</p>
+              <p className={`text-xs ${themeConfig.textSecondary}`}>Unlocked</p>
             </div>
             <div className="text-center">
               <motion.div
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
                 transition={{ delay: 1.1, type: "spring", stiffness: 200 }}
-                className="text-2xl font-bold text-blue-600 mb-1"
+                className="text-2xl font-bold text-blue-600 dark:text-blue-400 mb-1"
               >
                 {totalPoints.toLocaleString()}
               </motion.div>
-              <p className="text-xs text-gray-600">Total Points</p>
+              <p className={`text-xs ${themeConfig.textSecondary}`}>Total Points</p>
             </div>
             <div className="text-center">
               <motion.div
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
                 transition={{ delay: 1.2, type: "spring", stiffness: 200 }}
-                className="text-2xl font-bold text-green-600 mb-1"
+                className="text-2xl font-bold text-green-600 dark:text-green-400 mb-1"
               >
                 {Math.round(achievements.reduce((sum, a) => sum + a.progress, 0) / achievements.length)}%
               </motion.div>
-              <p className="text-xs text-gray-600">Avg Progress</p>
+              <p className={`text-xs ${themeConfig.textSecondary}`}>Avg Progress</p>
             </div>
           </div>
         </div>
       </motion.div>
 
-      {/* Motivational Message */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 1 }}
         className="mx-4"
       >
-        <div className="bg-gradient-to-r from-blue-500 to-purple-600 rounded-2xl p-4 text-white text-center">
+        <div className={`bg-gradient-to-r ${themeConfig.primaryGradient} rounded-2xl p-4 text-white text-center`}>
           <motion.div
             animate={{ rotate: [0, 10, -10, 0] }}
             transition={{ duration: 2, repeat: Infinity, repeatDelay: 3 }}

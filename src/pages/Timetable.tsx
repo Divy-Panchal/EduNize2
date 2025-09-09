@@ -86,16 +86,16 @@ export function Timetable() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
-        className={`${themeConfig.card} p-4 rounded-xl shadow-sm border border-gray-100`}
+        className={`${themeConfig.card} p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700`}
       >
         <div className="flex items-center justify-between">
           <motion.button
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
             onClick={() => setCurrentWeek(subWeeks(currentWeek, 1))}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors duration-200"
+            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors duration-200"
           >
-            <ChevronLeft className="w-5 h-5 text-gray-600" />
+            <ChevronLeft className={`w-5 h-5 ${themeConfig.textSecondary}`} />
           </motion.button>
           
           <h2 className={`text-sm md:text-lg font-semibold ${themeConfig.text}`}>
@@ -106,9 +106,9 @@ export function Timetable() {
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
             onClick={() => setCurrentWeek(addWeeks(currentWeek, 1))}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors duration-200"
+            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors duration-200"
           >
-            <ChevronRight className="w-5 h-5 text-gray-600" />
+            <ChevronRight className={`w-5 h-5 ${themeConfig.textSecondary}`} />
           </motion.button>
         </div>
       </motion.div>
@@ -118,11 +118,11 @@ export function Timetable() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2 }}
-        className={`${themeConfig.card} p-2 md:p-6 rounded-xl shadow-sm border border-gray-100 overflow-x-auto`}
+        className={`${themeConfig.card} p-2 md:p-6 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-x-auto`}
       >
         <div className="min-w-full">
           <div className="grid grid-cols-8 gap-1 md:gap-2 mb-4">
-            <div className="p-1 md:p-3 text-center font-medium text-gray-500 text-xs md:text-sm">Time</div>
+            <div className={`p-1 md:p-3 text-center font-medium ${themeConfig.textSecondary} text-xs md:text-sm`}>Time</div>
             {weekDays.map((day, index) => (
               <motion.div
                 key={day.toISOString()}
@@ -159,8 +159,8 @@ export function Timetable() {
                     <motion.div
                       key={`${day.toISOString()}-${time}`}
                       whileHover={{ scale: 1.02 }}
-                      className={`p-1 md:p-3 min-h-[40px] md:min-h-[60px] border border-gray-100 rounded-lg ${
-                        classItem ? `${classItem.color} text-white` : 'bg-gray-50 hover:bg-gray-100'
+                      className={`p-1 md:p-3 min-h-[40px] md:min-h-[60px] border border-gray-100 dark:border-gray-700 rounded-lg ${
+                        classItem ? `${classItem.color} text-white` : 'bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700'
                       } transition-all duration-200 cursor-pointer`}
                     >
                       {classItem && (
@@ -183,7 +183,7 @@ export function Timetable() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.3 }}
-        className={`${themeConfig.card} p-4 md:p-6 rounded-xl shadow-sm border border-gray-100`}
+        className={`${themeConfig.card} p-4 md:p-6 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700`}
       >
         <div className="flex items-center gap-3 mb-4">
           <BookOpen className={`w-5 h-5 ${themeConfig.primary.replace('bg-', 'text-')}`} />
@@ -197,7 +197,7 @@ export function Timetable() {
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: index * 0.1 }}
-              className="flex items-center gap-3 md:gap-4 p-3 bg-gray-50 rounded-lg"
+              className={`flex items-center gap-3 md:gap-4 p-3 rounded-lg ${themeConfig.background}`}
             >
               <div className={`w-3 h-3 ${classItem.color} rounded-full`} />
               <div className="flex-1">
@@ -232,9 +232,9 @@ export function Timetable() {
               <h2 className={`text-lg md:text-xl font-semibold ${themeConfig.text}`}>Add New Class</h2>
               <button
                 onClick={() => setShowAddModal(false)}
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors duration-200"
+                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors duration-200"
               >
-                <X className="w-5 h-5 text-gray-500" />
+                <X className={`w-5 h-5 ${themeConfig.textSecondary}`} />
               </button>
             </div>
 
@@ -247,7 +247,7 @@ export function Timetable() {
                   type="text"
                   value={newClass.subject}
                   onChange={(e) => setNewClass({ ...newClass, subject: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm md:text-base"
+                  className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm md:text-base ${themeConfig.background} ${themeConfig.text} dark:border-gray-600`}
                   placeholder="e.g., Mathematics"
                 />
               </div>
@@ -260,7 +260,7 @@ export function Timetable() {
                   type="text"
                   value={newClass.type}
                   onChange={(e) => setNewClass({ ...newClass, type: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm md:text-base"
+                  className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm md:text-base ${themeConfig.background} ${themeConfig.text} dark:border-gray-600`}
                   placeholder="e.g., Lecture, Lab, Tutorial"
                 />
               </div>
@@ -273,7 +273,7 @@ export function Timetable() {
                   <select
                     value={newClass.day}
                     onChange={(e) => setNewClass({ ...newClass, day: parseInt(e.target.value) })}
-                    className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm md:text-base"
+                    className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm md:text-base ${themeConfig.background} ${themeConfig.text} dark:border-gray-600`}
                   >
                     {weekDays.map((day, index) => (
                       <option key={index} value={index}>
@@ -290,7 +290,7 @@ export function Timetable() {
                   <select
                     value={newClass.time}
                     onChange={(e) => setNewClass({ ...newClass, time: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm md:text-base"
+                    className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm md:text-base ${themeConfig.background} ${themeConfig.text} dark:border-gray-600`}
                   >
                     {timeSlots.map(time => (
                       <option key={time} value={time}>{time}</option>
@@ -310,7 +310,7 @@ export function Timetable() {
                       type="button"
                       onClick={() => setNewClass({ ...newClass, color })}
                       className={`w-8 h-8 ${color} rounded-lg border-2 ${
-                        newClass.color === color ? 'border-gray-800' : 'border-gray-200'
+                        newClass.color === color ? 'border-gray-800 dark:border-gray-200' : 'border-gray-200 dark:border-gray-600'
                       } transition-all duration-200`}
                     />
                   ))}
@@ -331,7 +331,7 @@ export function Timetable() {
                   whileTap={{ scale: 0.98 }}
                   type="button"
                   onClick={() => setShowAddModal(false)}
-                  className="px-4 md:px-6 py-2 md:py-3 border border-gray-200 rounded-lg font-medium hover:bg-gray-50 transition-colors duration-200 text-sm md:text-base"
+                  className={`${themeConfig.card} px-4 md:px-6 py-2 md:py-3 border dark:border-gray-600 rounded-lg font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200 text-sm md:text-base`}
                 >
                   Cancel
                 </motion.button>

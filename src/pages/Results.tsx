@@ -1,35 +1,46 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { TrendingUp, Award, Target, BookOpen } from 'lucide-react';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell } from 'recharts';
+import { 
+  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, 
+  ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell 
+} from 'recharts';
 import { useTheme } from '../context/ThemeContext';
 
+const gradeData = [
+  { subject: 'Mathematics', grade: 92 },
+  { subject: 'Physics', grade: 88 },
+  { subject: 'Chemistry', grade: 85 },
+  { subject: 'English', grade: 91 },
+  { subject: 'History', grade: 87 },
+  { subject: 'Computer Science', grade: 95 }
+];
+
+const progressData = [
+  { month: 'Sep', grade: 78 },
+  { month: 'Oct', grade: 82 },
+  { month: 'Nov', grade: 85 },
+  { month: 'Dec', grade: 88 },
+  { month: 'Jan', grade: 91 }
+];
+
+const studyTimeData = [
+  { name: 'Mathematics', hours: 45, color: 'hsl(var(--chart-1))' },
+  { name: 'Physics', hours: 38, color: 'hsl(var(--chart-2))' },
+  { name: 'Chemistry', hours: 42, color: 'hsl(var(--chart-3))' },
+  { name: 'English', hours: 28, color: 'hsl(var(--chart-4))' },
+  { name: 'Others', hours: 35, color: 'hsl(var(--chart-5))' }
+];
+
 export function Results() {
-  const { themeConfig } = useTheme();
+  const { theme, themeConfig } = useTheme();
 
-  const gradeData = [
-    { subject: 'Mathematics', grade: 92, color: '#3B82F6' },
-    { subject: 'Physics', grade: 88, color: '#8B5CF6' },
-    { subject: 'Chemistry', grade: 85, color: '#10B981' },
-    { subject: 'English', grade: 91, color: '#F59E0B' },
-    { subject: 'History', grade: 87, color: '#EF4444' },
-    { subject: 'Computer Science', grade: 95, color: '#6366F1' }
-  ];
-
-  const progressData = [
-    { month: 'Sep', grade: 78 },
-    { month: 'Oct', grade: 82 },
-    { month: 'Nov', grade: 85 },
-    { month: 'Dec', grade: 88 },
-    { month: 'Jan', grade: 91 }
-  ];
-
-  const studyTimeData = [
-    { name: 'Mathematics', hours: 45, color: '#3B82F6' },
-    { name: 'Physics', hours: 38, color: '#8B5CF6' },
-    { name: 'Chemistry', hours: 42, color: '#10B981' },
-    { name: 'English', hours: 28, color: '#F59E0B' },
-    { name: 'Others', hours: 35, color: '#6B7280' }
+  const chartColors = [
+    'hsl(var(--chart-1))',
+    'hsl(var(--chart-2))',
+    'hsl(var(--chart-3))',
+    'hsl(var(--chart-4))',
+    'hsl(var(--chart-5))'
   ];
 
   const overallGrade = gradeData.reduce((sum, item) => sum + item.grade, 0) / gradeData.length;
@@ -47,7 +58,6 @@ export function Results() {
         </p>
       </motion.div>
 
-      {/* Overall Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6">
         {[
           { title: 'Overall GPA', value: '3.7', icon: Award, color: 'bg-yellow-500' },
@@ -61,7 +71,7 @@ export function Results() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: index * 0.1 }}
             whileHover={{ y: -5 }}
-            className={`${themeConfig.card} p-3 md:p-6 rounded-xl shadow-sm border border-gray-100`}
+            className={`${themeConfig.card} p-3 md:p-6 rounded-xl shadow-sm border dark:border-gray-700`}
           >
             <div className="flex items-center justify-between mb-3">
               <div className={`${stat.color} p-2 md:p-3 rounded-lg`}>
@@ -84,70 +94,54 @@ export function Results() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Grade Progress Chart */}
         <motion.div
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 0.3 }}
-          className={`${themeConfig.card} p-4 md:p-6 rounded-xl shadow-sm border border-gray-100`}
+          className={`${themeConfig.card} p-4 md:p-6 rounded-xl shadow-sm border dark:border-gray-700`}
         >
           <h3 className={`text-base md:text-lg font-semibold ${themeConfig.text} mb-4`}>Grade Progress</h3>
           <ResponsiveContainer width="100%" height={200}>
             <LineChart data={progressData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
-              <XAxis dataKey="month" stroke="#6B7280" />
-              <YAxis stroke="#6B7280" />
+              <CartesianGrid strokeDasharray="3 3" stroke={theme === 'dark' ? '#374151' : '#E5E7EB'} />
+              <XAxis dataKey="month" stroke={theme === 'dark' ? '#9CA3AF' : '#6B7280'} />
+              <YAxis stroke={theme === 'dark' ? '#9CA3AF' : '#6B7280'} />
               <Tooltip 
                 contentStyle={{ 
-                  backgroundColor: '#fff', 
-                  border: '1px solid #E5E7EB',
+                  backgroundColor: theme === 'dark' ? '#1F2937' : '#FFFFFF', 
+                  border: `1px solid ${theme === 'dark' ? '#374151' : '#E5E7EB'}`,
                   borderRadius: '8px',
-                  boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                  color: theme === 'dark' ? '#F9FAFB' : '#111827'
                 }}
               />
-              <Line 
-                type="monotone" 
-                dataKey="grade" 
-                stroke="#3B82F6" 
-                strokeWidth={3}
-                dot={{ fill: '#3B82F6', strokeWidth: 2, r: 6 }}
-                activeDot={{ r: 8, fill: '#3B82F6' }}
-              />
+              <Line type="monotone" dataKey="grade" stroke="hsl(var(--chart-1))" strokeWidth={3} />
             </LineChart>
           </ResponsiveContainer>
         </motion.div>
 
-        {/* Subject Grades */}
         <motion.div
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 0.4 }}
-          className={`${themeConfig.card} p-4 md:p-6 rounded-xl shadow-sm border border-gray-100`}
+          className={`${themeConfig.card} p-4 md:p-6 rounded-xl shadow-sm border dark:border-gray-700`}
         >
           <h3 className={`text-base md:text-lg font-semibold ${themeConfig.text} mb-4`}>Subject Performance</h3>
           <ResponsiveContainer width="100%" height={200}>
-            <BarChart data={gradeData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
-              <XAxis 
-                dataKey="subject" 
-                stroke="#6B7280"
-                tick={{ fontSize: 10 }}
-                angle={-45}
-                textAnchor="end"
-                height={80}
-              />
-              <YAxis stroke="#6B7280" />
+            <BarChart data={gradeData} margin={{ top: 5, right: 10, left: -10, bottom: 5 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke={theme === 'dark' ? '#374151' : '#E5E7EB'} />
+              <XAxis dataKey="subject" stroke={theme === 'dark' ? '#9CA3AF' : '#6B7280'} tick={{ fontSize: 12 }} />
+              <YAxis stroke={theme === 'dark' ? '#9CA3AF' : '#6B7280'} />
               <Tooltip 
                 contentStyle={{ 
-                  backgroundColor: '#fff', 
-                  border: '1px solid #E5E7EB',
+                  backgroundColor: theme === 'dark' ? '#1F2937' : '#FFFFFF', 
+                  border: `1px solid ${theme === 'dark' ? '#374151' : '#E5E7EB'}`,
                   borderRadius: '8px',
-                  boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                  color: theme === 'dark' ? '#F9FAFB' : '#111827'
                 }}
               />
               <Bar dataKey="grade" radius={[4, 4, 0, 0]}>
-                {gradeData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={entry.color} />
+                {gradeData.map((_entry, index) => (
+                  <Cell key={`cell-${index}`} fill={chartColors[index % chartColors.length]} />
                 ))}
               </Bar>
             </BarChart>
@@ -155,36 +149,27 @@ export function Results() {
         </motion.div>
       </div>
 
-      {/* Study Time Distribution */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.5 }}
-        className={`${themeConfig.card} p-4 md:p-6 rounded-xl shadow-sm border border-gray-100`}
+        className={`${themeConfig.card} p-4 md:p-6 rounded-xl shadow-sm border dark:border-gray-700`}
       >
         <h3 className={`text-base md:text-lg font-semibold ${themeConfig.text} mb-4`}>Study Time Distribution</h3>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-center">
           <ResponsiveContainer width="100%" height={250}>
             <PieChart>
-              <Pie
-                data={studyTimeData}
-                cx="50%"
-                cy="50%"
-                innerRadius={40}
-                outerRadius={80}
-                paddingAngle={5}
-                dataKey="hours"
-              >
+              <Pie data={studyTimeData} cx="50%" cy="50%" innerRadius={60} outerRadius={100} paddingAngle={5} dataKey="hours">
                 {studyTimeData.map((entry, index) => (
                   <Cell key={`cell-${index}`} fill={entry.color} />
                 ))}
               </Pie>
               <Tooltip 
                 contentStyle={{ 
-                  backgroundColor: '#fff', 
-                  border: '1px solid #E5E7EB',
+                  backgroundColor: theme === 'dark' ? '#1F2937' : '#FFFFFF', 
+                  border: `1px solid ${theme === 'dark' ? '#374151' : '#E5E7EB'}`,
                   borderRadius: '8px',
-                  boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                  color: theme === 'dark' ? '#F9FAFB' : '#111827'
                 }}
               />
             </PieChart>
@@ -197,13 +182,10 @@ export function Results() {
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: index * 0.1 }}
-                className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                className={`flex items-center justify-between p-3 ${themeConfig.background} rounded-lg`}
               >
                 <div className="flex items-center gap-3">
-                  <div 
-                    className="w-4 h-4 rounded-full" 
-                    style={{ backgroundColor: item.color }}
-                  />
+                  <div className="w-4 h-4 rounded-full" style={{ backgroundColor: item.color }} />
                   <span className={`font-medium ${themeConfig.text} text-sm md:text-base`}>{item.name}</span>
                 </div>
                 <span className={`font-semibold ${themeConfig.text} text-sm md:text-base`}>{item.hours}h</span>

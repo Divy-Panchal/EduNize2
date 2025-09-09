@@ -10,7 +10,8 @@ import {
   BarChart3, 
   Settings,
   Award,
-  LogOut
+  LogOut,
+  User
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
@@ -23,6 +24,7 @@ const navigationItems = [
   { path: '/pomodoro', icon: Timer, label: 'Pomodoro' },
   { path: '/results', icon: BarChart3, label: 'Results' },
   { path: '/achievements', icon: Award, label: 'Badges' },
+  { path: '/profile', icon: User, label: 'Profile' },
   { path: '/settings', icon: Settings, label: 'Settings' },
 ];
 

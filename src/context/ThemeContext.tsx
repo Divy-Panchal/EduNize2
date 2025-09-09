@@ -6,6 +6,8 @@ interface ThemeContextType {
   theme: Theme;
   setTheme: (theme: Theme) => void;
   themeConfig: Record<string, string>;
+  isTransitioning: boolean;
+  transitionTheme: Theme;
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
@@ -55,24 +57,41 @@ const themes = {
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setTheme] = useState<Theme>('default');
+  const [isTransitioning, setIsTransitioning] = useState(false);
+  const [transitionTheme, setTransitionTheme] = useState<Theme>('default');
 
   useEffect(() => {
     const savedTheme = localStorage.getItem('eduorganize-theme') as Theme;
     if (savedTheme && themes[savedTheme]) {
       setTheme(savedTheme);
+      setTransitionTheme(savedTheme);
     }
   }, []);
 
   const handleSetTheme = (newTheme: Theme) => {
-    setTheme(newTheme);
-    localStorage.setItem('eduorganize-theme', newTheme);
+    if (newTheme !== theme) {
+      setTransitionTheme(newTheme);
+      setIsTransitioning(true);
+      // Wait for the animation to cover the screen before changing the theme
+      setTimeout(() => {
+        setTheme(newTheme);
+        localStorage.setItem('eduorganize-theme', newTheme);
+      }, 600); // Animation point where the screen is covered
+
+      // Wait for the animation to complete before ending the transition state
+      setTimeout(() => {
+        setIsTransitioning(false);
+      }, 1200); // Total animation duration
+    }
   };
 
   return (
     <ThemeContext.Provider value={{
       theme,
       setTheme: handleSetTheme,
-      themeConfig: themes[theme]
+      themeConfig: themes[theme],
+      isTransitioning,
+      transitionTheme,
     }}>
       {children}
     </ThemeContext.Provider>

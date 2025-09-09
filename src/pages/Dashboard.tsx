@@ -16,6 +16,7 @@ import {
 import { Link } from 'react-router-dom';
 import { useTask } from '../context/TaskContext';
 import { useTheme } from '../context/ThemeContext';
+import { DashboardProfile } from '../components/DashboardProfile';
 
 export function Dashboard() {
   const { tasks } = useTask();
@@ -60,20 +61,31 @@ export function Dashboard() {
     .filter(task => !task.completed)
     .sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime())
     .slice(0, 3);
+    
+  const scheduleItems = [
+    { time: '09:00', subject: 'Mathematics', type: 'Lecture', color: 'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300' },
+    { time: '11:00', subject: 'Physics', type: 'Lab', color: 'bg-purple-100 text-purple-800 dark:bg-purple-900/50 dark:text-purple-300' },
+    { time: '14:00', subject: 'English', type: 'Assignment', color: 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300' },
+    { time: '16:00', subject: 'Study Break', type: 'Personal', color: 'bg-orange-100 text-orange-800 dark:bg-orange-900/50 dark:text-orange-300' }
+  ];
 
   return (
     <div className="space-y-6">
-      <motion.div
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-      >
-        <h1 className={`text-3xl font-bold ${themeConfig.text} mb-2`}>
-          Welcome back! 👋
-        </h1>
-        <p className={themeConfig.textSecondary}>
-          Here's what's happening with your studies today
-        </p>
+        <motion.div 
+            className="flex justify-between items-start"
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+        >
+            <div>
+                <h1 className={`text-2xl md:text-3xl font-bold ${themeConfig.text} mb-2`}>
+                Welcome back! 👋
+                </h1>
+                <p className={themeConfig.textSecondary}>
+                Here's what's happening with your studies today
+                </p>
+            </div>
+            <DashboardProfile />
       </motion.div>
 
       {/* Stats Grid */}
@@ -85,7 +97,7 @@ export function Dashboard() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: index * 0.1 }}
             whileHover={{ y: -5 }}
-            className={`${themeConfig.card} p-3 md:p-6 rounded-xl shadow-sm border border-gray-100`}
+            className={`${themeConfig.card} p-3 md:p-6 rounded-xl shadow-sm border dark:border-gray-700`}
           >
             <div className="flex items-center justify-between mb-4">
               <div className={`${stat.color} p-2 md:p-3 rounded-lg`}>
@@ -98,7 +110,7 @@ export function Dashboard() {
             <h3 className={`text-xs md:text-sm font-medium ${themeConfig.textSecondary} mb-2`}>
               {stat.title}
             </h3>
-            <div className="w-full bg-gray-200 rounded-full h-2">
+            <div className={`w-full ${themeConfig.background} rounded-full h-2`}>
               <motion.div
                 className={`h-2 ${stat.color} rounded-full`}
                 initial={{ width: 0 }}
@@ -116,7 +128,7 @@ export function Dashboard() {
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.5, delay: 0.3 }}
-          className={`lg:col-span-2 ${themeConfig.card} p-4 md:p-6 rounded-xl shadow-sm border border-gray-100`}
+          className={`lg:col-span-2 ${themeConfig.card} p-4 md:p-6 rounded-xl shadow-sm border dark:border-gray-700`}
         >
           <div className="flex items-center gap-3 mb-4">
             <Calendar className={`w-5 h-5 ${themeConfig.primary.replace('bg-', 'text-')}`} />
@@ -124,18 +136,13 @@ export function Dashboard() {
           </div>
           
           <div className="space-y-3">
-            {[
-              { time: '09:00', subject: 'Mathematics', type: 'Lecture', color: 'bg-blue-100 text-blue-800' },
-              { time: '11:00', subject: 'Physics', type: 'Lab', color: 'bg-purple-100 text-purple-800' },
-              { time: '14:00', subject: 'English', type: 'Assignment', color: 'bg-green-100 text-green-800' },
-              { time: '16:00', subject: 'Study Break', type: 'Personal', color: 'bg-orange-100 text-orange-800' }
-            ].map((item, index) => (
+            {scheduleItems.map((item, index) => (
               <motion.div
                 key={index}
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.3, delay: index * 0.1 }}
-                className="flex items-center gap-3 md:gap-4 p-3 bg-gray-50 rounded-lg"
+                className={`flex items-center gap-3 md:gap-4 p-3 ${themeConfig.background} rounded-lg`}
               >
                 <div className={`text-xs md:text-sm font-medium ${themeConfig.textSecondary} w-10 md:w-12`}>
                   {item.time}
@@ -156,7 +163,7 @@ export function Dashboard() {
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.5, delay: 0.4 }}
-          className={`${themeConfig.card} p-4 md:p-6 rounded-xl shadow-sm border border-gray-100`}
+          className={`${themeConfig.card} p-4 md:p-6 rounded-xl shadow-sm border dark:border-gray-700`}
         >
           <div className="flex items-center gap-3 mb-4">
             <AlertCircle className={`w-5 h-5 ${themeConfig.secondary.replace('bg-', 'text-')}`} />
@@ -173,7 +180,7 @@ export function Dashboard() {
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.3, delay: index * 0.1 }}
-                  className="p-3 bg-gray-50 rounded-lg"
+                  className={`p-3 ${themeConfig.background} rounded-lg`}
                 >
                   <h3 className={`font-medium ${themeConfig.text} text-xs md:text-sm mb-1`}>
                     {task.title}
@@ -183,9 +190,9 @@ export function Dashboard() {
                       {task.category}
                     </span>
                     <span className={`text-xs px-2 py-1 rounded-full ${
-                      task.priority === 'high' ? 'bg-red-100 text-red-800' :
-                      task.priority === 'medium' ? 'bg-yellow-100 text-yellow-800' :
-                      'bg-gray-100 text-gray-800'
+                      task.priority === 'high' ? 'bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300' :
+                      task.priority === 'medium' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300' :
+                      'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'
                     }`}>
                       {task.priority}
                     </span>
@@ -202,7 +209,7 @@ export function Dashboard() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.5 }}
-        className={`${themeConfig.card} p-4 md:p-6 rounded-xl shadow-sm border border-gray-100`}
+        className={`${themeConfig.card} p-4 md:p-6 rounded-xl shadow-sm border dark:border-gray-700`}
       >
         <h2 className={`text-base md:text-lg font-semibold ${themeConfig.text} mb-4`}>Quick Actions</h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -220,7 +227,7 @@ export function Dashboard() {
               <motion.div
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                className="flex flex-col items-center gap-2 p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors duration-200"
+                className={`flex flex-col items-center gap-2 p-4 ${themeConfig.background} rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200`}
               >
                 <action.icon className={`w-6 h-6 ${themeConfig.primary.replace('bg-', 'text-')}`} />
                 <span className={`text-sm font-medium ${themeConfig.text} text-center`}>
