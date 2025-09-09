@@ -113,8 +113,8 @@ export function Auth() {
             <div className="inline-flex items-center justify-center w-16 h-16 bg-white bg-opacity-20 backdrop-blur-sm rounded-full mb-4">
               <GraduationCap className="w-8 h-8 text-white" />
             </div>
-            <h1 className="text-3xl font-bold text-white mb-2">EduOrganize</h1>
-            <p className="text-white text-opacity-80 text-sm">Your study companion</p>
+            <h1 className="text-5xl font-bold text-gray-800 mb-2 font-serif" style={{textShadow: '2px 2px 4px rgba(0,0,0,0.3)'}}>EduOrganize</h1>
+            <p className="text-gray-600 text-sm">Your study companion</p>
           </motion.div>
 
           {/* Auth Card */}
@@ -122,25 +122,25 @@ export function Auth() {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4 }}
-            className="bg-white bg-opacity-10 backdrop-blur-lg rounded-2xl p-8 shadow-2xl border border-white border-opacity-20"
+            className="bg-white bg-opacity-20 backdrop-blur-lg rounded-2xl p-8 shadow-2xl border border-white border-opacity-30"
           >
             <div className="text-center mb-6">
-              <h2 className="text-2xl font-bold text-white mb-2">
+              <h2 className="text-3xl font-bold text-gray-800 mb-2">
                 Welcome 👋
               </h2>
-              <p className="text-white text-opacity-80 text-sm">
+              <p className="text-gray-600 text-sm">
                 {isLogin ? 'Login to access your account' : 'Create your account to get started'}
               </p>
               {!isLogin && (
-                <div className="mt-3 p-3 bg-blue-500 bg-opacity-20 rounded-lg border border-blue-300 border-opacity-30">
-                  <p className="text-white text-opacity-90 text-xs">
+                <div className="mt-3 p-3 bg-blue-500 bg-opacity-30 rounded-lg border border-blue-300 border-opacity-40">
+                  <p className="text-gray-800 text-opacity-90 text-xs">
                     💡 First time here? Create an account to get started!
                   </p>
                 </div>
               )}
               {isLogin && (
-                <div className="mt-3 p-3 bg-green-500 bg-opacity-20 rounded-lg border border-green-300 border-opacity-30">
-                  <p className="text-white text-opacity-90 text-xs">
+                <div className="mt-3 p-3 bg-green-500 bg-opacity-30 rounded-lg border border-green-300 border-opacity-40">
+                  <p className="text-gray-800 text-opacity-90 text-xs">
                     💡 Don't have an account? Click "Sign up here" below to create one.
                   </p>
                 </div>
@@ -150,17 +150,17 @@ export function Auth() {
             <form onSubmit={handleSubmit} className="space-y-4">
               {/* Email Field */}
               <div>
-                <label className="block text-white text-opacity-90 text-sm font-medium mb-2">
+                <label className="block text-gray-800 text-sm font-medium mb-2">
                   Email
                 </label>
                 <div className="relative">
-                  <Mail className="absolute left-3 top-3 w-5 h-5 text-white text-opacity-60" />
+                  <Mail className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
                   <input
                     type="email"
                     name="email"
                     value={formData.email}
                     onChange={handleInputChange}
-                    className="w-full pl-10 pr-4 py-3 bg-white bg-opacity-20 border border-white border-opacity-30 rounded-lg text-white placeholder-white placeholder-opacity-60 focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-50 focus:border-transparent backdrop-blur-sm"
+                    className="w-full pl-10 pr-4 py-3 bg-white bg-opacity-50 border border-gray-300 rounded-lg text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent backdrop-blur-sm"
                     placeholder="your@email.com"
                     required
                   />
@@ -169,24 +169,24 @@ export function Auth() {
 
               {/* Password Field */}
               <div>
-                <label className="block text-white text-opacity-90 text-sm font-medium mb-2">
+                <label className="block text-gray-800 text-sm font-medium mb-2">
                   Password
                 </label>
                 <div className="relative">
-                  <Lock className="absolute left-3 top-3 w-5 h-5 text-white text-opacity-60" />
+                  <Lock className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
                   <input
                     type={showPassword ? 'text' : 'password'}
                     name="password"
                     value={formData.password}
                     onChange={handleInputChange}
-                    className="w-full pl-10 pr-12 py-3 bg-white bg-opacity-20 border border-white border-opacity-30 rounded-lg text-white placeholder-white placeholder-opacity-60 focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-50 focus:border-transparent backdrop-blur-sm"
+                    className="w-full pl-10 pr-12 py-3 bg-white bg-opacity-50 border border-gray-300 rounded-lg text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent backdrop-blur-sm"
                     placeholder="••••••••"
                     required
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-3 text-white text-opacity-60 hover:text-opacity-80 transition-opacity"
+                    className="absolute right-3 top-3 text-gray-400 hover:text-gray-600 transition-colors"
                   >
                     {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                   </button>
@@ -202,17 +202,17 @@ export function Auth() {
                     exit={{ opacity: 0, height: 0 }}
                     transition={{ duration: 0.3 }}
                   >
-                    <label className="block text-white text-opacity-90 text-sm font-medium mb-2">
+                    <label className="block text-gray-800 text-sm font-medium mb-2">
                       Confirm Password
                     </label>
                     <div className="relative">
-                      <Lock className="absolute left-3 top-3 w-5 h-5 text-white text-opacity-60" />
+                      <Lock className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
                       <input
                         type={showPassword ? 'text' : 'password'}
                         name="confirmPassword"
                         value={formData.confirmPassword}
                         onChange={handleInputChange}
-                        className="w-full pl-10 pr-4 py-3 bg-white bg-opacity-20 border border-white border-opacity-30 rounded-lg text-white placeholder-white placeholder-opacity-60 focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-50 focus:border-transparent backdrop-blur-sm"
+                        className="w-full pl-10 pr-4 py-3 bg-white bg-opacity-50 border border-gray-300 rounded-lg text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent backdrop-blur-sm"
                         placeholder="••••••••"
                         required={!isLogin}
                       />
@@ -224,16 +224,16 @@ export function Auth() {
               {/* Remember Me / Forgot Password */}
               {isLogin && (
                 <div className="flex items-center justify-between text-sm">
-                  <label className="flex items-center gap-2 text-white text-opacity-80">
+                  <label className="flex items-center gap-2 text-gray-600">
                     <input
                       type="checkbox"
-                      className="w-4 h-4 rounded border-white border-opacity-30 bg-white bg-opacity-20 focus:ring-2 focus:ring-white focus:ring-opacity-50"
+                      className="w-4 h-4 rounded border-gray-300 bg-white bg-opacity-50 focus:ring-2 focus:ring-teal-500"
                     />
                     Remember Me
                   </label>
                   <button
                     type="button"
-                    className="text-white text-opacity-80 hover:text-opacity-100 transition-opacity"
+                    className="text-gray-600 hover:text-gray-800 transition-colors"
                   >
                     Forgot Password?
                   </button>
@@ -246,11 +246,11 @@ export function Auth() {
                 whileTap={{ scale: 0.98 }}
                 type="submit"
                 disabled={loading}
-                className="w-full bg-white bg-opacity-90 hover:bg-opacity-100 text-teal-700 font-semibold py-3 rounded-lg transition-all duration-200 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full bg-teal-600 hover:bg-teal-700 text-white font-semibold py-3 rounded-lg transition-all duration-200 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loading ? (
                   <div className="flex items-center justify-center gap-2">
-                    <div className="w-5 h-5 border-2 border-teal-700 border-t-transparent rounded-full animate-spin" />
+                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
                     {isLogin ? 'Signing in...' : 'Creating account...'}
                   </div>
                 ) : (
@@ -261,7 +261,7 @@ export function Auth() {
 
             {/* Toggle between Login/Signup */}
             <div className="mt-6 text-center">
-              <p className="text-white text-opacity-80 text-sm">
+              <p className="text-gray-600 text-sm">
                 {isLogin ? "Don't have an account?" : "Already have an account?"}
               </p>
               <button
@@ -269,7 +269,7 @@ export function Auth() {
                   setIsLogin(!isLogin);
                   setFormData({ email: '', password: '', confirmPassword: '' });
                 }}
-                className="text-white font-medium hover:text-opacity-80 transition-opacity mt-1"
+                className="text-teal-600 font-medium hover:text-teal-700 transition-colors mt-1"
               >
                 {isLogin ? 'Sign up here' : 'Login here'}
               </button>
@@ -283,7 +283,7 @@ export function Auth() {
             transition={{ delay: 0.8 }}
             className="text-center mt-8"
           >
-            <p className="text-white text-opacity-60 text-xs">
+            <p className="text-gray-500 text-xs">
               By continuing, you agree to our Terms of Service and Privacy Policy
             </p>
           </motion.div>
