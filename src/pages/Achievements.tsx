@@ -1,22 +1,19 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { 
   Trophy, 
   Star, 
-  Medal, 
-  BookOpen, 
-  Target, 
-  Zap, 
   Crown, 
-  Award,
+  BookOpen, 
   Flame,
   Brain,
   Clock,
-  CheckCircle
+  CheckCircle,
+  Zap
 } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 
-const achievements = [
+const initialAchievements = [
   {
     id: 'math-master',
     title: 'Math Master',
@@ -25,7 +22,8 @@ const achievements = [
     gradient: 'from-yellow-400 via-yellow-500 to-orange-500',
     progress: 85,
     unlocked: true,
-    points: 500
+    points: 500,
+    goal: 50,
   },
   {
     id: 'quiz-champion',
@@ -35,7 +33,8 @@ const achievements = [
     gradient: 'from-purple-400 via-purple-500 to-indigo-500',
     progress: 100,
     unlocked: true,
-    points: 750
+    points: 750,
+    goal: 5,
   },
   {
     id: 'streak-saver',
@@ -45,7 +44,8 @@ const achievements = [
     gradient: 'from-red-400 via-red-500 to-pink-500',
     progress: 71,
     unlocked: false,
-    points: 300
+    points: 300,
+    goal: 7,
   },
   {
     id: 'speed-reader',
@@ -55,7 +55,8 @@ const achievements = [
     gradient: 'from-green-400 via-green-500 to-emerald-500',
     progress: 60,
     unlocked: false,
-    points: 400
+    points: 400,
+    goal: 10,
   },
   {
     id: 'focus-master',
@@ -63,9 +64,10 @@ const achievements = [
     description: 'Complete 25 Pomodoro sessions',
     icon: Brain,
     gradient: 'from-blue-400 via-blue-500 to-cyan-500',
-    progress: 92,
-    unlocked: true,
-    points: 600
+    progress: 0, // This will be updated dynamically
+    unlocked: false, // This will be updated dynamically
+    points: 600,
+    goal: 25,
   },
   {
     id: 'early-bird',
@@ -75,7 +77,8 @@ const achievements = [
     gradient: 'from-orange-400 via-orange-500 to-red-500',
     progress: 40,
     unlocked: false,
-    points: 250
+    points: 250,
+    goal: 5,
   },
   {
     id: 'perfectionist',
@@ -85,7 +88,8 @@ const achievements = [
     gradient: 'from-pink-400 via-pink-500 to-rose-500',
     progress: 100,
     unlocked: true,
-    points: 1000
+    points: 1000,
+    goal: 1,
   },
   {
     id: 'task-crusher',
@@ -95,7 +99,8 @@ const achievements = [
     gradient: 'from-teal-400 via-teal-500 to-green-500',
     progress: 78,
     unlocked: false,
-    points: 800
+    points: 800,
+    goal: 100,
   },
   {
     id: 'code-ninja',
@@ -105,7 +110,8 @@ const achievements = [
     gradient: 'from-gray-400 via-gray-500 to-gray-600',
     progress: 0,
     unlocked: false,
-    points: 500
+    points: 500,
+    goal: 10,
   }
 ];
 
@@ -119,6 +125,22 @@ const levels = [
 
 export function Achievements() {
   const { themeConfig } = useTheme();
+  const [achievements, setAchievements] = useState(initialAchievements);
+
+  useEffect(() => {
+    const pomodoroSessions = parseInt(localStorage.getItem('pomodoroSessions') || '0', 10);
+    
+    setAchievements(prevAchievements => 
+      prevAchievements.map(ach => {
+        if (ach.id === 'focus-master') {
+          const progress = Math.min(100, (pomodoroSessions / ach.goal) * 100);
+          const unlocked = pomodoroSessions >= ach.goal;
+          return { ...ach, progress: Math.round(progress), unlocked };
+        }
+        return ach;
+      })
+    );
+  }, []);
   
   const totalPoints = achievements
     .filter(achievement => achievement.unlocked)

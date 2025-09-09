@@ -8,13 +8,12 @@ import {
   Calendar, 
   Timer, 
   BarChart3, 
-  Settings,
   Award,
-  LogOut,
-  User
+  LogOut
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
+import { ProfileDropdown } from './ProfileDropdown';
 
 const navigationItems = [
   { path: '/', icon: Home, label: 'Dashboard' },
@@ -24,8 +23,6 @@ const navigationItems = [
   { path: '/pomodoro', icon: Timer, label: 'Pomodoro' },
   { path: '/results', icon: BarChart3, label: 'Results' },
   { path: '/achievements', icon: Award, label: 'Badges' },
-  { path: '/profile', icon: User, label: 'Profile' },
-  { path: '/settings', icon: Settings, label: 'Settings' },
 ];
 
 export function Navigation() {
@@ -43,11 +40,14 @@ export function Navigation() {
   return (
     <nav className="fixed bottom-0 left-0 right-0 md:top-0 md:left-0 md:bottom-auto md:w-64 bg-white border-t md:border-r md:border-t-0 border-gray-200 z-50">
       <div className="flex md:flex-col h-16 md:h-full">
-        <div className="hidden md:block p-6 border-b border-gray-200">
-          <h1 className="text-xl font-bold text-gray-800 mb-2">EduOrganize</h1>
-          {user && (
-            <p className="text-sm text-gray-600 truncate">{user.email}</p>
-          )}
+        <div className="hidden md:flex items-center justify-between p-6 border-b border-gray-200">
+          <div>
+            <h1 className="text-xl font-bold text-gray-800 mb-2">EduOrganize</h1>
+            {user && (
+              <p className="text-sm text-gray-600 truncate">{user.email}</p>
+            )}
+          </div>
+          <ProfileDropdown />
         </div>
         
         <div className="flex md:flex-col flex-1 overflow-x-auto md:overflow-x-visible md:overflow-y-auto md:pb-20">

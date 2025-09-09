@@ -12,25 +12,25 @@ const onboardingSteps = [
     icon: GraduationCap,
     title: 'Welcome to EduOrganize',
     description: 'Your personal study companion designed to make learning more engaging and effective.',
-    illustration: 'https://images.pexels.com/photos/159844/books-school-study-education-159844.jpeg?auto=compress&cs=tinysrgb&w=400'
+    illustration: 'https://plus.unsplash.com/premium_photo-1682148439903-3c6c16c8e659?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'
   },
   {
     icon: Target,
     title: 'Manage Your Tasks',
     description: 'Create, organize, and track your assignments with beautiful visual feedback and progress tracking.',
-    illustration: 'https://images.pexels.com/photos/196644/pexels-photo-196644.jpeg?auto=compress&cs=tinysrgb&w=400'
+    illustration: 'https://images.unsplash.com/photo-1542626991-cbc4e6268474?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'
   },
   {
     icon: Timer,
     title: 'Focus with Pomodoro',
     description: 'Use the built-in Pomodoro timer to maintain focus and take productive breaks during study sessions.',
-    illustration: 'https://images.pexels.com/photos/1103970/pexels-photo-1103970.jpeg?auto=compress&cs=tinysrgb&w=400'
+    illustration: 'https://images.unsplash.com/photo-1517976487666-df63216e2e50?q=80&w=1935&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'
   },
   {
     icon: BarChart3,
     title: 'Track Your Progress',
     description: 'Visualize your academic journey with detailed analytics, grade tracking, and study time insights.',
-    illustration: 'https://images.pexels.com/photos/590016/pexels-photo-590016.jpeg?auto=compress&cs=tinysrgb&w=400'
+    illustration: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'
   }
 ];
 
