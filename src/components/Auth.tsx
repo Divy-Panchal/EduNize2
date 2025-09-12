@@ -5,7 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
 
 export function Auth() {
-  const { signIn, signUp } = useAuth();
+  const { signIn, signUp, signInWithGoogle } = useAuth();
   const [isLogin, setIsLogin] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -43,29 +43,40 @@ export function Auth() {
     });
   };
 
+  const handleGoogleSignIn = async () => {
+    setLoading(true);
+    try {
+      await signInWithGoogle();
+    } catch (error: any) {
+      toast.error(error.message || 'An error occurred during Google sign-in');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen relative overflow-hidden">
       {/* Background with layered mountains */}
       <div className="absolute inset-0">
         {/* Sky gradient */}
-        <div className="absolute inset-0 bg-gradient-to-b from-blue-200 via-teal-100 to-green-200" />
+        <div className="absolute inset-0 bg-gradient-to-b from-blue-200 via-blue-100 to-blue-200" />
         
         {/* Mountain layers */}
         <div className="absolute inset-0">
           {/* Back mountains */}
-          <div className="absolute bottom-0 w-full h-3/4 bg-gradient-to-t from-teal-300 to-teal-200 opacity-60"
+          <div className="absolute bottom-0 w-full h-3/4 bg-gradient-to-t from-blue-300 to-blue-200 opacity-60"
                style={{
                  clipPath: 'polygon(0% 100%, 0% 60%, 15% 45%, 30% 55%, 45% 40%, 60% 50%, 75% 35%, 90% 45%, 100% 40%, 100% 100%)'
                }} />
           
           {/* Middle mountains */}
-          <div className="absolute bottom-0 w-full h-2/3 bg-gradient-to-t from-teal-400 to-teal-300 opacity-70"
+          <div className="absolute bottom-0 w-full h-2/3 bg-gradient-to-t from-blue-400 to-blue-300 opacity-70"
                style={{
                  clipPath: 'polygon(0% 100%, 0% 70%, 20% 55%, 35% 65%, 50% 50%, 65% 60%, 80% 45%, 95% 55%, 100% 50%, 100% 100%)'
                }} />
           
           {/* Front mountains */}
-          <div className="absolute bottom-0 w-full h-1/2 bg-gradient-to-t from-teal-500 to-teal-400 opacity-80"
+          <div className="absolute bottom-0 w-full h-1/2 bg-gradient-to-t from-blue-500 to-blue-400 opacity-80"
                style={{
                  clipPath: 'polygon(0% 100%, 0% 80%, 25% 65%, 40% 75%, 55% 60%, 70% 70%, 85% 55%, 100% 65%, 100% 100%)'
                }} />
@@ -89,9 +100,9 @@ export function Auth() {
         />
 
         {/* Decorative plants/trees */}
-        <div className="absolute bottom-0 left-8 w-16 h-32 bg-gradient-to-t from-green-800 to-green-600 opacity-40"
+        <div className="absolute bottom-0 left-8 w-16 h-32 bg-gradient-to-t from-blue-800 to-blue-600 opacity-40"
              style={{ clipPath: 'polygon(40% 100%, 45% 20%, 50% 0%, 55% 20%, 60% 100%)' }} />
-        <div className="absolute bottom-0 right-12 w-20 h-28 bg-gradient-to-t from-green-700 to-green-500 opacity-50"
+        <div className="absolute bottom-0 right-12 w-20 h-28 bg-gradient-to-t from-blue-700 to-blue-500 opacity-50"
              style={{ clipPath: 'polygon(35% 100%, 40% 30%, 45% 10%, 50% 0%, 55% 10%, 60% 30%, 65% 100%)' }} />
       </div>
 
@@ -113,7 +124,7 @@ export function Auth() {
             <div className="inline-flex items-center justify-center w-16 h-16 bg-white bg-opacity-20 backdrop-blur-sm rounded-full mb-4">
               <GraduationCap className="w-8 h-8 text-white" />
             </div>
-            <h1 className="text-5xl font-bold text-gray-800 mb-2 font-serif" style={{textShadow: '2px 2px 4px rgba(0,0,0,0.3)'}}>EduOrganize</h1>
+            <h1 className="text-5xl font-bold text-gray-800 mb-2" style={{textShadow: '2px 2px 4px rgba(0,0,0,0.3)'}}>EduOrganize</h1>
             <p className="text-gray-600 text-sm">Your study companion</p>
           </motion.div>
 
@@ -139,7 +150,7 @@ export function Auth() {
                 </div>
               )}
               {isLogin && (
-                <div className="mt-3 p-3 bg-green-500 bg-opacity-30 rounded-lg border border-green-300 border-opacity-40">
+                <div className="mt-3 p-3 bg-blue-500 bg-opacity-30 rounded-lg border border-blue-300 border-opacity-40">
                   <p className="text-gray-800 text-opacity-90 text-xs">
                     💡 Don't have an account? Click "Sign up here" below to create one.
                   </p>
@@ -160,7 +171,7 @@ export function Auth() {
                     name="email"
                     value={formData.email}
                     onChange={handleInputChange}
-                    className="w-full pl-10 pr-4 py-3 bg-white bg-opacity-50 border border-gray-300 rounded-lg text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent backdrop-blur-sm"
+                    className="w-full pl-10 pr-4 py-3 bg-white bg-opacity-50 border border-gray-300 rounded-lg text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent backdrop-blur-sm"
                     placeholder="your@email.com"
                     required
                   />
@@ -179,7 +190,7 @@ export function Auth() {
                     name="password"
                     value={formData.password}
                     onChange={handleInputChange}
-                    className="w-full pl-10 pr-12 py-3 bg-white bg-opacity-50 border border-gray-300 rounded-lg text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent backdrop-blur-sm"
+                    className="w-full pl-10 pr-12 py-3 bg-white bg-opacity-50 border border-gray-300 rounded-lg text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent backdrop-blur-sm"
                     placeholder="••••••••"
                     required
                   />
@@ -212,7 +223,7 @@ export function Auth() {
                         name="confirmPassword"
                         value={formData.confirmPassword}
                         onChange={handleInputChange}
-                        className="w-full pl-10 pr-4 py-3 bg-white bg-opacity-50 border border-gray-300 rounded-lg text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent backdrop-blur-sm"
+                        className="w-full pl-10 pr-4 py-3 bg-white bg-opacity-50 border border-gray-300 rounded-lg text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent backdrop-blur-sm"
                         placeholder="••••••••"
                         required={!isLogin}
                       />
@@ -227,7 +238,7 @@ export function Auth() {
                   <label className="flex items-center gap-2 text-gray-600">
                     <input
                       type="checkbox"
-                      className="w-4 h-4 rounded border-gray-300 bg-white bg-opacity-50 focus:ring-2 focus:ring-teal-500"
+                      className="w-4 h-4 rounded border-gray-300 bg-white bg-opacity-50 focus:ring-2 focus:ring-blue-500"
                     />
                     Remember Me
                   </label>
@@ -246,7 +257,7 @@ export function Auth() {
                 whileTap={{ scale: 0.98 }}
                 type="submit"
                 disabled={loading}
-                className="w-full bg-teal-600 hover:bg-teal-700 text-white font-semibold py-3 rounded-lg transition-all duration-200 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg transition-all duration-200 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loading ? (
                   <div className="flex items-center justify-center gap-2">
@@ -259,6 +270,25 @@ export function Auth() {
               </motion.button>
             </form>
 
+            {/* Divider */}
+            <div className="my-6 flex items-center">
+              <div className="flex-grow border-t border-gray-300"></div>
+              <span className="mx-4 text-gray-500 text-sm">OR</span>
+              <div className="flex-grow border-t border-gray-300"></div>
+            </div>
+
+            {/* Google Sign-In Button */}
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={handleGoogleSignIn}
+              disabled={loading}
+              className="w-full bg-white hover:bg-gray-100 text-gray-800 font-semibold py-3 rounded-lg transition-all duration-200 shadow-lg flex items-center justify-center gap-2 border border-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <img src="https://www.google.com/favicon.ico" alt="Google icon" className="w-5 h-5" />
+              Sign in with Google
+            </motion.button>
+
             {/* Toggle between Login/Signup */}
             <div className="mt-6 text-center">
               <p className="text-gray-600 text-sm">
@@ -269,7 +299,7 @@ export function Auth() {
                   setIsLogin(!isLogin);
                   setFormData({ email: '', password: '', confirmPassword: '' });
                 }}
-                className="text-teal-600 font-medium hover:text-teal-700 transition-colors mt-1"
+                className="text-blue-600 font-medium hover:text-blue-700 transition-colors mt-1"
               >
                 {isLogin ? 'Sign up here' : 'Login here'}
               </button>

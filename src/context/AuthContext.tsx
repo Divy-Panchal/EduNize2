@@ -4,7 +4,9 @@ import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   signOut as firebaseSignOut,
-  onAuthStateChanged
+  onAuthStateChanged,
+  GoogleAuthProvider,
+  signInWithPopup
 } from 'firebase/auth';
 import { auth } from '../firebaseConfig'; // Import the auth instance
 import toast from 'react-hot-toast';
@@ -15,6 +17,7 @@ interface AuthContextType {
   signUp: (email: string, password: string) => Promise<void>;
   signIn: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
+  signInWithGoogle: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -71,13 +74,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const signInWithGoogle = async () => {
+    const provider = new GoogleAuthProvider();
+    try {
+      await signInWithPopup(auth, provider);
+      toast.success('Signed in with Google successfully!');
+    } catch (error: any) {
+      throw new Error(error.message || 'Failed to sign in with Google.');
+    }
+  };
+
   return (
     <AuthContext.Provider value={{
       user,
       loading,
       signUp,
       signIn,
-      signOut
+      signOut,
+      signInWithGoogle
     }}>
       {children}
     </AuthContext.Provider>
