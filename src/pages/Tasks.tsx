@@ -26,7 +26,7 @@ export function Tasks() {
     toast.success('Task updated!');
   };
 
-  const handleDeleteTask = (id: string) => {
+  const handleDeleteTask = (id:string) => {
     deleteTask(id);
     toast.success('Task deleted!');
   };
@@ -112,10 +112,23 @@ export function Tasks() {
         >
           <Calendar className="w-16 h-16 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
           <p className={`text-lg ${themeConfig.textSecondary}`}>
-            {searchTerm || filterPriority !== 'all' ? 'No tasks match your filters' : 'No tasks yet'}
+            {searchTerm || filterPriority !== 'all' 
+              ? 'No tasks match your filters' 
+              : 'No tasks yet! Start adding tasks to boost your productivity.'}
           </p>
+          {!(searchTerm || filterPriority !== 'all') && (
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => setShowAddModal(true)}
+              className={`${themeConfig.primary} ${themeConfig.primaryHover} text-white px-6 py-3 rounded-lg font-medium flex items-center gap-2 shadow-lg text-base mx-auto mt-6`}
+            >
+              <Plus className="w-5 h-5" />
+              Quick Add Task
+            </motion.button>
+          )}
           <p className={`text-sm ${themeConfig.textSecondary} mt-2`}>
-            {searchTerm || filterPriority !== 'all' ? 'Try adjusting your search or filters' : 'Create your first task to get started'}
+            {searchTerm || filterPriority !== 'all' ? 'Try adjusting your search or filters' : ''}
           </p>
         </motion.div>
       )}
