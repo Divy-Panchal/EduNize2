@@ -56,7 +56,7 @@ export function PomodoroTimer() {
   const alarmRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
-    alarmRef.current = new Audio('https://actions.google.com/sounds/v1/alarms/alarm_clock.ogg');
+    alarmRef.current = new Audio('/alarm.mp3');
     alarmRef.current.loop = true;
   }, []);
 
