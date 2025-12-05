@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 
 import { Toaster } from 'react-hot-toast';
@@ -18,35 +18,47 @@ import { TaskProvider } from './context/TaskContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { Auth } from './components/Auth';
 import { DarkModeTransition } from './components/DarkModeTransition';
+import { Onboarding } from './components/Onboarding';
 
 const pageVariants = {
   initial: {
     opacity: 0,
-    x: '100vw',
-    scale: 0.95,
+    y: 20,
   },
   in: {
     opacity: 1,
-    x: 0,
-    scale: 1,
+    y: 0,
   },
   out: {
     opacity: 0,
-    x: '-100vw',
-    scale: 1.05,
+    y: -20,
   },
 };
 
 const pageTransition = {
   type: 'tween',
   ease: 'anticipate',
-  duration: 0.5,
+  duration: 0.4,
 };
 
 function AppContent() {
   const { user, loading } = useAuth();
   const { themeConfig, isTransitioning, transitionTheme } = useTheme();
   const location = useLocation();
+  const [showOnboarding, setShowOnboarding] = useState(false);
+
+  useEffect(() => {
+    const hasCompletedOnboarding = localStorage.getItem('hasCompletedOnboarding');
+    if (!hasCompletedOnboarding) {
+      setShowOnboarding(true);
+    }
+  }, []);
+
+  const handleOnboardingComplete = () => {
+    localStorage.setItem('hasCompletedOnboarding', 'true');
+    setShowOnboarding(false);
+  };
+
 
   if (loading) {
     return (
@@ -69,33 +81,48 @@ function AppContent() {
         isTransitioning={isTransitioning}
         transitionTheme={transitionTheme}
       />
-      <div className="flex flex-col md:flex-row">
-        <Navigation />
-        <main className="flex-1 md:ml-64 mb-16 md:mb-0 p-4 md:p-6 overflow-hidden">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={location.pathname}
-              initial="initial"
-              animate="in"
-              exit="out"
-              variants={pageVariants}
-              transition={pageTransition}
-            >
-              <Routes location={location}>
-                <Route path="/" element={<Dashboard />} />
-                <Route path="/subjects" element={<Subjects />} />
-                <Route path="/tasks" element={<Tasks />} />
-                <Route path="/timetable" element={<Timetable />} />
-                <Route path="/pomodoro" element={<PomodoroTimer />} />
-                <Route path="/achievements" element={<Achievements />} />
-                <Route path="/results" element={<Results />} />
-                <Route path="/settings" element={<Settings />} />
-                <Route path="/profile" element={<Profile />} />
-              </Routes>
-            </motion.div>
-          </AnimatePresence>
-        </main>
-      </div>
+      <AnimatePresence mode="wait">
+        {showOnboarding && (
+          <motion.div
+            key="onboarding"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <Onboarding onComplete={handleOnboardingComplete} />
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {!showOnboarding && (
+        <div className="md:flex-row">
+          <Navigation />
+          <main className="flex-1 p-4 md:p-6 pb-28">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={location.pathname}
+                initial="initial"
+                animate="in"
+                exit="out"
+                variants={pageVariants}
+                transition={pageTransition}
+              >
+                <Routes location={location}>
+                  <Route path="/" element={<Dashboard />} />
+                  <Route path="/subjects" element={<Subjects />} />
+                  <Route path="/tasks" element={<Tasks />} />
+                  <Route path="/timetable" element={<Timetable />} />
+                  <Route path="/pomodoro" element={<PomodoroTimer />} />
+                  <Route path="/achievements" element={<Achievements />} />
+                  <Route path="/results" element={<Results />} />
+                  <Route path="/settings" element={<Settings />} />
+                  <Route path="/profile" element={<Profile />} />
+                </Routes>
+              </motion.div>
+            </AnimatePresence>
+          </main>
+        </div>
+      )}
     </div>
   );
 }

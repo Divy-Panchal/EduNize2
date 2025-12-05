@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Edit, Save, BookOpen, Award, BarChart2, Plus, Upload } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
+import { useAuth } from '../context/AuthContext';
 
 // Mock user data
 const initialUserData = {
@@ -61,6 +62,7 @@ const ProgressCircle = ({ progress }: { progress: number }) => {
 
 export function Profile() {
   const { themeConfig } = useTheme();
+  const { signOut } = useAuth();
   const [isFlipped, setIsFlipped] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [userData, setUserData] = useState(getStoredUserData);
@@ -119,14 +121,23 @@ export function Profile() {
       <div className="max-w-4xl mx-auto">
         <div className="flex flex-wrap justify-between items-center mb-6 gap-4">
           <h1 className={`text-3xl font-bold ${themeConfig.text}`}>My Profile</h1>
-          <motion.button
-            onClick={() => (isEditing ? handleSave() : setIsEditing(true))}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg font-semibold transition-colors ${isEditing ? 'bg-green-500 text-white' : 'bg-blue-500 text-white'}`}
-            whileTap={{ scale: 0.95 }}
-          >
-            {isEditing ? <Save size={18} /> : <Edit size={18} />}
-            {isEditing ? 'Save' : 'Edit'}
-          </motion.button>
+          <div className="flex gap-4">
+            <motion.button
+              onClick={() => (isEditing ? handleSave() : setIsEditing(true))}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg font-semibold transition-colors ${isEditing ? 'bg-green-500 text-white' : 'bg-blue-500 text-white'}`}
+              whileTap={{ scale: 0.95 }}
+            >
+              {isEditing ? <Save size={18} /> : <Edit size={18} />}
+              {isEditing ? 'Save' : 'Edit'}
+            </motion.button>
+            <motion.button
+              onClick={signOut}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg font-semibold transition-colors bg-red-500 text-white`}
+              whileTap={{ scale: 0.95 }}
+            >
+              Sign Out
+            </motion.button>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
