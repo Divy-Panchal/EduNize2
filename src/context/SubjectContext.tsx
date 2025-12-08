@@ -18,6 +18,8 @@ export interface Resource {
     title: string;
     url: string;
     type: 'link' | 'file' | 'video';
+    fileName?: string;
+    fileData?: string; // base64 encoded file data
 }
 
 export interface Subject {

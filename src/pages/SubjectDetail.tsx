@@ -26,6 +26,7 @@ export function SubjectDetail() {
     const [resourceTitle, setResourceTitle] = useState('');
     const [resourceUrl, setResourceUrl] = useState('');
     const [resourceType, setResourceType] = useState<'link' | 'file' | 'video'>('link');
+    const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
     if (!subject) {
         return (
@@ -62,8 +63,37 @@ export function SubjectDetail() {
         }
     };
 
-    const handleAddResource = () => {
-        if (resourceTitle.trim() && resourceUrl.trim() && id) {
+    const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            setSelectedFile(file);
+            setResourceTitle(file.name);
+        }
+    };
+
+    const handleAddResource = async () => {
+        if (!id) return;
+
+        if (resourceType === 'file' && selectedFile) {
+            // Convert file to base64
+            const reader = new FileReader();
+            reader.onload = () => {
+                const base64 = reader.result as string;
+                addResource(id, {
+                    title: resourceTitle.trim() || selectedFile.name,
+                    url: '', // Not used for files
+                    type: 'file',
+                    fileName: selectedFile.name,
+                    fileData: base64,
+                });
+                setResourceTitle('');
+                setResourceUrl('');
+                setSelectedFile(null);
+                setResourceType('link');
+                setShowResourceModal(false);
+            };
+            reader.readAsDataURL(selectedFile);
+        } else if (resourceTitle.trim() && resourceUrl.trim()) {
             addResource(id, { title: resourceTitle.trim(), url: resourceUrl.trim(), type: resourceType });
             setResourceTitle('');
             setResourceUrl('');
@@ -217,8 +247,8 @@ export function SubjectDetail() {
                                             <button
                                                 onClick={() => id && toggleTopic(id, topic.id)}
                                                 className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${topic.completed
-                                                        ? 'bg-green-500 border-green-500'
-                                                        : `border-gray-400 ${themeConfig.card}`
+                                                    ? 'bg-green-500 border-green-500'
+                                                    : `border-gray-400 ${themeConfig.card}`
                                                     }`}
                                             >
                                                 {topic.completed && <Check className="w-4 h-4 text-white" />}
@@ -279,14 +309,28 @@ export function SubjectDetail() {
                                                 </div>
                                                 <div className="flex-1">
                                                     <h3 className={`font-bold ${themeConfig.text} mb-1`}>{resource.title}</h3>
-                                                    <a
-                                                        href={resource.url}
-                                                        target="_blank"
-                                                        rel="noopener noreferrer"
-                                                        className="text-blue-500 hover:text-blue-600 text-sm break-all"
-                                                    >
-                                                        {resource.url}
-                                                    </a>
+                                                    {resource.type === 'file' && resource.fileData ? (
+                                                        <button
+                                                            onClick={() => {
+                                                                const link = document.createElement('a');
+                                                                link.href = resource.fileData!;
+                                                                link.download = resource.fileName || resource.title;
+                                                                link.click();
+                                                            }}
+                                                            className="text-blue-500 hover:text-blue-600 text-sm font-semibold"
+                                                        >
+                                                            📥 Download {resource.fileName}
+                                                        </button>
+                                                    ) : (
+                                                        <a
+                                                            href={resource.url}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            className="text-blue-500 hover:text-blue-600 text-sm break-all"
+                                                        >
+                                                            {resource.url}
+                                                        </a>
+                                                    )}
                                                 </div>
                                             </div>
                                             <button
@@ -432,21 +476,7 @@ export function SubjectDetail() {
                             className={`${themeConfig.card} rounded-2xl p-6 max-w-md w-full shadow-2xl border ${themeConfig.text === 'text-white' ? 'border-gray-700' : 'border-gray-200'}`}
                         >
                             <h2 className={`text-2xl font-bold ${themeConfig.text} mb-4`}>Add Resource</h2>
-                            <input
-                                type="text"
-                                value={resourceTitle}
-                                onChange={(e) => setResourceTitle(e.target.value)}
-                                placeholder="Resource title"
-                                className={`w-full px-4 py-3 rounded-xl border-2 ${themeConfig.background} ${themeConfig.text} ${themeConfig.text === 'text-white' ? 'border-gray-600' : 'border-gray-300'} focus:border-blue-500 focus:outline-none transition-colors mb-3`}
-                                autoFocus
-                            />
-                            <input
-                                type="url"
-                                value={resourceUrl}
-                                onChange={(e) => setResourceUrl(e.target.value)}
-                                placeholder="URL"
-                                className={`w-full px-4 py-3 rounded-xl border-2 ${themeConfig.background} ${themeConfig.text} ${themeConfig.text === 'text-white' ? 'border-gray-600' : 'border-gray-300'} focus:border-blue-500 focus:outline-none transition-colors mb-3`}
-                            />
+
                             <div className="mb-4">
                                 <label className={`block text-sm font-semibold ${themeConfig.text} mb-2`}>Type</label>
                                 <div className="flex gap-2">
@@ -455,8 +485,8 @@ export function SubjectDetail() {
                                             key={type}
                                             onClick={() => setResourceType(type)}
                                             className={`flex-1 px-4 py-2 rounded-xl font-semibold transition-all ${resourceType === type
-                                                    ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white'
-                                                    : `${themeConfig.background} ${themeConfig.text} border-2 ${themeConfig.text === 'text-white' ? 'border-gray-600' : 'border-gray-300'}`
+                                                ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white'
+                                                : `${themeConfig.background} ${themeConfig.text} border-2 ${themeConfig.text === 'text-white' ? 'border-gray-600' : 'border-gray-300'}`
                                                 }`}
                                         >
                                             {type.charAt(0).toUpperCase() + type.slice(1)}
@@ -464,6 +494,48 @@ export function SubjectDetail() {
                                     ))}
                                 </div>
                             </div>
+
+                            {resourceType === 'file' ? (
+                                <>
+                                    <input
+                                        type="text"
+                                        value={resourceTitle}
+                                        onChange={(e) => setResourceTitle(e.target.value)}
+                                        placeholder="Resource title (optional)"
+                                        className={`w-full px-4 py-3 rounded-xl border-2 ${themeConfig.background} ${themeConfig.text} ${themeConfig.text === 'text-white' ? 'border-gray-600' : 'border-gray-300'} focus:border-blue-500 focus:outline-none transition-colors mb-3`}
+                                    />
+                                    <div className={`w-full px-4 py-3 rounded-xl border-2 border-dashed ${themeConfig.text === 'text-white' ? 'border-gray-600' : 'border-gray-300'} hover:border-blue-400 transition-all mb-3`}>
+                                        <input
+                                            type="file"
+                                            onChange={handleFileSelect}
+                                            className="w-full"
+                                            id="file-upload"
+                                        />
+                                        <label htmlFor="file-upload" className={`cursor-pointer ${themeConfig.text}`}>
+                                            {selectedFile ? `Selected: ${selectedFile.name}` : 'Choose a file'}
+                                        </label>
+                                    </div>
+                                </>
+                            ) : (
+                                <>
+                                    <input
+                                        type="text"
+                                        value={resourceTitle}
+                                        onChange={(e) => setResourceTitle(e.target.value)}
+                                        placeholder="Resource title"
+                                        className={`w-full px-4 py-3 rounded-xl border-2 ${themeConfig.background} ${themeConfig.text} ${themeConfig.text === 'text-white' ? 'border-gray-600' : 'border-gray-300'} focus:border-blue-500 focus:outline-none transition-colors mb-3`}
+                                        autoFocus
+                                    />
+                                    <input
+                                        type="url"
+                                        value={resourceUrl}
+                                        onChange={(e) => setResourceUrl(e.target.value)}
+                                        placeholder="URL"
+                                        className={`w-full px-4 py-3 rounded-xl border-2 ${themeConfig.background} ${themeConfig.text} ${themeConfig.text === 'text-white' ? 'border-gray-600' : 'border-gray-300'} focus:border-blue-500 focus:outline-none transition-colors mb-3`}
+                                    />
+                                </>
+                            )}
+
                             <div className="flex gap-3">
                                 <button
                                     onClick={() => setShowResourceModal(false)}
