@@ -2,10 +2,11 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, BookOpen, X } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
+import { useSubject } from '../context/SubjectContext';
 
 export function Subjects() {
   const { themeConfig } = useTheme();
-  const [subjects, setSubjects] = useState<Array<{ id: string; name: string; color: string }>>([]);
+  const { subjects, addSubject, deleteSubject } = useSubject();
   const [showAddModal, setShowAddModal] = useState(false);
   const [newSubjectName, setNewSubjectName] = useState('');
 
@@ -23,21 +24,17 @@ export function Subjects() {
   const handleAddSubject = () => {
     if (newSubjectName.trim()) {
       const randomColor = colors[Math.floor(Math.random() * colors.length)];
-      setSubjects([
-        ...subjects,
-        {
-          id: Date.now().toString(),
-          name: newSubjectName.trim(),
-          color: randomColor,
-        },
-      ]);
+      addSubject({
+        name: newSubjectName.trim(),
+        color: randomColor,
+      });
       setNewSubjectName('');
       setShowAddModal(false);
     }
   };
 
   const handleDeleteSubject = (id: string) => {
-    setSubjects(subjects.filter(subject => subject.id !== id));
+    deleteSubject(id);
   };
 
   return (

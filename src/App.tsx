@@ -15,6 +15,7 @@ import { Achievements } from './pages/Achievements';
 import { Profile } from './pages/Profile';
 import { ThemeProvider, useTheme } from './context/ThemeContext';
 import { TaskProvider } from './context/TaskContext';
+import { SubjectProvider } from './context/SubjectContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { Auth } from './components/Auth';
 import { DarkModeTransition } from './components/DarkModeTransition';
@@ -132,10 +133,12 @@ function App() {
     <AuthProvider>
       <ThemeProvider>
         <TaskProvider>
-          <Router>
-            <Toaster position="top-right" />
-            <AppContent />
-          </Router>
+          <SubjectProvider>
+            <Router>
+              <Toaster position="top-right" />
+              <AppContent />
+            </Router>
+          </SubjectProvider>
         </TaskProvider>
       </ThemeProvider>
     </AuthProvider>
