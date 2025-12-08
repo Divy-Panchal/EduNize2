@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, BookOpen, X } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../context/ThemeContext';
 import { useSubject } from '../context/SubjectContext';
 
 export function Subjects() {
   const { themeConfig } = useTheme();
   const { subjects, addSubject, deleteSubject } = useSubject();
+  const navigate = useNavigate();
   const [showAddModal, setShowAddModal] = useState(false);
   const [newSubjectName, setNewSubjectName] = useState('');
 
@@ -113,7 +115,10 @@ export function Subjects() {
                 whileHover={{ scale: 1.02 }}
                 className="relative"
               >
-                <div className={`bg-gradient-to-r ${subject.color} rounded-2xl p-1 shadow-lg`}>
+                <div
+                  className={`bg-gradient-to-r ${subject.color} rounded-2xl p-1 shadow-lg cursor-pointer`}
+                  onClick={() => navigate(`/subjects/${subject.id}`)}
+                >
                   <div className={`${themeConfig.card} rounded-xl p-4 h-20 flex items-center justify-between relative overflow-hidden`}>
                     <div className="relative z-10 flex-1">
                       <h3 className={`text-lg font-bold ${themeConfig.text}`}>
@@ -121,7 +126,10 @@ export function Subjects() {
                       </h3>
                     </div>
                     <motion.button
-                      onClick={() => handleDeleteSubject(subject.id)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeleteSubject(subject.id);
+                      }}
                       whileHover={{ scale: 1.1, rotate: 90 }}
                       whileTap={{ scale: 0.9 }}
                       className="relative z-10 bg-red-500 hover:bg-red-600 p-2 rounded-full transition-colors"

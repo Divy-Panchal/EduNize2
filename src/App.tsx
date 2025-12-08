@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Navigation } from './components/Navigation';
 import { Dashboard } from './pages/Dashboard';
 import { Subjects } from './pages/Subjects';
+import { SubjectDetail } from './pages/SubjectDetail';
 import { Tasks } from './pages/Tasks';
 import { Timetable } from './pages/Timetable';
 import { PomodoroTimer } from './pages/PomodoroTimer';
@@ -111,6 +112,7 @@ function AppContent() {
                 <Routes location={location}>
                   <Route path="/" element={<Dashboard />} />
                   <Route path="/subjects" element={<Subjects />} />
+                  <Route path="/subjects/:id" element={<SubjectDetail />} />
                   <Route path="/tasks" element={<Tasks />} />
                   <Route path="/timetable" element={<Timetable />} />
                   <Route path="/pomodoro" element={<PomodoroTimer />} />
