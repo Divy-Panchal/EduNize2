@@ -28,7 +28,12 @@ export function TaskProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const savedTasks = localStorage.getItem('eduorganize-tasks');
     if (savedTasks) {
-      setTasks(JSON.parse(savedTasks));
+      try {
+        setTasks(JSON.parse(savedTasks));
+      } catch (error) {
+        console.error('Failed to parse tasks from localStorage:', error);
+        setTasks([]);
+      }
     } else {
       // Sample data for demo
       setTasks([
@@ -70,7 +75,7 @@ export function TaskProvider({ children }: { children: React.ReactNode }) {
   };
 
   const updateTask = (id: string, updates: Partial<Task>) => {
-    setTasks(prev => prev.map(task => 
+    setTasks(prev => prev.map(task =>
       task.id === id ? { ...task, ...updates } : task
     ));
   };
@@ -80,7 +85,7 @@ export function TaskProvider({ children }: { children: React.ReactNode }) {
   };
 
   const toggleTask = (id: string) => {
-    setTasks(prev => prev.map(task => 
+    setTasks(prev => prev.map(task =>
       task.id === id ? { ...task, completed: !task.completed } : task
     ));
   };

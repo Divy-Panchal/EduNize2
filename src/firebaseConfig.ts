@@ -7,12 +7,12 @@ import { getMessaging } from "firebase/messaging";
 // Your web app's Firebase configuration
 // IMPORTANT: Replace with your own Firebase project's configuration
 const firebaseConfig = {
-  apiKey: "AIzaSyAzf6v3t1fTuCITIf-mhY0AI1ft-yzf1Jc",
-  authDomain: "fir-edunize.firebaseapp.com",
-  projectId: "fir-edunize",
-  storageBucket: "fir-edunize.firebasestorage.app",
-  messagingSenderId: "32958674902",
-  appId: "1:32958674902:web:ec1336352048ee7cf39677"
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID
 };
 
 // Initialize Firebase

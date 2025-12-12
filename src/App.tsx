@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 
 import { Toaster } from 'react-hot-toast';
@@ -14,13 +14,16 @@ import { Results } from './pages/Results';
 import { Settings } from './pages/Settings';
 import { Achievements } from './pages/Achievements';
 import { Profile } from './pages/Profile';
+import { Calendar } from './pages/Calendar';
 import { ThemeProvider, useTheme } from './context/ThemeContext';
 import { TaskProvider } from './context/TaskContext';
 import { SubjectProvider } from './context/SubjectContext';
+import { TimetableProvider } from './context/TimetableContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { Auth } from './components/Auth';
 import { DarkModeTransition } from './components/DarkModeTransition';
 import { Onboarding } from './components/Onboarding';
+import { ProfileSetup } from './components/ProfileSetup';
 
 const pageVariants = {
   initial: {
@@ -48,6 +51,7 @@ function AppContent() {
   const { themeConfig, isTransitioning, transitionTheme } = useTheme();
   const location = useLocation();
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const [showProfileSetup, setShowProfileSetup] = useState(false);
 
   useEffect(() => {
     const hasCompletedOnboarding = localStorage.getItem('hasCompletedOnboarding');
@@ -56,9 +60,46 @@ function AppContent() {
     }
   }, []);
 
+  useEffect(() => {
+    // Check if user has completed profile setup
+    if (user && !showOnboarding) {
+      const hasCompletedProfileSetup = localStorage.getItem('hasCompletedProfileSetup');
+      if (!hasCompletedProfileSetup) {
+        // New user hasn't completed profile setup
+        setShowProfileSetup(true);
+      }
+    }
+  }, [user, showOnboarding]);
+
   const handleOnboardingComplete = () => {
     localStorage.setItem('hasCompletedOnboarding', 'true');
     setShowOnboarding(false);
+  };
+
+  const handleProfileSetupComplete = (data: { fullName: string; class: string; institution: string }) => {
+    // Update userData in localStorage
+    const existingData = localStorage.getItem('userData');
+    let userData = {};
+    try {
+      userData = existingData ? JSON.parse(existingData) : {};
+    } catch (error) {
+      console.error('Failed to parse userData:', error);
+      userData = {};
+    }
+
+    const updatedData = {
+      ...userData,
+      fullName: data.fullName,
+      role: 'Student',
+      education: {
+        institution: data.institution,
+        grade: data.class,
+      },
+    };
+
+    localStorage.setItem('userData', JSON.stringify(updatedData));
+    localStorage.setItem('hasCompletedProfileSetup', 'true');
+    setShowProfileSetup(false);
   };
 
 
@@ -96,7 +137,20 @@ function AppContent() {
         )}
       </AnimatePresence>
 
-      {!showOnboarding && (
+      <AnimatePresence mode="wait">
+        {!showOnboarding && showProfileSetup && (
+          <motion.div
+            key="profilesetup"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <ProfileSetup onComplete={handleProfileSetupComplete} />
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {!showOnboarding && !showProfileSetup && (
         <div className="md:flex-row">
           <Navigation />
           <main className="flex-1 p-4 md:p-6 pb-28">
@@ -108,8 +162,9 @@ function AppContent() {
                 exit="out"
                 variants={pageVariants}
                 transition={pageTransition}
+                className="min-h-screen"
               >
-                <Routes location={location}>
+                <Routes location={location} key={location.pathname}>
                   <Route path="/" element={<Dashboard />} />
                   <Route path="/subjects" element={<Subjects />} />
                   <Route path="/subjects/:id" element={<SubjectDetail />} />
@@ -120,6 +175,7 @@ function AppContent() {
                   <Route path="/results" element={<Results />} />
                   <Route path="/settings" element={<Settings />} />
                   <Route path="/profile" element={<Profile />} />
+                  <Route path="/calendar" element={<Calendar />} />
                 </Routes>
               </motion.div>
             </AnimatePresence>
@@ -136,10 +192,12 @@ function App() {
       <ThemeProvider>
         <TaskProvider>
           <SubjectProvider>
-            <Router>
-              <Toaster position="top-right" />
-              <AppContent />
-            </Router>
+            <TimetableProvider>
+              <Router>
+                <Toaster position="top-right" />
+                <AppContent />
+              </Router>
+            </TimetableProvider>
           </SubjectProvider>
         </TaskProvider>
       </ThemeProvider>

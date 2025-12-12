@@ -1,4 +1,4 @@
- import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 import {
   User,
   createUserWithEmailAndPassword,
@@ -42,13 +42,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       await createUserWithEmailAndPassword(auth, email, password);
       toast.success('Account created successfully!');
     } catch (error: any) {
-      // Handle Firebase specific errors
-      if (error.code === 'auth/email-already-in-use') {
+      const code = error?.code;
+      const message = error?.message;
+
+      if (code === 'auth/email-already-in-use') {
         throw new Error('An account with this email already exists. Please try logging in instead.');
-      } else if (error.code === 'auth/weak-password') {
+      } else if (code === 'auth/weak-password') {
         throw new Error('The password is too weak. Please choose a stronger password.');
       }
-      throw new Error(error.message || 'Failed to create account.');
+      throw new Error(message || 'Failed to create account.');
     }
   };
 
@@ -57,11 +59,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       await signInWithEmailAndPassword(auth, email, password);
       toast.success('Welcome back!');
     } catch (error: any) {
-      // Handle Firebase specific errors
-      if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
+      const code = error?.code;
+      const message = error?.message;
+
+      if (code === 'auth/user-not-found' || code === 'auth/wrong-password' || code === 'auth/invalid-credential') {
         throw new Error('Invalid email or password. Please check your credentials or create an account.');
       }
-      throw new Error(error.message || 'Failed to sign in.');
+      throw new Error(message || 'Failed to sign in.');
     }
   };
 
@@ -70,7 +74,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       await firebaseSignOut(auth);
       toast.success('Signed out successfully');
     } catch (error: any) {
-      throw new Error(error.message || 'Failed to sign out.');
+      throw new Error(error?.message || 'Failed to sign out.');
     }
   };
 
@@ -80,7 +84,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       await signInWithPopup(auth, provider);
       toast.success('Signed in with Google successfully!');
     } catch (error: any) {
-      throw new Error(error.message || 'Failed to sign in with Google.');
+      throw new Error(error?.message || 'Failed to sign in with Google.');
     }
   };
 

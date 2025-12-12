@@ -2,10 +2,12 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { ChevronLeft, ChevronRight, Plus, BookOpen, X } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
+import { useTimetable } from '../context/TimetableContext';
 import { format, startOfWeek, addDays, addWeeks, subWeeks } from 'date-fns';
 
 export function Timetable() {
   const { themeConfig } = useTheme();
+  const { classes, addClass, deleteClass } = useTimetable();
   const [currentWeek, setCurrentWeek] = useState(new Date());
   const [showAddModal, setShowAddModal] = useState(false);
   const [newClass, setNewClass] = useState({
@@ -19,19 +21,10 @@ export function Timetable() {
 
   const weekStart = startOfWeek(currentWeek, { weekStartsOn: 1 });
   const weekDays = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
-  
+
   const timeSlots = [
     '09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00'
   ];
-
-  const [classes, setClasses] = useState([
-    { day: 1, time: '09:00', duration: 2, subject: 'Mathematics', type: 'Lecture', color: 'bg-blue-500' },
-    { day: 1, time: '14:00', duration: 1, subject: 'Physics Lab', type: 'Lab', color: 'bg-purple-500' },
-    { day: 2, time: '10:00', duration: 1, subject: 'English', type: 'Literature', color: 'bg-green-500' },
-    { day: 3, time: '11:00', duration: 2, subject: 'Chemistry', type: 'Lecture', color: 'bg-orange-500' },
-    { day: 4, time: '09:00', duration: 1, subject: 'History', type: 'Discussion', color: 'bg-red-500' },
-    { day: 5, time: '13:00', duration: 1, subject: 'Computer Science', type: 'Lab', color: 'bg-indigo-500' },
-  ]);
 
   const getClassForSlot = (dayIndex: number, time: string) => {
     return classes.find(cls => cls.day === dayIndex && cls.time === time);
@@ -40,8 +33,8 @@ export function Timetable() {
   const handleAddClass = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newClass.subject || !newClass.type) return;
-    
-    setClasses([...classes, { ...newClass, id: Date.now() }]);
+
+    addClass(newClass);
     setNewClass({
       subject: '',
       type: '',
@@ -54,7 +47,7 @@ export function Timetable() {
   };
 
   const colorOptions = [
-    'bg-blue-500', 'bg-purple-500', 'bg-green-500', 'bg-orange-500', 
+    'bg-blue-500', 'bg-purple-500', 'bg-green-500', 'bg-orange-500',
     'bg-red-500', 'bg-indigo-500', 'bg-pink-500', 'bg-teal-500'
   ];
   return (
@@ -97,11 +90,11 @@ export function Timetable() {
           >
             <ChevronLeft className={`w-5 h-5 ${themeConfig.textSecondary}`} />
           </motion.button>
-          
+
           <h2 className={`text-sm md:text-lg font-semibold ${themeConfig.text}`}>
             Week of {format(weekStart, 'MMM dd, yyyy')}
           </h2>
-          
+
           <motion.button
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
@@ -159,9 +152,8 @@ export function Timetable() {
                     <motion.div
                       key={`${day.toISOString()}-${time}`}
                       whileHover={{ scale: 1.02 }}
-                      className={`p-1 md:p-3 min-h-[40px] md:min-h-[60px] border border-gray-100 dark:border-gray-700 rounded-lg ${
-                        classItem ? `${classItem.color} text-white` : 'bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700'
-                      } transition-all duration-200 cursor-pointer`}
+                      className={`p-1 md:p-3 min-h-[40px] md:min-h-[60px] border border-gray-100 dark:border-gray-700 rounded-lg ${classItem ? `${classItem.color} text-white` : 'bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700'
+                        } transition-all duration-200 cursor-pointer`}
                     >
                       {classItem && (
                         <div>
@@ -189,7 +181,7 @@ export function Timetable() {
           <BookOpen className={`w-5 h-5 ${themeConfig.primary.replace('bg-', 'text-')}`} />
           <h3 className={`text-base md:text-lg font-semibold ${themeConfig.text}`}>Today's Classes</h3>
         </div>
-        
+
         <div className="space-y-3">
           {classes.slice(0, 3).map((classItem, index) => (
             <motion.div
@@ -309,9 +301,8 @@ export function Timetable() {
                       key={color}
                       type="button"
                       onClick={() => setNewClass({ ...newClass, color })}
-                      className={`w-8 h-8 ${color} rounded-lg border-2 ${
-                        newClass.color === color ? 'border-gray-800 dark:border-gray-200' : 'border-gray-200 dark:border-gray-600'
-                      } transition-all duration-200`}
+                      className={`w-8 h-8 ${color} rounded-lg border-2 ${newClass.color === color ? 'border-gray-800 dark:border-gray-200' : 'border-gray-200 dark:border-gray-600'
+                        } transition-all duration-200`}
                     />
                   ))}
                 </div>

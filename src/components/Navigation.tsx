@@ -2,12 +2,13 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Home, BookOpen, CheckSquare, Timer, User } from 'lucide-react';
+import { Home, BookOpen, CheckSquare, Timer, User, Calendar } from 'lucide-react';
 
 const navigationItems = [
   { path: '/', icon: Home, label: 'Dashboard' },
   { path: '/subjects', icon: BookOpen, label: 'Subjects' },
   { path: '/tasks', icon: CheckSquare, label: 'Tasks' },
+  { path: '/calendar', icon: Calendar, label: 'Calendar' },
   { path: '/pomodoro', icon: Timer, label: 'Pomodoro' },
   { path: '/profile', icon: User, label: 'Profile' },
 ];
@@ -30,19 +31,32 @@ export function Navigation() {
               to={item.path}
               className="relative w-16 h-16 flex flex-col items-center justify-center rounded-full text-gray-400 hover:text-white transition-colors duration-200 focus:outline-none"
             >
-              {isActive && (
-                <motion.div
-                  layoutId="active-pill"
-                  className="absolute inset-0 bg-white rounded-full"
-                  transition={{ type: "spring", stiffness: 350, damping: 30 }}
-                />
-              )}
-              <div className="relative z-10 flex flex-col items-center">
-                <Icon className={`w-6 h-6 transition-colors duration-300 ${isActive ? 'text-black' : ''}`} />
-                <span className={`text-xs font-bold mt-1 transition-colors duration-300 ${isActive ? 'text-black' : 'text-transparent'}`}>
-                  {item.label}
-                </span>
-              </div>
+              <motion.div
+                className="w-full h-full flex flex-col items-center justify-center"
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                {isActive && (
+                  <motion.div
+                    layoutId="active-pill"
+                    className="absolute inset-0 bg-white rounded-full shadow-[0_0_15px_rgba(255,255,255,0.4)]"
+                    transition={{ type: "spring", stiffness: 300, damping: 25 }}
+                  />
+                )}
+                <div className="relative z-10 flex flex-col items-center">
+                  <Icon className={`w-6 h-6 transition-colors duration-300 ${isActive ? 'text-black' : ''}`} />
+                  <motion.span
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{
+                      opacity: isActive ? 1 : 0,
+                      height: isActive ? 'auto' : 0
+                    }}
+                    className={`text-[10px] font-bold mt-1 transition-colors duration-300 ${isActive ? 'text-black' : 'text-transparent'}`}
+                  >
+                    {item.label}
+                  </motion.span>
+                </div>
+              </motion.div>
             </Link>
           );
         })}

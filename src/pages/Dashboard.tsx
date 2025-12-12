@@ -1,10 +1,8 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { 
-  BookOpen, 
-  Target, 
-  Clock, 
-  TrendingUp,
+import {
+  BookOpen,
+  Target,
   Calendar,
   Award,
   AlertCircle,
@@ -16,11 +14,13 @@ import {
 import { Link } from 'react-router-dom';
 import { useTask } from '../context/TaskContext';
 import { useTheme } from '../context/ThemeContext';
+import { useTimetable } from '../context/TimetableContext';
 import { DashboardProfile } from '../components/DashboardProfile';
 
 export function Dashboard() {
   const { tasks } = useTask();
   const { themeConfig } = useTheme();
+  const { getTodayClasses } = useTimetable();
 
   const completedTasks = tasks.filter(task => task.completed).length;
   const totalTasks = tasks.length;
@@ -57,35 +57,73 @@ export function Dashboard() {
     }
   ];
 
-  const upcomingTasks = tasks
-    .filter(task => !task.completed)
-    .sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime())
-    .slice(0, 3);
-    
-  const scheduleItems = [
-    { time: '09:00', subject: 'Mathematics', type: 'Lecture', color: 'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300' },
-    { time: '11:00', subject: 'Physics', type: 'Lab', color: 'bg-purple-100 text-purple-800 dark:bg-purple-900/50 dark:text-purple-300' },
-    { time: '14:00', subject: 'English', type: 'Assignment', color: 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300' },
-    { time: '16:00', subject: 'Study Break', type: 'Personal', color: 'bg-orange-100 text-orange-800 dark:bg-orange-900/50 dark:text-orange-300' }
-  ];
+  const upcomingTasks = React.useMemo(() => {
+    return tasks
+      .filter(task => !task.completed)
+      .sort((a, b) => {
+        const dateA = new Date(a.dueDate).getTime();
+        const dateB = new Date(b.dueDate).getTime();
+        if (isNaN(dateA)) return 1; // move invalid dates to end
+        if (isNaN(dateB)) return -1;
+        return dateA - dateB;
+      })
+      .slice(0, 3);
+  }, [tasks]);
+
+  const todayClasses = getTodayClasses();
 
   return (
     <div className="space-y-6">
-        <motion.div 
-            className="flex justify-between items-start"
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-        >
-            <div>
-                <h1 className={`text-2xl md:text-3xl font-bold ${themeConfig.text} mb-2`}>
-                Welcome back! 👋
-                </h1>
-                <p className={themeConfig.textSecondary}>
-                Here's what's happening with your studies today
-                </p>
-            </div>
-            <DashboardProfile />
+      <motion.div
+        className="flex justify-between items-start"
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+      >
+        <div>
+          <h1 className={`text-2xl md:text-3xl font-bold ${themeConfig.text} mb-2`}>
+            Welcome back! 👋
+          </h1>
+          <p className={themeConfig.textSecondary}>
+            Here's what's happening with your studies today
+          </p>
+        </div>
+        <DashboardProfile />
+      </motion.div>
+
+      {/* Quick Actions */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.1 }}
+        className={`${themeConfig.card} p-4 md:p-6 rounded-xl shadow-sm border dark:border-gray-700`}
+      >
+        <h2 className={`text-base md:text-lg font-semibold ${themeConfig.text} mb-4`}>Quick Actions</h2>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {[
+            { icon: Users, label: 'Subjects', path: '/subjects' },
+            { icon: Brain, label: 'Start Timer', path: '/pomodoro' },
+            { icon: Calendar, label: 'View Schedule', path: '/timetable' },
+            { icon: Zap, label: 'Add Task', path: '/tasks' }
+          ].map((action) => (
+            <Link
+              key={action.label}
+              to={action.path}
+              className="block"
+            >
+              <motion.div
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className={`flex flex-col items-center gap-2 p-4 ${themeConfig.background} rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200`}
+              >
+                <action.icon className={`w-6 h-6 ${themeConfig.primary.replace('bg-', 'text-')}`} />
+                <span className={`text-sm font-medium ${themeConfig.text} text-center`}>
+                  {action.label}
+                </span>
+              </motion.div>
+            </Link>
+          ))}
+        </div>
       </motion.div>
 
       {/* Stats Grid */}
@@ -134,27 +172,31 @@ export function Dashboard() {
             <Calendar className={`w-5 h-5 ${themeConfig.primary.replace('bg-', 'text-')}`} />
             <h2 className={`text-base md:text-lg font-semibold ${themeConfig.text}`}>Today's Schedule</h2>
           </div>
-          
+
           <div className="space-y-3">
-            {scheduleItems.map((item, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.3, delay: index * 0.1 }}
-                className={`flex items-center gap-3 md:gap-4 p-3 ${themeConfig.background} rounded-lg`}
-              >
-                <div className={`text-xs md:text-sm font-medium ${themeConfig.textSecondary} w-10 md:w-12`}>
-                  {item.time}
-                </div>
-                <div className="flex-1">
-                  <h3 className={`font-medium ${themeConfig.text} text-sm md:text-base`}>{item.subject}</h3>
-                  <span className={`inline-block px-2 py-1 text-xs rounded-full ${item.color}`}>
-                    {item.type}
-                  </span>
-                </div>
-              </motion.div>
-            ))}
+            {todayClasses.length === 0 ? (
+              <p className={`text-sm ${themeConfig.textSecondary}`}>No classes scheduled for today</p>
+            ) : (
+              todayClasses.map((item, index) => (
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.3, delay: index * 0.1 }}
+                  className={`flex items-center gap-3 md:gap-4 p-3 ${themeConfig.background} rounded-lg`}
+                >
+                  <div className={`text-xs md:text-sm font-medium ${themeConfig.textSecondary} w-10 md:w-12`}>
+                    {item.time}
+                  </div>
+                  <div className="flex-1">
+                    <h3 className={`font-medium ${themeConfig.text} text-sm md:text-base`}>{item.subject}</h3>
+                    <span className={`inline-block px-2 py-1 text-xs rounded-full ${item.color}`}>
+                      {item.type}
+                    </span>
+                  </div>
+                </motion.div>
+              ))
+            )}
           </div>
         </motion.div>
 
@@ -169,7 +211,7 @@ export function Dashboard() {
             <AlertCircle className={`w-5 h-5 ${themeConfig.secondary.replace('bg-', 'text-')}`} />
             <h2 className={`text-base md:text-lg font-semibold ${themeConfig.text}`}>Upcoming Tasks</h2>
           </div>
-          
+
           <div className="space-y-3">
             {upcomingTasks.length === 0 ? (
               <p className={`text-xs md:text-sm ${themeConfig.textSecondary}`}>No upcoming tasks</p>
@@ -189,11 +231,10 @@ export function Dashboard() {
                     <span className={`text-xs ${themeConfig.textSecondary}`}>
                       {task.category}
                     </span>
-                    <span className={`text-xs px-2 py-1 rounded-full ${
-                      task.priority === 'high' ? 'bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300' :
+                    <span className={`text-xs px-2 py-1 rounded-full ${task.priority === 'high' ? 'bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300' :
                       task.priority === 'medium' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300' :
-                      'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'
-                    }`}>
+                        'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'
+                      }`}>
                       {task.priority}
                     </span>
                   </div>
@@ -203,41 +244,6 @@ export function Dashboard() {
           </div>
         </motion.div>
       </div>
-
-      {/* Quick Actions */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.5 }}
-        className={`${themeConfig.card} p-4 md:p-6 rounded-xl shadow-sm border dark:border-gray-700`}
-      >
-        <h2 className={`text-base md:text-lg font-semibold ${themeConfig.text} mb-4`}>Quick Actions</h2>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {[
-            { icon: Users, label: 'Subjects', path: '/subjects' },
-            { icon: Brain, label: 'Start Timer', path: '/pomodoro' },
-            { icon: Calendar, label: 'View Schedule', path: '/timetable' },
-            { icon: Zap, label: 'Add Task', path: '/tasks' }
-          ].map((action, index) => (
-            <Link
-              key={action.label}
-              to={action.path}
-              className="block"
-            >
-              <motion.div
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className={`flex flex-col items-center gap-2 p-4 ${themeConfig.background} rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200`}
-              >
-                <action.icon className={`w-6 h-6 ${themeConfig.primary.replace('bg-', 'text-')}`} />
-                <span className={`text-sm font-medium ${themeConfig.text} text-center`}>
-                  {action.label}
-                </span>
-              </motion.div>
-            </Link>
-          ))}
-        </div>
-      </motion.div>
     </div>
   );
 }
