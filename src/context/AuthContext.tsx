@@ -44,13 +44,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } catch (error: any) {
       const code = error?.code;
       const message = error?.message;
+      console.error('Signup error:', { code, message });
 
       if (code === 'auth/email-already-in-use') {
         throw new Error('An account with this email already exists. Please try logging in instead.');
       } else if (code === 'auth/weak-password') {
-        throw new Error('The password is too weak. Please choose a stronger password.');
+        throw new Error('The password is too weak. Please choose a stronger password (at least 6 characters).');
+      } else if (code === 'auth/invalid-email') {
+        throw new Error('Invalid email address. Please check and try again.');
+      } else if (code === 'auth/operation-not-allowed') {
+        throw new Error('Email/Password authentication is not enabled. Please contact support.');
+      } else if (code === 'auth/network-request-failed') {
+        throw new Error('Network error. Please check your internet connection and try again.');
+      } else if (code === 'auth/too-many-requests') {
+        throw new Error('Too many attempts. Please try again later.');
       }
-      throw new Error(message || 'Failed to create account.');
+      throw new Error(message || 'Failed to create account. Please try again.');
     }
   };
 
@@ -61,11 +70,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } catch (error: any) {
       const code = error?.code;
       const message = error?.message;
+      console.error('Login error:', { code, message });
 
       if (code === 'auth/user-not-found' || code === 'auth/wrong-password' || code === 'auth/invalid-credential') {
         throw new Error('Invalid email or password. Please check your credentials or create an account.');
+      } else if (code === 'auth/invalid-email') {
+        throw new Error('Invalid email address. Please check and try again.');
+      } else if (code === 'auth/user-disabled') {
+        throw new Error('This account has been disabled. Please contact support.');
+      } else if (code === 'auth/network-request-failed') {
+        throw new Error('Network error. Please check your internet connection and try again.');
+      } else if (code === 'auth/too-many-requests') {
+        throw new Error('Too many failed login attempts. Please try again later or reset your password.');
+      } else if (code === 'auth/operation-not-allowed') {
+        throw new Error('Email/Password authentication is not enabled. Please contact support.');
       }
-      throw new Error(message || 'Failed to sign in.');
+      throw new Error(message || 'Failed to sign in. Please try again.');
     }
   };
 
@@ -84,7 +104,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       await signInWithPopup(auth, provider);
       toast.success('Signed in with Google successfully!');
     } catch (error: any) {
-      throw new Error(error?.message || 'Failed to sign in with Google.');
+      const code = error?.code;
+      const message = error?.message;
+      console.error('Google sign-in error:', { code, message });
+
+      if (code === 'auth/popup-closed-by-user') {
+        throw new Error('Sign-in cancelled. Please try again.');
+      } else if (code === 'auth/popup-blocked') {
+        throw new Error('Popup was blocked by your browser. Please allow popups and try again.');
+      } else if (code === 'auth/operation-not-allowed') {
+        throw new Error('Google Sign-In is not enabled. Please contact support.');
+      } else if (code === 'auth/network-request-failed') {
+        throw new Error('Network error. Please check your internet connection and try again.');
+      } else if (code === 'auth/unauthorized-domain') {
+        throw new Error('This domain is not authorized for Google Sign-In. Please contact support.');
+      } else if (code === 'auth/account-exists-with-different-credential') {
+        throw new Error('An account already exists with the same email but different sign-in method. Try signing in with email/password.');
+      }
+      throw new Error(message || 'Failed to sign in with Google. Please try again.');
     }
   };
 
