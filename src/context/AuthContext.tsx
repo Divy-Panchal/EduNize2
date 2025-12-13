@@ -22,6 +22,28 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+// Helper function to clear user-specific data from localStorage
+const clearUserData = () => {
+  // Clear user-specific data but keep app-level settings like onboarding status
+  const keysToRemove = [
+    'hasCompletedProfileSetup',
+    'userData',
+    'currentUserId'
+  ];
+
+  keysToRemove.forEach(key => {
+    localStorage.removeItem(key);
+  });
+
+  // Also remove any user-specific keys (those with user ID suffix)
+  const allKeys = Object.keys(localStorage);
+  allKeys.forEach(key => {
+    if (key.startsWith('hasCompletedProfileSetup_') || key.startsWith('userData_')) {
+      localStorage.removeItem(key);
+    }
+  });
+};
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
@@ -31,6 +53,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
       setLoading(false);
+
+      // If user changed, check if we need to clear old user data
+      if (currentUser) {
+        const storedUserId = localStorage.getItem('currentUserId');
+        if (storedUserId && storedUserId !== currentUser.uid) {
+          // Different user logged in, clear old user data
+          clearUserData();
+        }
+        // Store current user ID
+        localStorage.setItem('currentUserId', currentUser.uid);
+      }
     });
 
     // Cleanup subscription on unmount
@@ -39,6 +72,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signUp = async (email: string, password: string) => {
     try {
+      // Clear any existing user data before creating new account
+      clearUserData();
       await createUserWithEmailAndPassword(auth, email, password);
       toast.success('Account created successfully!');
     } catch (error: any) {
@@ -65,7 +100,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signIn = async (email: string, password: string) => {
     try {
-      await signInWithEmailAndPassword(auth, email, password);
+      const result = await signInWithEmailAndPassword(auth, email, password);
+
+      // Check if this is a different user than the one stored
+      const storedUserId = localStorage.getItem('currentUserId');
+      if (storedUserId && storedUserId !== result.user.uid) {
+        clearUserData();
+      }
+
       toast.success('Welcome back!');
     } catch (error: any) {
       const code = error?.code;
@@ -91,6 +133,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signOut = async () => {
     try {
+      // Clear user data before signing out
+      clearUserData();
       await firebaseSignOut(auth);
       toast.success('Signed out successfully');
     } catch (error: any) {
@@ -101,7 +145,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signInWithGoogle = async () => {
     const provider = new GoogleAuthProvider();
     try {
-      await signInWithPopup(auth, provider);
+      const result = await signInWithPopup(auth, provider);
+
+      // Check if this is a different user than the one stored
+      const storedUserId = localStorage.getItem('currentUserId');
+      if (storedUserId && storedUserId !== result.user.uid) {
+        clearUserData();
+      }
+
       toast.success('Signed in with Google successfully!');
     } catch (error: any) {
       const code = error?.code;

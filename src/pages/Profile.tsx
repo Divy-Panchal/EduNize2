@@ -3,11 +3,12 @@ import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import {
     Edit, Save, BookOpen, Award, Upload, X,
-    Mail, Phone, User,
+    Mail, Phone, User as UserIcon,
     Eye, EyeOff, Settings
 } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
+import { User } from 'firebase/auth';
 
 // User data structure (without skills and interests)
 const initialUserData = {
@@ -36,20 +37,37 @@ const initialUserData = {
 };
 
 // Function to get data from localStorage
-const getStoredUserData = () => {
-    const storedData = localStorage.getItem('userData');
+const getStoredUserData = (user: User | null) => {
+    if (!user) return initialUserData;
+
+    const userDataKey = `userData_${user.uid}`;
+    const storedData = localStorage.getItem(userDataKey);
     if (storedData) {
         const parsed = JSON.parse(storedData);
         // Merge with initial data to ensure all new fields exist
+        // But always use the Firebase user's email
         return {
             ...initialUserData,
             ...parsed,
-            contact: { ...initialUserData.contact, ...parsed.contact },
+            contact: {
+                ...initialUserData.contact,
+                ...parsed.contact,
+                email: user.email || parsed.contact?.email || initialUserData.contact.email
+            },
             sectionVisibility: { ...initialUserData.sectionVisibility, ...parsed.sectionVisibility },
         };
     }
-    localStorage.setItem('userData', JSON.stringify(initialUserData));
-    return initialUserData;
+
+    // For new users, create initial data with their Firebase email
+    const newUserData = {
+        ...initialUserData,
+        contact: {
+            ...initialUserData.contact,
+            email: user.email || initialUserData.contact.email,
+        }
+    };
+    localStorage.setItem(userDataKey, JSON.stringify(newUserData));
+    return newUserData;
 };
 
 const ProgressCircle = ({ progress }: { progress: number }) => {
@@ -137,20 +155,22 @@ SectionCard.displayName = 'SectionCard';
 
 export function Profile() {
     const { themeConfig } = useTheme();
-    const { signOut } = useAuth();
+    const { signOut, user } = useAuth();
     const navigate = useNavigate();
     const [isFlipped, setIsFlipped] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
-    const [userData, setUserData] = useState(getStoredUserData);
+    const [userData, setUserData] = useState(() => getStoredUserData(user));
     const [newAchievement, setNewAchievement] = useState('');
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
-        setUserData(getStoredUserData());
-    }, []);
+        setUserData(getStoredUserData(user));
+    }, [user]);
 
     const handleSave = () => {
-        localStorage.setItem('userData', JSON.stringify(userData));
+        if (!user) return;
+        const userDataKey = `userData_${user.uid}`;
+        localStorage.setItem(userDataKey, JSON.stringify(userData));
         setIsEditing(false);
     };
 
@@ -358,7 +378,7 @@ export function Profile() {
                 {/* About Me */}
                 <SectionCard
                     title="About Me"
-                    icon={User}
+                    icon={UserIcon}
                     sectionKey="bio"
                     isVisible={userData.sectionVisibility.bio}
                     onToggleVisibility={() => toggleSectionVisibility('bio')}

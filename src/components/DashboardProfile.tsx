@@ -2,13 +2,22 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTheme } from '../context/ThemeContext';
+import { useAuth } from '../context/AuthContext';
 import { ChevronDown } from 'lucide-react';
 
-const getStoredUserData = () => {
-  const storedData = localStorage.getItem('userData');
+const getStoredUserData = (userId: string | undefined) => {
+  if (!userId) {
+    return {
+      fullName: 'User',
+      profilePhoto: 'https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=400',
+    };
+  }
+
+  const userDataKey = `userData_${userId}`;
+  const storedData = localStorage.getItem(userDataKey);
   if (storedData) {
     return JSON.parse(storedData);
-  } 
+  }
   return {
     fullName: 'User',
     profilePhoto: 'https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=400',
@@ -17,23 +26,24 @@ const getStoredUserData = () => {
 
 export function DashboardProfile() {
   const { themeConfig } = useTheme();
-  const [userData, setUserData] = useState(getStoredUserData);
+  const { user } = useAuth();
+  const [userData, setUserData] = useState(() => getStoredUserData(user?.uid));
   const [isDropdownOpen, setDropdownOpen] = useState(false);
 
   useEffect(() => {
     const handleStorageUpdate = (event: StorageEvent) => {
-      if (event.key === 'userData') {
-        setUserData(getStoredUserData());
+      if (user && event.key === `userData_${user.uid}`) {
+        setUserData(getStoredUserData(user.uid));
       }
     };
 
-    setUserData(getStoredUserData());
+    setUserData(getStoredUserData(user?.uid));
     window.addEventListener('storage', handleStorageUpdate);
 
     return () => {
       window.removeEventListener('storage', handleStorageUpdate);
     };
-  }, []);
+  }, [user]);
 
   return (
     <div className="relative">
@@ -43,9 +53,9 @@ export function DashboardProfile() {
         whileTap={{ scale: 0.98 }}
         onClick={() => setDropdownOpen(!isDropdownOpen)}
       >
-        <img 
-          src={userData.profilePhoto} 
-          alt="Profile" 
+        <img
+          src={userData.profilePhoto}
+          alt="Profile"
           className="w-10 h-10 md:w-12 md:h-12 rounded-full object-cover border-2 border-blue-400"
         />
         <div className='hidden md:block'>

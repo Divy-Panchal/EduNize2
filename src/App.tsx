@@ -63,7 +63,7 @@ function AppContent() {
   useEffect(() => {
     // Check if user has completed profile setup
     if (user && !showOnboarding) {
-      const hasCompletedProfileSetup = localStorage.getItem('hasCompletedProfileSetup');
+      const hasCompletedProfileSetup = localStorage.getItem(`hasCompletedProfileSetup_${user.uid}`);
       if (!hasCompletedProfileSetup) {
         // New user hasn't completed profile setup
         setShowProfileSetup(true);
@@ -76,9 +76,12 @@ function AppContent() {
     setShowOnboarding(false);
   };
 
-  const handleProfileSetupComplete = (data: { fullName: string; class: string; institution: string }) => {
-    // Update userData in localStorage
-    const existingData = localStorage.getItem('userData');
+  const handleProfileSetupComplete = (data: { fullName: string; class: string; institution: string; phone: string }) => {
+    if (!user) return;
+
+    // Update userData in localStorage with user-specific key
+    const userDataKey = `userData_${user.uid}`;
+    const existingData = localStorage.getItem(userDataKey);
     let userData = {};
     try {
       userData = existingData ? JSON.parse(existingData) : {};
@@ -95,10 +98,14 @@ function AppContent() {
         institution: data.institution,
         grade: data.class,
       },
+      contact: {
+        email: user.email || '',
+        phone: data.phone || '',
+      },
     };
 
-    localStorage.setItem('userData', JSON.stringify(updatedData));
-    localStorage.setItem('hasCompletedProfileSetup', 'true');
+    localStorage.setItem(userDataKey, JSON.stringify(updatedData));
+    localStorage.setItem(`hasCompletedProfileSetup_${user.uid}`, 'true');
     setShowProfileSetup(false);
   };
 
