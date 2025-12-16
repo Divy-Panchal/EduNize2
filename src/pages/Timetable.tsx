@@ -51,7 +51,7 @@ export function Timetable() {
     'bg-red-500', 'bg-indigo-500', 'bg-pink-500', 'bg-teal-500'
   ];
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-20 md:pb-32">
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -106,75 +106,11 @@ export function Timetable() {
         </div>
       </motion.div>
 
-      {/* Timetable Grid */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.2 }}
-        className={`${themeConfig.card} p-2 md:p-6 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-x-auto`}
-      >
-        <div className="min-w-full">
-          <div className="grid grid-cols-8 gap-1 md:gap-2 mb-4">
-            <div className={`p-1 md:p-3 text-center font-medium ${themeConfig.textSecondary} text-xs md:text-sm`}>Time</div>
-            {weekDays.map((day, index) => (
-              <motion.div
-                key={day.toISOString()}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.05 }}
-                className="p-1 md:p-3 text-center"
-              >
-                <div className={`font-medium ${themeConfig.text} text-xs md:text-sm`}>
-                  {format(day, 'EEE')}
-                </div>
-                <div className={`text-xs md:text-sm ${themeConfig.textSecondary}`}>
-                  {format(day, 'MMM dd')}
-                </div>
-              </motion.div>
-            ))}
-          </div>
-
-          <div className="space-y-1 md:space-y-1">
-            {timeSlots.map((time, timeIndex) => (
-              <motion.div
-                key={time}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: timeIndex * 0.05 }}
-                className="grid grid-cols-8 gap-1 md:gap-2"
-              >
-                <div className={`p-1 md:p-3 text-xs md:text-sm font-medium ${themeConfig.textSecondary} text-center`}>
-                  {time}
-                </div>
-                {weekDays.map((day, dayIndex) => {
-                  const classItem = getClassForSlot(dayIndex, time);
-                  return (
-                    <motion.div
-                      key={`${day.toISOString()}-${time}`}
-                      whileHover={{ scale: 1.02 }}
-                      className={`p-1 md:p-3 min-h-[40px] md:min-h-[60px] border border-gray-100 dark:border-gray-700 rounded-lg ${classItem ? `${classItem.color} text-white` : 'bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700'
-                        } transition-all duration-200 cursor-pointer`}
-                    >
-                      {classItem && (
-                        <div>
-                          <div className="font-medium text-xs md:text-sm">{classItem.subject}</div>
-                          <div className="text-xs opacity-90 hidden md:block">{classItem.type}</div>
-                        </div>
-                      )}
-                    </motion.div>
-                  );
-                })}
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </motion.div>
-
       {/* Today's Classes */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.3 }}
+        transition={{ delay: 0.15 }}
         className={`${themeConfig.card} p-4 md:p-6 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700`}
       >
         <div className="flex items-center gap-3 mb-4">
@@ -200,15 +136,92 @@ export function Timetable() {
                 {classItem.time}
               </span>
               <button
-                onClick={() => {
-                  if (classItem.id) deleteClass(classItem.id);
+                onClick={(e) => {
+                  e.stopPropagation();
+                  console.log('Remove button clicked!');
+                  console.log('Class item:', classItem);
+                  console.log('Class ID:', classItem.id);
+                  console.log('All classes:', classes);
+
+                  if (classItem.id) {
+                    console.log('Calling deleteClass with ID:', classItem.id);
+                    deleteClass(classItem.id);
+                  } else {
+                    console.error('No ID found for class:', classItem);
+                  }
                 }}
-                className="p-1.5 bg-red-500 hover:bg-red-600 rounded-full transition-colors duration-200"
+                className="relative z-10 p-1.5 bg-red-500 hover:bg-red-600 rounded-full transition-colors duration-200 flex-shrink-0"
               >
                 <X className="w-3 h-3 text-white" />
               </button>
             </motion.div>
           ))}
+        </div>
+      </motion.div>
+
+      {/* Timetable Grid */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2 }}
+        className={`${themeConfig.card} p-2 md:p-6 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-auto`}
+      >
+        <div className="min-w-full pb-4">
+          <div className="grid grid-cols-8 gap-1 md:gap-2 mb-4 sticky top-0 bg-white dark:bg-gray-800 z-10">
+            <div className={`p-1 md:p-3 text-center font-medium ${themeConfig.textSecondary} text-xs md:text-sm`}>Time</div>
+            {weekDays.map((day, index) => (
+              <motion.div
+                key={day.toISOString()}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.05 }}
+                className="p-1 md:p-3 text-center"
+              >
+                <div className={`font-medium ${themeConfig.text} text-xs md:text-sm`}>
+                  {format(day, 'EEE')}
+                </div>
+                <div className={`text-xs md:text-sm ${themeConfig.textSecondary}`}>
+                  {format(day, 'MMM dd')}
+                </div>
+              </motion.div>
+            ))}
+          </div>
+
+          <div className="space-y-2 md:space-y-2">
+            {timeSlots.map((time, timeIndex) => (
+              <motion.div
+                key={time}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: timeIndex * 0.05 }}
+                className="grid grid-cols-8 gap-1 md:gap-2"
+              >
+                <div className={`p-2 md:p-3 text-xs md:text-sm font-medium ${themeConfig.textSecondary} text-center flex items-center justify-center bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700`}>
+                  {time}
+                </div>
+                {weekDays.map((day, dayIndex) => {
+                  const classItem = getClassForSlot(dayIndex, time);
+                  return (
+                    <motion.div
+                      key={`${day.toISOString()}-${time}`}
+                      whileHover={{ scale: 1.02 }}
+                      className={`p-2 md:p-3 min-h-[50px] md:min-h-[70px] border-2 rounded-lg flex items-center justify-center ${classItem
+                        ? `${classItem.color} text-white shadow-md border-transparent`
+                        : 'bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 border-gray-200 dark:border-gray-600'
+                        } transition-all duration-200 cursor-pointer`}
+                    >
+                      {classItem && (
+                        <div className="text-center">
+                          <div className="font-medium text-xs md:text-sm">{classItem.subject}</div>
+                          <div className="text-xs opacity-90 hidden md:block">{classItem.type}</div>
+                        </div>
+                      )}
+                    </motion.div>
+                  );
+                })}
+              </motion.div>
+            ))}
+          </div>
         </div>
       </motion.div>
 

@@ -63,6 +63,13 @@ export function PomodoroTimer() {
   useEffect(() => {
     alarmRef.current = new Audio('/alarm.mp3');
     alarmRef.current.loop = true;
+
+    // Handle missing audio file
+    alarmRef.current.addEventListener('error', () => {
+      if (import.meta.env.DEV) {
+        console.warn('Alarm audio file not found, will use Web Audio API fallback');
+      }
+    });
   }, []);
 
   useEffect(() => {
@@ -91,7 +98,47 @@ export function PomodoroTimer() {
 
   const playAlarm = () => {
     if (alarmRef.current) {
-      alarmRef.current.play().catch(e => console.error("Error playing alarm:", e));
+      alarmRef.current.play().catch(e => {
+        if (import.meta.env.DEV) {
+          console.warn("Error playing alarm audio, using fallback beep:", e);
+        }
+        // Fallback: Use Web Audio API to create a beep sound
+        try {
+          const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+          const oscillator = audioContext.createOscillator();
+          const gainNode = audioContext.createGain();
+
+          oscillator.connect(gainNode);
+          gainNode.connect(audioContext.destination);
+
+          oscillator.frequency.value = 800; // 800 Hz beep
+          oscillator.type = 'sine';
+
+          gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+          gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+
+          oscillator.start(audioContext.currentTime);
+          oscillator.stop(audioContext.currentTime + 0.5);
+
+          // Repeat beep 3 times
+          setTimeout(() => {
+            const osc2 = audioContext.createOscillator();
+            const gain2 = audioContext.createGain();
+            osc2.connect(gain2);
+            gain2.connect(audioContext.destination);
+            osc2.frequency.value = 800;
+            osc2.type = 'sine';
+            gain2.gain.setValueAtTime(0.3, audioContext.currentTime);
+            gain2.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+            osc2.start();
+            osc2.stop(audioContext.currentTime + 0.5);
+          }, 600);
+        } catch (audioError) {
+          if (import.meta.env.DEV) {
+            console.error("Web Audio API fallback failed:", audioError);
+          }
+        }
+      });
       setIsAlarmPlaying(true);
     }
   };

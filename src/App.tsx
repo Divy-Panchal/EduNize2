@@ -14,7 +14,6 @@ import { Results } from './pages/Results';
 import { Settings } from './pages/Settings';
 import { Achievements } from './pages/Achievements';
 import { Profile } from './pages/Profile';
-import { Calendar } from './pages/Calendar';
 import { ThemeProvider, useTheme } from './context/ThemeContext';
 import { TaskProvider } from './context/TaskContext';
 import { SubjectProvider } from './context/SubjectContext';
@@ -24,6 +23,7 @@ import { Auth } from './components/Auth';
 import { DarkModeTransition } from './components/DarkModeTransition';
 import { Onboarding } from './components/Onboarding';
 import { ProfileSetup } from './components/ProfileSetup';
+import { ErrorBoundary } from './components/ErrorBoundary';
 
 const pageVariants = {
   initial: {
@@ -86,7 +86,9 @@ function AppContent() {
     try {
       userData = existingData ? JSON.parse(existingData) : {};
     } catch (error) {
-      console.error('Failed to parse userData:', error);
+      if (import.meta.env.DEV) {
+        console.error('Failed to parse userData:', error);
+      }
       userData = {};
     }
 
@@ -182,7 +184,6 @@ function AppContent() {
                   <Route path="/results" element={<Results />} />
                   <Route path="/settings" element={<Settings />} />
                   <Route path="/profile" element={<Profile />} />
-                  <Route path="/calendar" element={<Timetable />} />
                 </Routes>
               </motion.div>
             </AnimatePresence>
@@ -195,20 +196,22 @@ function AppContent() {
 
 function App() {
   return (
-    <AuthProvider>
-      <ThemeProvider>
-        <TaskProvider>
-          <SubjectProvider>
-            <TimetableProvider>
-              <Router>
-                <Toaster position="top-right" />
-                <AppContent />
-              </Router>
-            </TimetableProvider>
-          </SubjectProvider>
-        </TaskProvider>
-      </ThemeProvider>
-    </AuthProvider>
+    <ErrorBoundary>
+      <AuthProvider>
+        <ThemeProvider>
+          <TaskProvider>
+            <SubjectProvider>
+              <TimetableProvider>
+                <Router>
+                  <Toaster position="top-right" />
+                  <AppContent />
+                </Router>
+              </TimetableProvider>
+            </SubjectProvider>
+          </TaskProvider>
+        </ThemeProvider>
+      </AuthProvider>
+    </ErrorBoundary>
   );
 }
 

@@ -12,9 +12,15 @@ import { User } from 'firebase/auth';
 
 // User data structure (without skills and interests)
 const initialUserData = {
-    fullName: 'Alex Doe',
-    role: 'Student',
-    profilePhoto: 'https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=400',
+    fullName: 'Student',
+    class: '',
+    institution: '', // Top-level institution field
+    phone: '',       // Top-level phone field
+    email: '',       // Top-level email field
+    address: '',
+    dateOfBirth: '',
+    gender: '',
+    profilePhoto: 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"%3E%3Ccircle cx="50" cy="50" r="50" fill="%23e0e0e0"/%3E%3Ccircle cx="50" cy="40" r="18" fill="%23999"/%3E%3Cpath d="M 20 85 Q 20 60 50 60 Q 80 60 80 85 Z" fill="%23999"/%3E%3C/svg%3E',
     education: {
         institution: 'University of Innovation',
         grade: '3rd Year',

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, Plus, BookOpen, Calendar, X, Link as LinkIcon, Video, File, Check, Eye, Download } from 'lucide-react';
@@ -24,6 +24,8 @@ export function SubjectDetail() {
     const [resourceUrl, setResourceUrl] = useState('');
     const [resourceType, setResourceType] = useState<'link' | 'file' | 'video'>('link');
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
+    const [isUploading, setIsUploading] = useState(false);
+    const blobUrlsRef = useRef<string[]>([]);
 
     if (!subject) {
         return (
@@ -42,6 +44,14 @@ export function SubjectDetail() {
             </div>
         );
     }
+
+    // Cleanup blob URLs on unmount
+    useEffect(() => {
+        return () => {
+            blobUrlsRef.current.forEach(url => URL.revokeObjectURL(url));
+            blobUrlsRef.current = [];
+        };
+    }, []);
 
 
 
@@ -64,55 +74,77 @@ export function SubjectDetail() {
     const handleAddResource = async () => {
         if (!id) return;
 
-        if (resourceType === 'file' && selectedFile) {
-            // Convert file to base64
-            const reader = new FileReader();
-            reader.onload = () => {
-                const base64 = reader.result as string;
-                addResource(id, {
-                    title: resourceTitle.trim() || selectedFile.name,
-                    url: '', // Not used for files
-                    type: 'file',
-                    fileName: selectedFile.name,
-                    fileData: base64,
-                });
-                toast.success('File added successfully!');
+        setIsUploading(true);
+        try {
+            if (resourceType === 'file' && selectedFile) {
+                // Check file size (5MB limit to prevent localStorage overflow)
+                const maxSize = 5 * 1024 * 1024; // 5MB in bytes
+                if (selectedFile.size > maxSize) {
+                    toast.error('File size must be less than 5MB. Please choose a smaller file.');
+                    setIsUploading(false);
+                    return;
+                }
+
+                // Convert file to base64
+                const reader = new FileReader();
+                reader.onload = () => {
+                    try {
+                        const base64 = reader.result as string;
+                        addResource(id, {
+                            title: resourceTitle.trim() || selectedFile.name,
+                            url: '', // Not used for files
+                            type: 'file',
+                            fileName: selectedFile.name,
+                            fileData: base64,
+                        });
+                        toast.success('File added successfully!');
+                        setResourceTitle('');
+                        setResourceUrl('');
+                        setSelectedFile(null);
+                        setResourceType('link');
+                        setShowResourceModal(false);
+                        setIsUploading(false);
+                    } catch (err) {
+                        if (import.meta.env.DEV) {
+                            console.error('Error saving file:', err);
+                        }
+                        toast.error('Failed to save file. Storage limit may be exceeded.');
+                        setIsUploading(false);
+                    }
+                };
+                reader.onerror = () => {
+                    toast.error('Failed to read file');
+                    setIsUploading(false);
+                };
+                reader.readAsDataURL(selectedFile);
+            } else if (resourceType === 'file' && !selectedFile) {
+                toast.error('Please select a file to upload');
+                setIsUploading(false);
+            } else if (resourceTitle.trim() && resourceUrl.trim()) {
+                addResource(id, { title: resourceTitle.trim(), url: resourceUrl.trim(), type: resourceType });
+                toast.success(`${resourceType.charAt(0).toUpperCase() + resourceType.slice(1)} added successfully!`);
                 setResourceTitle('');
                 setResourceUrl('');
-                setSelectedFile(null);
                 setResourceType('link');
                 setShowResourceModal(false);
-            };
-            reader.readAsDataURL(selectedFile);
-        } else if (resourceType === 'file' && !selectedFile) {
-            toast.error('Please select a file to upload');
-        } else if (resourceTitle.trim() && resourceUrl.trim()) {
-            console.log('Adding link/video resource:', {
-                title: resourceTitle.trim(),
-                url: resourceUrl.trim(),
-                type: resourceType
-            });
-            addResource(id, { title: resourceTitle.trim(), url: resourceUrl.trim(), type: resourceType });
-            toast.success(`${resourceType.charAt(0).toUpperCase() + resourceType.slice(1)} added successfully!`);
-            setResourceTitle('');
-            setResourceUrl('');
-            setResourceType('link');
-            setShowResourceModal(false);
-        } else {
-            // Provide specific error messages
-            if (!resourceTitle.trim() && !resourceUrl.trim()) {
-                toast.error('Please fill in both the title and URL fields');
-            } else if (!resourceTitle.trim()) {
-                toast.error('Please enter a resource title');
-            } else if (!resourceUrl.trim()) {
-                toast.error('Please enter a URL');
+                setIsUploading(false);
+            } else {
+                // Provide specific error messages
+                if (!resourceTitle.trim() && !resourceUrl.trim()) {
+                    toast.error('Please fill in both the title and URL fields');
+                } else if (!resourceTitle.trim()) {
+                    toast.error('Please enter a resource title');
+                } else if (!resourceUrl.trim()) {
+                    toast.error('Please enter a URL');
+                }
+                setIsUploading(false);
             }
-            console.log('Validation failed:', {
-                resourceTitle: resourceTitle.trim(),
-                resourceUrl: resourceUrl.trim(),
-                hasTitle: !!resourceTitle.trim(),
-                hasUrl: !!resourceUrl.trim()
-            });
+        } catch (error) {
+            if (import.meta.env.DEV) {
+                console.error('Error adding resource:', error);
+            }
+            toast.error('Failed to add resource');
+            setIsUploading(false);
         }
     };
 
@@ -138,50 +170,63 @@ export function SubjectDetail() {
         return viewableExtensions.includes(extension || '');
     };
 
-    // Convert base64 to Blob URL for faster loading and better file handling
+    // Convert base64 to Blob URL and track for cleanup
     const createBlobUrl = (base64: string) => {
         try {
-            // Validate base64 string
             if (!base64 || typeof base64 !== 'string') {
-                console.error('Invalid base64 data');
+                if (import.meta.env.DEV) {
+                    console.error('Invalid base64 data');
+                }
                 return '';
             }
 
-            // Check if it's a valid data URL
             if (!base64.startsWith('data:')) {
-                console.error('Not a valid data URL');
+                if (import.meta.env.DEV) {
+                    console.error('Not a valid data URL');
+                }
                 return base64;
             }
 
             const parts = base64.split(',');
             if (parts.length !== 2) {
-                console.error('Invalid data URL format');
+                if (import.meta.env.DEV) {
+                    console.error('Invalid data URL format');
+                }
                 return base64;
             }
 
             const base64Data = parts[1];
             const mimeTypePart = parts[0];
-
-            // Extract MIME type
             const mimeTypeMatch = mimeTypePart.match(/data:([^;]+)/);
+
             if (!mimeTypeMatch) {
-                console.error('Could not extract MIME type');
+                if (import.meta.env.DEV) {
+                    console.error('Could not extract MIME type');
+                }
                 return base64;
             }
-            const mimeType = mimeTypeMatch[1];
 
-            // Decode base64
+            const mimeType = mimeTypeMatch[1];
             const byteCharacters = atob(base64Data);
             const byteNumbers = new Array(byteCharacters.length);
+
             for (let i = 0; i < byteCharacters.length; i++) {
                 byteNumbers[i] = byteCharacters.charCodeAt(i);
             }
+
             const byteArray = new Uint8Array(byteNumbers);
             const blob = new Blob([byteArray], { type: mimeType });
-            return URL.createObjectURL(blob);
+            const blobUrl = URL.createObjectURL(blob);
+
+            // Track blob URL for cleanup
+            blobUrlsRef.current.push(blobUrl);
+
+            return blobUrl;
         } catch (error) {
-            console.error('Error creating blob URL:', error);
-            return base64; // Fallback to base64 if conversion fails
+            if (import.meta.env.DEV) {
+                console.error('Error creating blob URL:', error);
+            }
+            return base64;
         }
     };
 
@@ -228,15 +273,15 @@ export function SubjectDetail() {
                 transition={{ delay: 0.1 }}
                 className="px-4 grid grid-cols-2 gap-3"
             >
-                <div className={`${themeConfig.card} rounded-xl p-4 text-center border ${themeConfig.text === 'text-white' ? 'border-gray-700' : 'border-gray-200'}`}>
-                    <Calendar className={`w-6 h-6 mx-auto mb-2 ${themeConfig.textSecondary}`} />
-                    <p className={`text-2xl font-bold ${themeConfig.text}`}>{subject.topics.length}</p>
-                    <p className={`text-xs ${themeConfig.textSecondary}`}>Topics</p>
+                <div className={`${themeConfig.card} rounded-xl p-4 text-center border ${themeConfig.text === 'text-white' ? 'border-gray-700' : 'border-gray-200'} `}>
+                    <Calendar className={`w-6 h-6 mx-auto mb-2 ${themeConfig.textSecondary} `} />
+                    <p className={`text-2xl font-bold ${themeConfig.text} `}>{subject.topics.length}</p>
+                    <p className={`text-xs ${themeConfig.textSecondary} `}>Topics</p>
                 </div>
-                <div className={`${themeConfig.card} rounded-xl p-4 text-center border ${themeConfig.text === 'text-white' ? 'border-gray-700' : 'border-gray-200'}`}>
-                    <BookOpen className={`w-6 h-6 mx-auto mb-2 ${themeConfig.textSecondary}`} />
-                    <p className={`text-2xl font-bold ${themeConfig.text}`}>{subject.resources.length}</p>
-                    <p className={`text-xs ${themeConfig.textSecondary}`}>Resources</p>
+                <div className={`${themeConfig.card} rounded-xl p-4 text-center border ${themeConfig.text === 'text-white' ? 'border-gray-700' : 'border-gray-200'} `}>
+                    <BookOpen className={`w-6 h-6 mx-auto mb-2 ${themeConfig.textSecondary} `} />
+                    <p className={`text-2xl font-bold ${themeConfig.text} `}>{subject.resources.length}</p>
+                    <p className={`text-xs ${themeConfig.textSecondary} `}>Resources</p>
                 </div>
             </motion.div>
 
@@ -268,11 +313,11 @@ export function SubjectDetail() {
                                                 className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${topic.completed
                                                     ? 'bg-green-500 border-green-500'
                                                     : `border-gray-400 ${themeConfig.card}`
-                                                    }`}
+                                                    } `}
                                             >
                                                 {topic.completed && <Check className="w-4 h-4 text-white" />}
                                             </button>
-                                            <span className={`${topic.completed ? 'line-through ' + themeConfig.textSecondary : themeConfig.text}`}>
+                                            <span className={`${topic.completed ? 'line-through ' + themeConfig.textSecondary : themeConfig.text} `}>
                                                 {topic.name}
                                             </span>
                                         </div>
@@ -292,11 +337,11 @@ export function SubjectDetail() {
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
                         onClick={() => setShowTopicModal(true)}
-                        className={`w-full rounded-2xl p-6 border-2 border-dashed ${themeConfig.text === 'text-white' ? 'border-gray-600' : 'border-gray-300'} hover:border-blue-400 transition-all`}
+                        className={`w-full rounded-2xl p-6 border-2 border-dashed ${themeConfig.text === 'text-white' ? 'border-gray-600' : 'border-gray-300'} hover: border-blue - 400 transition-all`}
                     >
                         <div className="flex items-center justify-center gap-3">
-                            <Plus className={`w-6 h-6 ${themeConfig.textSecondary}`} />
-                            <span className={`font-semibold ${themeConfig.text}`}>Add Topic</span>
+                            <Plus className={`w-6 h-6 ${themeConfig.textSecondary} `} />
+                            <span className={`font-semibold ${themeConfig.text} `}>Add Topic</span>
                         </div>
                     </motion.button>
                 </motion.div>
@@ -319,7 +364,7 @@ export function SubjectDetail() {
                                         animate={{ opacity: 1, x: 0 }}
                                         exit={{ opacity: 0, x: 20 }}
                                         transition={{ delay: index * 0.05 }}
-                                        className={`${themeConfig.card} rounded-xl p-4 border ${themeConfig.text === 'text-white' ? 'border-gray-700' : 'border-gray-200'}`}
+                                        className={`${themeConfig.card} rounded-xl p-4 border ${themeConfig.text === 'text-white' ? 'border-gray-700' : 'border-gray-200'} `}
                                     >
                                         <div className="flex justify-between items-start">
                                             <div className="flex items-start gap-3 flex-1">
@@ -375,7 +420,7 @@ export function SubjectDetail() {
                                                                 Open
                                                             </button>
                                                             {/* Show URL as secondary info */}
-                                                            <span className={`text-xs ${themeConfig.textSecondary} self-center truncate max-w-[200px]`}>
+                                                            <span className={`text-xs ${themeConfig.textSecondary} self-center truncate max-w - [200px]`}>
                                                                 {resource.url}
                                                             </span>
                                                         </div>
@@ -399,11 +444,11 @@ export function SubjectDetail() {
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
                         onClick={() => setShowResourceModal(true)}
-                        className={`w-full rounded-2xl p-6 border-2 border-dashed ${themeConfig.text === 'text-white' ? 'border-gray-600' : 'border-gray-300'} hover:border-blue-400 transition-all`}
+                        className={`w-full rounded-2xl p-6 border-2 border-dashed ${themeConfig.text === 'text-white' ? 'border-gray-600' : 'border-gray-300'} hover: border-blue - 400 transition-all`}
                     >
                         <div className="flex items-center justify-center gap-3">
-                            <Plus className={`w-6 h-6 ${themeConfig.textSecondary}`} />
-                            <span className={`font-semibold ${themeConfig.text}`}>Add Resource</span>
+                            <Plus className={`w-6 h-6 ${themeConfig.textSecondary} `} />
+                            <span className={`font-semibold ${themeConfig.text} `}>Add Resource</span>
                         </div>
                     </motion.button>
                 </motion.div>
@@ -426,7 +471,7 @@ export function SubjectDetail() {
                             animate={{ scale: 1, y: 0 }}
                             exit={{ scale: 0.9, y: 20 }}
                             onClick={(e) => e.stopPropagation()}
-                            className={`${themeConfig.card} rounded-2xl p-6 max-w-md w-full shadow-2xl border ${themeConfig.text === 'text-white' ? 'border-gray-700' : 'border-gray-200'}`}
+                            className={`${themeConfig.card} rounded-2xl p-6 max-w-sm w-full shadow-2xl border ${themeConfig.text === 'text-white' ? 'border-gray-700' : 'border-gray-200'} `}
                         >
                             <h2 className={`text-2xl font-bold ${themeConfig.text} mb-4`}>Add Topic</h2>
                             <input
@@ -435,13 +480,13 @@ export function SubjectDetail() {
                                 onChange={(e) => setTopicName(e.target.value)}
                                 onKeyPress={(e) => e.key === 'Enter' && handleAddTopic()}
                                 placeholder="Topic name"
-                                className={`w-full px-4 py-3 rounded-xl border-2 ${themeConfig.background} ${themeConfig.text} ${themeConfig.text === 'text-white' ? 'border-gray-600' : 'border-gray-300'} focus:border-blue-500 focus:outline-none transition-colors mb-4`}
+                                className={`w-full px-4 py-3 rounded-xl border-2 ${themeConfig.background} ${themeConfig.text} ${themeConfig.text === 'text-white' ? 'border-gray-600' : 'border-gray-300'} focus: border-blue - 500 focus: outline-none transition-colors mb-4`}
                                 autoFocus
                             />
                             <div className="flex gap-3">
                                 <button
                                     onClick={() => setShowTopicModal(false)}
-                                    className={`flex-1 px-4 py-3 rounded-xl font-semibold ${themeConfig.background} ${themeConfig.text} border-2 ${themeConfig.text === 'text-white' ? 'border-gray-600' : 'border-gray-300'} hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors`}
+                                    className={`flex-1 px-4 py-3 rounded-xl font-semibold ${themeConfig.background} ${themeConfig.text} border-2 ${themeConfig.text === 'text-white' ? 'border-gray-600' : 'border-gray-300'} hover: bg-gray - 100 dark: hover: bg-gray - 700 transition-colors`}
                                 >
                                     Cancel
                                 </button>
@@ -472,7 +517,7 @@ export function SubjectDetail() {
                             animate={{ scale: 1, y: 0 }}
                             exit={{ scale: 0.9, y: 20 }}
                             onClick={(e) => e.stopPropagation()}
-                            className={`${themeConfig.card} rounded-2xl p-6 max-w-md w-full shadow-2xl border ${themeConfig.text === 'text-white' ? 'border-gray-700' : 'border-gray-200'}`}
+                            className={`${themeConfig.card} rounded-2xl p-6 max-w-sm w-full shadow-2xl border ${themeConfig.text === 'text-white' ? 'border-gray-700' : 'border-gray-200'} `}
                         >
                             <h2 className={`text-2xl font-bold ${themeConfig.text} mb-4`}>Add Resource</h2>
 
@@ -486,7 +531,7 @@ export function SubjectDetail() {
                                             className={`flex-1 px-4 py-2 rounded-xl font-semibold transition-all ${resourceType === type
                                                 ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white'
                                                 : `${themeConfig.background} ${themeConfig.text} border-2 ${themeConfig.text === 'text-white' ? 'border-gray-600' : 'border-gray-300'}`
-                                                }`}
+                                                } `}
                                         >
                                             {type.charAt(0).toUpperCase() + type.slice(1)}
                                         </button>
@@ -501,17 +546,17 @@ export function SubjectDetail() {
                                         value={resourceTitle}
                                         onChange={(e) => setResourceTitle(e.target.value)}
                                         placeholder="Resource title (optional)"
-                                        className={`w-full px-4 py-3 rounded-xl border-2 ${themeConfig.background} ${themeConfig.text} ${themeConfig.text === 'text-white' ? 'border-gray-600' : 'border-gray-300'} focus:border-blue-500 focus:outline-none transition-colors mb-3`}
+                                        className={`w-full px-4 py-3 rounded-xl border-2 ${themeConfig.background} ${themeConfig.text} ${themeConfig.text === 'text-white' ? 'border-gray-600' : 'border-gray-300'} focus: border-blue - 500 focus: outline-none transition-colors mb-3`}
                                     />
-                                    <div className={`w-full px-4 py-3 rounded-xl border-2 border-dashed ${themeConfig.text === 'text-white' ? 'border-gray-600' : 'border-gray-300'} hover:border-blue-400 transition-all mb-3`}>
+                                    <div className={`w-full px-4 py-3 rounded-xl border-2 border-dashed ${themeConfig.text === 'text-white' ? 'border-gray-600' : 'border-gray-300'} hover: border-blue - 400 transition-all mb-3`}>
                                         <input
                                             type="file"
                                             onChange={handleFileSelect}
                                             className="w-full"
                                             id="file-upload"
                                         />
-                                        <label htmlFor="file-upload" className={`cursor-pointer ${themeConfig.text}`}>
-                                            {selectedFile ? `Selected: ${selectedFile.name}` : 'Choose a file'}
+                                        <label htmlFor="file-upload" className={`cursor-pointer ${themeConfig.text} `}>
+                                            {selectedFile ? `Selected: ${selectedFile.name} ` : 'Choose a file'}
                                         </label>
                                     </div>
                                 </>
@@ -522,7 +567,7 @@ export function SubjectDetail() {
                                         value={resourceTitle}
                                         onChange={(e) => setResourceTitle(e.target.value)}
                                         placeholder="Resource title"
-                                        className={`w-full px-4 py-3 rounded-xl border-2 ${themeConfig.background} ${themeConfig.text} ${themeConfig.text === 'text-white' ? 'border-gray-600' : 'border-gray-300'} focus:border-blue-500 focus:outline-none transition-colors mb-3`}
+                                        className={`w-full px-4 py-3 rounded-xl border-2 ${themeConfig.background} ${themeConfig.text} ${themeConfig.text === 'text-white' ? 'border-gray-600' : 'border-gray-300'} focus: border-blue - 500 focus: outline-none transition-colors mb-3`}
                                         autoFocus
                                     />
                                     <input
@@ -531,7 +576,7 @@ export function SubjectDetail() {
                                         onChange={(e) => setResourceUrl(e.target.value)}
                                         onKeyPress={(e) => e.key === 'Enter' && handleAddResource()}
                                         placeholder="URL (e.g., https://example.com)"
-                                        className={`w-full px-4 py-3 rounded-xl border-2 ${themeConfig.background} ${themeConfig.text} ${themeConfig.text === 'text-white' ? 'border-gray-600' : 'border-gray-300'} focus:border-blue-500 focus:outline-none transition-colors mb-3`}
+                                        className={`w-full px-4 py-3 rounded-xl border-2 ${themeConfig.background} ${themeConfig.text} ${themeConfig.text === 'text-white' ? 'border-gray-600' : 'border-gray-300'} focus: border-blue - 500 focus: outline-none transition-colors mb-3`}
                                     />
                                 </>
                             )}
@@ -539,7 +584,7 @@ export function SubjectDetail() {
                             <div className="flex gap-3">
                                 <button
                                     onClick={() => setShowResourceModal(false)}
-                                    className={`flex-1 px-4 py-3 rounded-xl font-semibold ${themeConfig.background} ${themeConfig.text} border-2 ${themeConfig.text === 'text-white' ? 'border-gray-600' : 'border-gray-300'} hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors`}
+                                    className={`flex-1 px-4 py-3 rounded-xl font-semibold ${themeConfig.background} ${themeConfig.text} border-2 ${themeConfig.text === 'text-white' ? 'border-gray-600' : 'border-gray-300'} hover: bg-gray - 100 dark: hover: bg-gray - 700 transition-colors`}
                                 >
                                     Cancel
                                 </button>
@@ -557,3 +602,4 @@ export function SubjectDetail() {
         </div>
     );
 }
+
