@@ -205,7 +205,7 @@ export function AddTaskModal({ isOpen, onClose }: AddTaskModalProps) {
                   whileTap={{ scale: 0.98 }}
                   type="button"
                   onClick={onClose}
-                  className="px-6 py-3 border border-gray-200 rounded-lg font-medium hover:bg-gray-50 transition-colors duration-200"
+                  className={`px-6 py-3 border ${themeConfig.text === 'text-white' ? 'border-gray-600' : 'border-gray-200'} rounded-lg font-medium ${themeConfig.text} hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200`}
                 >
                   Cancel
                 </motion.button>
