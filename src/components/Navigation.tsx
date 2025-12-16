@@ -2,13 +2,13 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Home, BookOpen, CheckSquare, Timer, User, Calendar } from 'lucide-react';
+import { Home, BookOpen, CheckSquare, Timer, User, CalendarDays } from 'lucide-react';
 
 const navigationItems = [
   { path: '/', icon: Home, label: 'Dashboard' },
   { path: '/subjects', icon: BookOpen, label: 'Subjects' },
   { path: '/tasks', icon: CheckSquare, label: 'Tasks' },
-  { path: '/calendar', icon: Calendar, label: 'Calendar' },
+  { path: '/timetable', icon: CalendarDays, label: 'Timetable' },
   { path: '/pomodoro', icon: Timer, label: 'Pomodoro' },
   { path: '/profile', icon: User, label: 'Profile' },
 ];

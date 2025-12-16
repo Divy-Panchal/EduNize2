@@ -66,7 +66,7 @@ export function Subjects() {
           onClick={() => setShowAddModal(true)}
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
-          className={`w-full bg-gradient-to-r ${themeConfig.primary} ${themeConfig.secondary} rounded-2xl p-6 shadow-lg border-2 border-dashed ${themeConfig.text === 'text-white' ? 'border-gray-600' : 'border-gray-300'} hover:border-blue-400 transition-all duration-300`}
+          className={`w-full bg-gradient-to-r from-blue-500 to-purple-600 rounded-2xl p-6 shadow-lg border-2 border-dashed border-white/20 hover:border-white/40 transition-all duration-300`}
         >
           <div className="flex items-center justify-center gap-3">
             <div className="bg-white/20 backdrop-blur-sm p-3 rounded-full">

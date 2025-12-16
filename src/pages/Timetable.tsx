@@ -189,7 +189,7 @@ export function Timetable() {
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: index * 0.1 }}
-              className={`flex items-center gap-3 md:gap-4 p-3 rounded-lg ${themeConfig.background}`}
+              className={`flex items-center gap-3 md:gap-4 p-3 rounded-lg ${themeConfig.background} relative`}
             >
               <div className={`w-3 h-3 ${classItem.color} rounded-full`} />
               <div className="flex-1">
@@ -199,6 +199,14 @@ export function Timetable() {
               <span className={`text-xs md:text-sm font-medium ${themeConfig.textSecondary}`}>
                 {classItem.time}
               </span>
+              <button
+                onClick={() => {
+                  if (classItem.id) deleteClass(classItem.id);
+                }}
+                className="p-1.5 bg-red-500 hover:bg-red-600 rounded-full transition-colors duration-200"
+              >
+                <X className="w-3 h-3 text-white" />
+              </button>
             </motion.div>
           ))}
         </div>
@@ -268,7 +276,7 @@ export function Timetable() {
                     className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm md:text-base ${themeConfig.background} ${themeConfig.text} dark:border-gray-600`}
                   >
                     {weekDays.map((day, index) => (
-                      <option key={index} value={index}>
+                      <option key={index} value={index} className="text-gray-900 bg-white">
                         {format(day, 'EEEE')}
                       </option>
                     ))}
@@ -285,7 +293,7 @@ export function Timetable() {
                     className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm md:text-base ${themeConfig.background} ${themeConfig.text} dark:border-gray-600`}
                   >
                     {timeSlots.map(time => (
-                      <option key={time} value={time}>{time}</option>
+                      <option key={time} value={time} className="text-gray-900 bg-white">{time}</option>
                     ))}
                   </select>
                 </div>

@@ -186,7 +186,7 @@ export function SubjectDetail() {
     };
 
     return (
-        <div className="space-y-6 pb-20">
+        <div className={`min-h-screen ${themeConfig.background} space-y-6 pb-20`}>
             {/* Header with Back Button */}
             <motion.div
                 initial={{ opacity: 0, y: -20 }}
@@ -292,7 +292,7 @@ export function SubjectDetail() {
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
                         onClick={() => setShowTopicModal(true)}
-                        className={`w-full ${themeConfig.card} rounded-2xl p-6 border-2 border-dashed ${themeConfig.text === 'text-white' ? 'border-gray-600' : 'border-gray-300'} hover:border-blue-400 transition-all`}
+                        className={`w-full rounded-2xl p-6 border-2 border-dashed ${themeConfig.text === 'text-white' ? 'border-gray-600' : 'border-gray-300'} hover:border-blue-400 transition-all`}
                     >
                         <div className="flex items-center justify-center gap-3">
                             <Plus className={`w-6 h-6 ${themeConfig.textSecondary}`} />
@@ -399,7 +399,7 @@ export function SubjectDetail() {
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
                         onClick={() => setShowResourceModal(true)}
-                        className={`w-full ${themeConfig.card} rounded-2xl p-6 border-2 border-dashed ${themeConfig.text === 'text-white' ? 'border-gray-600' : 'border-gray-300'} hover:border-blue-400 transition-all`}
+                        className={`w-full rounded-2xl p-6 border-2 border-dashed ${themeConfig.text === 'text-white' ? 'border-gray-600' : 'border-gray-300'} hover:border-blue-400 transition-all`}
                     >
                         <div className="flex items-center justify-center gap-3">
                             <Plus className={`w-6 h-6 ${themeConfig.textSecondary}`} />
