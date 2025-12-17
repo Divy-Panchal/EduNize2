@@ -161,7 +161,7 @@ SectionCard.displayName = 'SectionCard';
 
 export function Profile() {
     const { themeConfig } = useTheme();
-    const { signOut, user } = useAuth();
+    const { user } = useAuth();
     const navigate = useNavigate();
     const [isFlipped, setIsFlipped] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
@@ -262,13 +262,6 @@ export function Profile() {
                         >
                             {isEditing ? <Save size={18} /> : <Edit size={18} />}
                             {isEditing ? 'Save' : 'Edit'}
-                        </motion.button>
-                        <motion.button
-                            onClick={signOut}
-                            className={`flex items-center gap-2 px-4 py-2 rounded-lg font-semibold transition-colors bg-red-500 text-white hover:bg-red-600`}
-                            whileTap={{ scale: 0.95 }}
-                        >
-                            Sign Out
                         </motion.button>
                     </div>
                 </div>

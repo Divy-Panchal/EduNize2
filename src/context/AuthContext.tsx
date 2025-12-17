@@ -6,7 +6,8 @@ import {
   signOut as firebaseSignOut,
   onAuthStateChanged,
   GoogleAuthProvider,
-  signInWithPopup
+  signInWithPopup,
+  deleteUser
 } from 'firebase/auth';
 import { auth } from '../firebaseConfig'; // Import the auth instance
 import toast from 'react-hot-toast';
@@ -18,6 +19,7 @@ interface AuthContextType {
   signIn: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
   signInWithGoogle: () => Promise<void>;
+  deleteAccount: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -176,6 +178,33 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const deleteAccount = async () => {
+    try {
+      if (!user) {
+        throw new Error('No user is currently signed in.');
+      }
+
+      // Clear user data before deleting account
+      clearUserData();
+
+      // Delete the user account from Firebase
+      await deleteUser(user);
+
+      toast.success('Account deleted successfully');
+    } catch (error: any) {
+      const code = error?.code;
+      const message = error?.message;
+      console.error('Delete account error:', { code, message });
+
+      if (code === 'auth/requires-recent-login') {
+        throw new Error('For security reasons, please sign out and sign in again before deleting your account.');
+      } else if (code === 'auth/network-request-failed') {
+        throw new Error('Network error. Please check your internet connection and try again.');
+      }
+      throw new Error(message || 'Failed to delete account. Please try again.');
+    }
+  };
+
   return (
     <AuthContext.Provider value={{
       user,
@@ -183,7 +212,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       signUp,
       signIn,
       signOut,
-      signInWithGoogle
+      signInWithGoogle,
+      deleteAccount
     }}>
       {children}
     </AuthContext.Provider>
