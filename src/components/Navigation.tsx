@@ -22,7 +22,7 @@ export function Navigation() {
         initial={{ y: 100, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ type: "spring", stiffness: 260, damping: 20 }}
-        className={`flex items-center gap-1 ${themeConfig.card} backdrop-blur-xl rounded-full shadow-2xl border ${themeConfig.text === 'text-white' ? 'border-gray-700/50' : 'border-gray-200/50'} px-4 py-3`}
+        className={`flex items-center gap-1 ${themeConfig.card} backdrop-blur-lg rounded-full shadow-lg border ${themeConfig.text === 'text-white' ? 'border-gray-700/30' : 'border-gray-200/30'} px-4 py-3`}
       >
         {navigationItems.map((item) => {
           const isActive = location.pathname === item.path;
@@ -44,7 +44,7 @@ export function Navigation() {
                   {isActive && (
                     <motion.div
                       layoutId="navPill"
-                      className="absolute inset-0 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full shadow-lg"
+                      className="absolute inset-0 bg-blue-600 dark:bg-blue-500 rounded-full shadow-md"
                       initial={{ opacity: 0, scale: 0.8 }}
                       animate={{ opacity: 1, scale: 1 }}
                       exit={{ opacity: 0, scale: 0.8 }}
@@ -55,7 +55,7 @@ export function Navigation() {
 
                 {/* Hover background */}
                 {!isActive && (
-                  <div className="absolute inset-0 rounded-full bg-gradient-to-r from-cyan-500/20 to-teal-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                  <div className="absolute inset-0 rounded-full bg-gray-100 dark:bg-gray-700/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                 )}
 
                 {/* Icon */}
