@@ -233,6 +233,12 @@ export function Profile() {
         }
     }, []);
 
+    const handleRemovePhoto = useCallback(() => {
+        // Reset to default profile photo
+        const defaultPhoto = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"%3E%3Ccircle cx="50" cy="50" r="50" fill="%23e0e0e0"/%3E%3Ccircle cx="50" cy="40" r="18" fill="%23999"/%3E%3Cpath d="M 20 85 Q 20 60 50 60 Q 80 60 80 85 Z" fill="%23999"/%3E%3C/svg%3E';
+        setUserData(prev => ({ ...prev, profilePhoto: defaultPhoto }));
+    }, []);
+
     const animationVariants = {
         initial: { opacity: 0, y: 20 },
         animate: { opacity: 1, y: 0, transition: { staggerChildren: 0.1 } },
@@ -279,13 +285,26 @@ export function Profile() {
                                     <div className="relative">
                                         <img src={userData.profilePhoto} alt="Profile" className="w-32 h-32 rounded-full object-cover border-4 border-blue-200 dark:border-blue-800" />
                                         {isEditing && (
-                                            <motion.button
-                                                onClick={() => fileInputRef.current?.click()}
-                                                className="absolute bottom-0 right-0 bg-blue-500 text-white p-2 rounded-full hover:bg-blue-600"
-                                                whileTap={{ scale: 0.9 }}
-                                            >
-                                                <Upload size={16} />
-                                            </motion.button>
+                                            <>
+                                                <motion.button
+                                                    onClick={() => fileInputRef.current?.click()}
+                                                    className="absolute bottom-0 right-0 bg-blue-500 text-white p-2 rounded-full hover:bg-blue-600"
+                                                    whileTap={{ scale: 0.9 }}
+                                                    title="Upload Photo"
+                                                >
+                                                    <Upload size={16} />
+                                                </motion.button>
+                                                {userData.profilePhoto !== initialUserData.profilePhoto && (
+                                                    <motion.button
+                                                        onClick={handleRemovePhoto}
+                                                        className="absolute top-0 right-0 bg-red-500 text-white p-2 rounded-full hover:bg-red-600"
+                                                        whileTap={{ scale: 0.9 }}
+                                                        title="Remove Photo"
+                                                    >
+                                                        <X size={16} />
+                                                    </motion.button>
+                                                )}
+                                            </>
                                         )}
                                         <input type="file" ref={fileInputRef} onChange={handlePhotoUpload} accept="image/*" className="hidden" />
                                     </div>

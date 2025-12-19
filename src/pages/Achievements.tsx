@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { 
-  Trophy, 
-  Star, 
-  Crown, 
-  BookOpen, 
+import {
+  Trophy,
+  Star,
+  Crown,
+  BookOpen,
   Flame,
   Brain,
   Clock,
@@ -129,8 +129,8 @@ export function Achievements() {
 
   useEffect(() => {
     const pomodoroSessions = parseInt(localStorage.getItem('pomodoroSessions') || '0', 10);
-    
-    setAchievements(prevAchievements => 
+
+    setAchievements(prevAchievements =>
       prevAchievements.map(ach => {
         if (ach.id === 'focus-master') {
           const progress = Math.min(100, (pomodoroSessions / ach.goal) * 100);
@@ -141,14 +141,14 @@ export function Achievements() {
       })
     );
   }, []);
-  
+
   const totalPoints = achievements
     .filter(achievement => achievement.unlocked)
     .reduce((sum, achievement) => sum + achievement.points, 0);
-  
+
   const currentLevel = levels.find(level => totalPoints >= level.min && totalPoints <= level.max) || levels[0];
   const nextLevel = levels[levels.indexOf(currentLevel) + 1];
-  const levelProgress = nextLevel 
+  const levelProgress = nextLevel
     ? ((totalPoints - currentLevel.min) / (nextLevel.min - currentLevel.min)) * 100
     : 100;
 
@@ -188,7 +188,7 @@ export function Achievements() {
               <p className={`text-xs ${themeConfig.textSecondary}`}>Level {levels.indexOf(currentLevel) + 1}</p>
             </div>
           </div>
-          
+
           <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3 mb-2">
             <motion.div
               className="bg-gradient-to-r from-yellow-400 to-orange-500 h-3 rounded-full"
@@ -197,7 +197,7 @@ export function Achievements() {
               transition={{ duration: 1, delay: 0.5 }}
             />
           </div>
-          
+
           {nextLevel && (
             <p className={`text-xs ${themeConfig.textSecondary} text-center`}>
               {nextLevel.min - totalPoints} points to {nextLevel.name}
@@ -217,15 +217,14 @@ export function Achievements() {
             whileTap={{ scale: 0.98 }}
             className="relative overflow-hidden"
           >
-            <div className={`bg-gradient-to-r ${achievement.gradient} rounded-2xl p-1 shadow-lg ${
-              !achievement.unlocked ? 'opacity-60' : ''
-            }`}>
+            <div className={`bg-gradient-to-r ${achievement.gradient} rounded-2xl p-1 shadow-lg ${!achievement.unlocked ? 'opacity-60' : ''
+              }`}>
               <div className={`${themeConfig.card} rounded-xl p-4 relative overflow-hidden`}>
                 {achievement.unlocked && (
                   <motion.div
                     className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-30"
                     animate={{ x: ['-100%', '100%'] }}
-                    transition={{ 
+                    transition={{
                       duration: 2,
                       repeat: Infinity,
                       repeatDelay: 3,
