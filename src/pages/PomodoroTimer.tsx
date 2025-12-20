@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, PanInfo, useAnimation } from 'framer-motion';
 import { Play, Pause, RotateCcw, Coffee, BookOpen, VolumeX, TrendingUp, Target, Clock } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
@@ -195,9 +195,9 @@ export function PomodoroTimer() {
 
     if (isActive && timeLeft > 0) {
       interval = setInterval(() => {
-        setTimeLeft(prev => prev - 1);
+        setTimeLeft((prev: number) => prev - 1);
         if (mode === 'work') {
-          setTotalMinutes(prev => prev + 1 / 60);
+          setTotalMinutes((prev: number) => prev + 1 / 60);
         }
       }, 1000);
     } else if (isActive && timeLeft === 0) {
@@ -226,7 +226,7 @@ export function PomodoroTimer() {
     setTimeLeft(durations[mode]);
   }
 
-  const handlePan = (event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+  const handlePan = (_event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
     if (isActive || !circleRef.current) return;
 
     const circle = circleRef.current.getBoundingClientRect();
@@ -270,7 +270,7 @@ export function PomodoroTimer() {
     if (isActive) return;
     isDragging.current = false;
     // Save the new duration when drag ends
-    setDurations(prev => ({ ...prev, [mode]: timeLeft }));
+    setDurations((prev: typeof durations) => ({ ...prev, [mode]: timeLeft }));
   };
 
   const minutes = Math.floor(timeLeft / 60);
