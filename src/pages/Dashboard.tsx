@@ -9,19 +9,23 @@ import {
   CheckCircle2,
   Users,
   Brain,
-  Zap
+  Zap,
+  TrendingUp
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useTask } from '../context/TaskContext';
 import { useTheme } from '../context/ThemeContext';
 import { useTimetable } from '../context/TimetableContext';
+import { useGrade } from '../context/GradeContext';
 import { DashboardProfile } from '../components/DashboardProfile';
 
 export function Dashboard() {
   const { tasks } = useTask();
   const { themeConfig } = useTheme();
   const { getTodayClasses } = useTimetable();
+  const { getGradeStats } = useGrade();
 
+  const gradeStats = getGradeStats();
   const completedTasks = tasks.filter(task => task.completed).length;
   const totalTasks = tasks.length;
   const completionRate = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
@@ -50,10 +54,10 @@ export function Dashboard() {
     },
     {
       title: 'Average Grade',
-      value: '87%',
+      value: gradeStats.overallPercentage > 0 ? `${Math.round(gradeStats.overallPercentage)}%` : 'N/A',
       icon: Award,
       color: 'bg-orange-500',
-      progress: 87
+      progress: gradeStats.overallPercentage || 0
     }
   ];
 
@@ -103,7 +107,7 @@ export function Dashboard() {
           {[
             { icon: Users, label: 'Subjects', path: '/subjects' },
             { icon: Brain, label: 'Start Timer', path: '/pomodoro' },
-            { icon: Calendar, label: 'View Schedule', path: '/timetable' },
+            { icon: TrendingUp, label: 'Grades', path: '/grades' },
             { icon: Zap, label: 'Add Task', path: '/tasks' }
           ].map((action) => (
             <Link

@@ -14,10 +14,12 @@ import { Results } from './pages/Results';
 import { Settings } from './pages/Settings';
 import { Achievements } from './pages/Achievements';
 import { Profile } from './pages/Profile';
+import { Grades } from './pages/Grades';
 import { ThemeProvider, useTheme } from './context/ThemeContext';
 import { TaskProvider } from './context/TaskContext';
 import { SubjectProvider } from './context/SubjectContext';
 import { TimetableProvider } from './context/TimetableContext';
+import { GradeProvider } from './context/GradeContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { Auth } from './components/Auth';
 import { DarkModeTransition } from './components/DarkModeTransition';
@@ -179,6 +181,7 @@ function AppContent() {
                   <Route path="/subjects/:id" element={<SubjectDetail />} />
                   <Route path="/tasks" element={<Tasks />} />
                   <Route path="/timetable" element={<Timetable />} />
+                  <Route path="/grades" element={<Grades />} />
                   <Route path="/pomodoro" element={<PomodoroTimer />} />
                   <Route path="/achievements" element={<Achievements />} />
                   <Route path="/results" element={<Results />} />
@@ -202,10 +205,12 @@ function App() {
           <TaskProvider>
             <SubjectProvider>
               <TimetableProvider>
-                <Router>
-                  <Toaster position="top-right" />
-                  <AppContent />
-                </Router>
+                <GradeProvider>
+                  <Router>
+                    <Toaster position="top-right" />
+                    <AppContent />
+                  </Router>
+                </GradeProvider>
               </TimetableProvider>
             </SubjectProvider>
           </TaskProvider>

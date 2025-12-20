@@ -1,6 +1,6 @@
 import { Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Home, BookOpen, CheckSquare, Timer, User, CalendarDays } from 'lucide-react';
+import { Home, BookOpen, CheckSquare, Timer, User, CalendarDays, TrendingUp } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 
 const navigationItems = [
@@ -8,6 +8,7 @@ const navigationItems = [
   { path: '/subjects', icon: BookOpen, label: 'Subjects' },
   { path: '/tasks', icon: CheckSquare, label: 'Tasks' },
   { path: '/timetable', icon: CalendarDays, label: 'Schedule' },
+  { path: '/grades', icon: TrendingUp, label: 'Grades' },
   { path: '/pomodoro', icon: Timer, label: 'Focus' },
   { path: '/profile', icon: User, label: 'Profile' },
 ];
