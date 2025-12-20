@@ -98,7 +98,7 @@ export function AddTaskModal({ isOpen, onClose }: AddTaskModalProps) {
                   type="text"
                   value={formData.title}
                   onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className={`w-full px-3 py-2 border ${themeConfig.text === 'text-white' ? 'border-gray-600' : 'border-gray-200'} rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${themeConfig.background} ${themeConfig.text}`}
                   placeholder="Enter task title"
                 />
               </div>
@@ -110,7 +110,7 @@ export function AddTaskModal({ isOpen, onClose }: AddTaskModalProps) {
                 <textarea
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent h-20 resize-none"
+                  className={`w-full px-3 py-2 border ${themeConfig.text === 'text-white' ? 'border-gray-600' : 'border-gray-200'} rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent h-20 resize-none ${themeConfig.background} ${themeConfig.text}`}
                   placeholder="Enter task description"
                 />
               </div>
@@ -123,11 +123,11 @@ export function AddTaskModal({ isOpen, onClose }: AddTaskModalProps) {
                   <select
                     value={formData.priority}
                     onChange={(e) => setFormData({ ...formData, priority: e.target.value as 'low' | 'medium' | 'high' })}
-                    className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className={`w-full px-3 py-2 border ${themeConfig.text === 'text-white' ? 'border-gray-600' : 'border-gray-200'} rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${themeConfig.background} ${themeConfig.text}`}
                   >
-                    <option value="low">Low</option>
-                    <option value="medium">Medium</option>
-                    <option value="high">High</option>
+                    <option value="low" className="text-gray-900 bg-white dark:text-gray-100 dark:bg-gray-800">Low</option>
+                    <option value="medium" className="text-gray-900 bg-white dark:text-gray-100 dark:bg-gray-800">Medium</option>
+                    <option value="high" className="text-gray-900 bg-white dark:text-gray-100 dark:bg-gray-800">High</option>
                   </select>
                 </div>
 
@@ -139,7 +139,7 @@ export function AddTaskModal({ isOpen, onClose }: AddTaskModalProps) {
                     type="date"
                     value={formData.dueDate}
                     onChange={(e) => setFormData({ ...formData, dueDate: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className={`w-full px-3 py-2 border ${themeConfig.text === 'text-white' ? 'border-gray-600' : 'border-gray-200'} rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${themeConfig.background} ${themeConfig.text}`}
                   />
                 </div>
               </div>
@@ -152,7 +152,7 @@ export function AddTaskModal({ isOpen, onClose }: AddTaskModalProps) {
                   type="text"
                   value={formData.category}
                   onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className={`w-full px-3 py-2 border ${themeConfig.text === 'text-white' ? 'border-gray-600' : 'border-gray-200'} rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${themeConfig.background} ${themeConfig.text}`}
                   placeholder="e.g., Mathematics, Physics"
                 />
               </div>
@@ -205,7 +205,7 @@ export function AddTaskModal({ isOpen, onClose }: AddTaskModalProps) {
                   whileTap={{ scale: 0.98 }}
                   type="button"
                   onClick={onClose}
-                  className="px-6 py-3 border border-gray-200 rounded-lg font-medium hover:bg-gray-50 transition-colors duration-200"
+                  className={`px-6 py-3 border ${themeConfig.text === 'text-white' ? 'border-gray-600' : 'border-gray-200'} rounded-lg font-medium ${themeConfig.text} hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200`}
                 >
                   Cancel
                 </motion.button>

@@ -1,19 +1,30 @@
-import React from 'react';
-import { motion } from 'framer-motion';
-import { Palette, Bell, User, Shield, HelpCircle, LogOut, Download } from 'lucide-react';
+import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Palette, Bell, User, Shield, HelpCircle, LogOut, Download, Trash2, AlertTriangle } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
 
 export function Settings() {
   const { theme, setTheme, themeConfig } = useTheme();
-  const { signOut, user } = useAuth();
+  const { signOut, deleteAccount, user } = useAuth();
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   const handleSignOut = async () => {
     try {
       await signOut();
     } catch (error: any) {
       toast.error('Error signing out');
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    try {
+      await deleteAccount();
+      setShowDeleteModal(false);
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to delete account');
+      setShowDeleteModal(false);
     }
   };
 
@@ -25,7 +36,7 @@ export function Settings() {
   ];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-20">
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -46,7 +57,7 @@ export function Settings() {
           <Palette className={`w-6 h-6 ${themeConfig.primary.replace('bg-', 'text-')}`} />
           <h2 className={`text-lg md:text-xl font-semibold ${themeConfig.text}`}>Theme</h2>
         </div>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {themes.map((themeOption, index) => (
             <motion.div
@@ -57,11 +68,10 @@ export function Settings() {
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               onClick={() => setTheme(themeOption.id as any)}
-              className={`p-4 rounded-lg border-2 cursor-pointer transition-all duration-200 ${
-                theme === themeOption.id 
-                  ? 'border-blue-500 dark:border-blue-400 bg-blue-50 dark:bg-blue-900/50' 
-                  : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500'
-              }`}
+              className={`p-4 rounded-lg border-2 cursor-pointer transition-all duration-200 ${theme === themeOption.id
+                ? 'border-blue-500 dark:border-blue-400 bg-blue-50 dark:bg-blue-900/50'
+                : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500'
+                }`}
             >
               <div className="flex items-center gap-3 mb-3">
                 <div className="flex gap-1">
@@ -102,7 +112,7 @@ export function Settings() {
             <Bell className={`w-5 h-5 ${themeConfig.secondary.replace('bg-', 'text-')}`} />
             <h3 className={`text-base md:text-lg font-semibold ${themeConfig.text}`}>Notifications</h3>
           </div>
-          
+
           <div className="space-y-4">
             {[
               { label: 'Task Reminders', enabled: true },
@@ -114,9 +124,8 @@ export function Settings() {
                 <span className={`text-xs md:text-sm ${themeConfig.text}`}>{setting.label}</span>
                 <motion.div
                   whileTap={{ scale: 0.95 }}
-                  className={`w-10 h-6 rounded-full cursor-pointer transition-colors duration-200 flex items-center ${
-                    setting.enabled ? 'bg-blue-500' : 'bg-gray-300 dark:bg-gray-600'
-                  }`}
+                  className={`w-10 h-6 rounded-full cursor-pointer transition-colors duration-200 flex items-center ${setting.enabled ? 'bg-blue-500' : 'bg-gray-300 dark:bg-gray-600'
+                    }`}
                 >
                   <motion.div
                     className="w-4 h-4 bg-white rounded-full ml-1"
@@ -139,7 +148,7 @@ export function Settings() {
             <User className={`w-5 h-5 ${themeConfig.accent.replace('bg-', 'text-')}`} />
             <h3 className={`text-base md:text-lg font-semibold ${themeConfig.text}`}>Profile</h3>
           </div>
-          
+
           <div className="space-y-4">
             <div>
               <label className={`block text-xs md:text-sm font-medium ${themeConfig.text} mb-2`}>
@@ -210,16 +219,94 @@ export function Settings() {
         className={`${themeConfig.card} p-4 md:p-6 rounded-xl shadow-sm border dark:border-gray-700`}
       >
         <h3 className={`text-base md:text-lg font-semibold ${themeConfig.text} mb-4`}>Account</h3>
-        <motion.button
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
-          onClick={handleSignOut}
-          className="flex items-center gap-3 w-full px-4 py-3 text-red-600 dark:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/50 rounded-lg transition-colors duration-200 border border-red-200 dark:border-red-800"
-        >
-          <LogOut className="w-5 h-5" />
-          <span className="font-medium">Sign Out</span>
-        </motion.button>
+        <div className="space-y-3">
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={handleSignOut}
+            className="flex items-center gap-3 w-full px-4 py-3 text-red-600 dark:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/50 rounded-lg transition-colors duration-200 border border-red-200 dark:border-red-800"
+          >
+            <LogOut className="w-5 h-5" />
+            <span className="font-medium">Sign Out</span>
+          </motion.button>
+
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={() => setShowDeleteModal(true)}
+            className="flex items-center gap-3 w-full px-4 py-3 text-red-700 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/70 rounded-lg transition-colors duration-200 border-2 border-red-300 dark:border-red-700"
+          >
+            <Trash2 className="w-5 h-5" />
+            <span className="font-medium">Delete Account</span>
+          </motion.button>
+        </div>
       </motion.div>
+
+      {/* Delete Account Confirmation Modal */}
+      <AnimatePresence>
+        {showDeleteModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+            onClick={() => setShowDeleteModal(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.9, y: 20 }}
+              onClick={(e) => e.stopPropagation()}
+              className={`${themeConfig.card} rounded-2xl p-6 max-w-md w-full shadow-2xl border-2 border-red-500 dark:border-red-600`}
+            >
+              <div className="flex items-center gap-3 mb-4">
+                <div className="bg-red-100 dark:bg-red-900/30 p-3 rounded-full">
+                  <AlertTriangle className="w-6 h-6 text-red-600 dark:text-red-400" />
+                </div>
+                <h2 className={`text-xl font-bold ${themeConfig.text}`}>
+                  Delete Account?
+                </h2>
+              </div>
+
+              <div className="space-y-3 mb-6">
+                <p className={`${themeConfig.text} text-sm`}>
+                  Are you sure you want to delete your account? This action is <strong>permanent and cannot be undone</strong>.
+                </p>
+                <div className={`bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-3`}>
+                  <p className="text-red-700 dark:text-red-400 text-xs font-medium">
+                    ⚠️ All your data will be permanently deleted:
+                  </p>
+                  <ul className="text-red-600 dark:text-red-400 text-xs mt-2 ml-4 list-disc space-y-1">
+                    <li>Subjects and study materials</li>
+                    <li>Tasks and schedules</li>
+                    <li>Progress and achievements</li>
+                    <li>All personal settings</li>
+                  </ul>
+                </div>
+              </div>
+
+              <div className="flex gap-3">
+                <motion.button
+                  onClick={() => setShowDeleteModal(false)}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className={`flex-1 px-4 py-3 rounded-xl font-semibold ${themeConfig.background} ${themeConfig.text} border-2 ${themeConfig.text === 'text-white' ? 'border-gray-600' : 'border-gray-300'} hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors`}
+                >
+                  Cancel
+                </motion.button>
+                <motion.button
+                  onClick={handleDeleteAccount}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="flex-1 px-4 py-3 rounded-xl font-semibold bg-red-600 hover:bg-red-700 text-white shadow-lg hover:shadow-xl transition-all"
+                >
+                  Delete Forever
+                </motion.button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

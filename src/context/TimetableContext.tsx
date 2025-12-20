@@ -28,7 +28,13 @@ export function TimetableProvider({ children }: { children: React.ReactNode }) {
         const savedClasses = localStorage.getItem('edunize-timetable');
         if (savedClasses) {
             try {
-                setClasses(JSON.parse(savedClasses));
+                const parsed = JSON.parse(savedClasses);
+                // Ensure all classes have IDs (migration for old data)
+                const classesWithIds = parsed.map((cls: TimetableClass, index: number) => ({
+                    ...cls,
+                    id: cls.id || `${Date.now()}-${index}`
+                }));
+                setClasses(classesWithIds);
             } catch (error) {
                 console.error('Error loading timetable:', error);
                 setClasses([]);
@@ -40,13 +46,16 @@ export function TimetableProvider({ children }: { children: React.ReactNode }) {
     useEffect(() => {
         if (classes.length > 0) {
             localStorage.setItem('edunize-timetable', JSON.stringify(classes));
+        } else {
+            // Clear localStorage if no classes remain
+            localStorage.removeItem('edunize-timetable');
         }
     }, [classes]);
 
     const addClass = (classData: TimetableClass) => {
         const newClass: TimetableClass = {
             ...classData,
-            id: Date.now().toString(),
+            id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
         };
         setClasses(prev => [...prev, newClass]);
     };

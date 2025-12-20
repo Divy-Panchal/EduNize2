@@ -79,7 +79,22 @@ export function SubjectProvider({ children }: { children: React.ReactNode }) {
             isInitialMount.current = false;
             return;
         }
-        localStorage.setItem('edunize-subjects', JSON.stringify(subjects));
+        try {
+            localStorage.setItem('edunize-subjects', JSON.stringify(subjects));
+        } catch (error) {
+            if (import.meta.env.DEV) {
+                console.error('Error saving to localStorage:', error);
+            }
+            // Check if it's a quota exceeded error
+            if (error instanceof DOMException && (
+                error.name === 'QuotaExceededError' ||
+                error.name === 'NS_ERROR_DOM_QUOTA_REACHED'
+            )) {
+                // Silently fail - the data is still in memory
+                // User will see error when trying to add more files
+                console.warn('localStorage quota exceeded');
+            }
+        }
     }, [subjects]);
 
     const addSubject = (subjectData: Omit<Subject, 'id' | 'notes' | 'topics' | 'resources'>) => {
