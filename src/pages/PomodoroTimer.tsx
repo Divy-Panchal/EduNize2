@@ -97,49 +97,73 @@ export function PomodoroTimer() {
   }, [totalMinutes]);
 
   const playAlarm = () => {
-    if (alarmRef.current) {
-      alarmRef.current.play().catch(e => {
-        if (import.meta.env.DEV) {
-          console.warn("Error playing alarm audio, using fallback beep:", e);
-        }
-        // Fallback: Use Web Audio API to create a beep sound
-        try {
-          const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-          const oscillator = audioContext.createOscillator();
-          const gainNode = audioContext.createGain();
+    // Create a gentle bell chime sound using Web Audio API
+    try {
+      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
 
-          oscillator.connect(gainNode);
-          gainNode.connect(audioContext.destination);
+      // Function to create a single bell tone
+      const createBellTone = (frequency: number, startTime: number, duration: number) => {
+        const oscillator = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
 
-          oscillator.frequency.value = 800; // 800 Hz beep
-          oscillator.type = 'sine';
+        // Add a subtle vibrato for more natural bell sound
+        const vibrato = audioContext.createOscillator();
+        const vibratoGain = audioContext.createGain();
 
-          gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-          gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+        vibrato.frequency.value = 5; // 5 Hz vibrato
+        vibratoGain.gain.value = 2; // Subtle pitch variation
 
-          oscillator.start(audioContext.currentTime);
-          oscillator.stop(audioContext.currentTime + 0.5);
+        vibrato.connect(vibratoGain);
+        vibratoGain.connect(oscillator.frequency);
 
-          // Repeat beep 3 times
-          setTimeout(() => {
-            const osc2 = audioContext.createOscillator();
-            const gain2 = audioContext.createGain();
-            osc2.connect(gain2);
-            gain2.connect(audioContext.destination);
-            osc2.frequency.value = 800;
-            osc2.type = 'sine';
-            gain2.gain.setValueAtTime(0.3, audioContext.currentTime);
-            gain2.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
-            osc2.start();
-            osc2.stop(audioContext.currentTime + 0.5);
-          }, 600);
-        } catch (audioError) {
-          if (import.meta.env.DEV) {
-            console.error("Web Audio API fallback failed:", audioError);
-          }
-        }
-      });
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+
+        // Bell-like tone (sine wave with harmonics)
+        oscillator.type = 'sine';
+        oscillator.frequency.value = frequency;
+
+        // Natural bell envelope: quick attack, long decay
+        const now = audioContext.currentTime + startTime;
+        gainNode.gain.setValueAtTime(0, now);
+        gainNode.gain.linearRampToValueAtTime(0.5, now + 0.01); // Quick attack - increased volume
+        gainNode.gain.exponentialRampToValueAtTime(0.01, now + duration); // Long decay
+
+        oscillator.start(now);
+        vibrato.start(now);
+        oscillator.stop(now + duration);
+        vibrato.stop(now + duration);
+      };
+
+      // Create a pleasant bell chord (C major - C, E, G)
+      // Main bell tone
+      createBellTone(523.25, 0, 2.0);    // C5
+      createBellTone(659.25, 0, 1.8);    // E5
+      createBellTone(783.99, 0, 1.6);    // G5
+
+      // Add subtle harmonics for richness
+      createBellTone(1046.50, 0, 1.2);   // C6 (octave up, quieter)
+
+      // Optional: Play a second chime after a short delay
+      setTimeout(() => {
+        createBellTone(523.25, 0, 1.5);
+        createBellTone(659.25, 0, 1.3);
+        createBellTone(783.99, 0, 1.1);
+      }, 800);
+
       setIsAlarmPlaying(true);
+
+      // Auto-stop alarm after sound completes
+      setTimeout(() => {
+        setIsAlarmPlaying(false);
+      }, 3000);
+
+    } catch (error) {
+      console.error("Error creating bell chime sound:", error);
+      // Fallback to simple beep if Web Audio API fails
+      if (alarmRef.current) {
+        alarmRef.current.play().catch(e => console.warn("Alarm playback failed:", e));
+      }
     }
   };
 
