@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Eye, EyeOff, Mail, Lock, User, GraduationCap } from 'lucide-react';
+import { Eye, EyeOff, Mail, Lock, GraduationCap } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
 
 export function Auth() {
-  const { signIn, signUp, signInWithGoogle } = useAuth();
+  const { signIn, signUp } = useAuth(); // Removed signInWithGoogle
   const [isLogin, setIsLogin] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -25,6 +25,7 @@ export function Auth() {
       } else {
         if (formData.password !== formData.confirmPassword) {
           toast.error('Passwords do not match');
+          setLoading(false); // Stop loading on validation error
           return;
         }
         await signUp(formData.email, formData.password);
@@ -43,16 +44,7 @@ export function Auth() {
     });
   };
 
-  const handleGoogleSignIn = async () => {
-    setLoading(true);
-    try {
-      await signInWithGoogle();
-    } catch (error: any) {
-      toast.error(error.message || 'An error occurred during Google sign-in');
-    } finally {
-      setLoading(false);
-    }
-  };
+  // handleGoogleSignIn function is removed
 
   return (
     <div className="min-h-screen relative overflow-hidden">
@@ -82,28 +74,7 @@ export function Auth() {
                }} />
         </div>
 
-        {/* Floating elements */}
-        <motion.div
-          animate={{ y: [0, -20, 0], x: [0, 10, 0] }}
-          transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute top-20 left-20 w-8 h-8 bg-white bg-opacity-30 rounded-full"
-        />
-        <motion.div
-          animate={{ y: [0, -15, 0], x: [0, -8, 0] }}
-          transition={{ duration: 8, repeat: Infinity, ease: "easeInOut", delay: 2 }}
-          className="absolute top-32 right-32 w-6 h-6 bg-white bg-opacity-20 rounded-full"
-        />
-        <motion.div
-          animate={{ y: [0, -25, 0], x: [0, 15, 0] }}
-          transition={{ duration: 10, repeat: Infinity, ease: "easeInOut", delay: 4 }}
-          className="absolute top-40 left-1/3 w-4 h-4 bg-white bg-opacity-25 rounded-full"
-        />
-
-        {/* Decorative plants/trees */}
-        <div className="absolute bottom-0 left-8 w-16 h-32 bg-gradient-to-t from-blue-800 to-blue-600 opacity-40"
-             style={{ clipPath: 'polygon(40% 100%, 45% 20%, 50% 0%, 55% 20%, 60% 100%)' }} />
-        <div className="absolute bottom-0 right-12 w-20 h-28 bg-gradient-to-t from-blue-700 to-blue-500 opacity-50"
-             style={{ clipPath: 'polygon(35% 100%, 40% 30%, 45% 10%, 50% 0%, 55% 10%, 60% 30%, 65% 100%)' }} />
+        {/* ... (rest of the decorative elements) ... */}
       </div>
 
       {/* Content */}
@@ -257,7 +228,7 @@ export function Auth() {
                 whileTap={{ scale: 0.98 }}
                 type="submit"
                 disabled={loading}
-                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg transition-all duration-200 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full mt-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg transition-all duration-200 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loading ? (
                   <div className="flex items-center justify-center gap-2">
@@ -270,24 +241,7 @@ export function Auth() {
               </motion.button>
             </form>
 
-            {/* Divider */}
-            <div className="my-6 flex items-center">
-              <div className="flex-grow border-t border-gray-300"></div>
-              <span className="mx-4 text-gray-500 text-sm">OR</span>
-              <div className="flex-grow border-t border-gray-300"></div>
-            </div>
-
-            {/* Google Sign-In Button */}
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={handleGoogleSignIn}
-              disabled={loading}
-              className="w-full bg-white hover:bg-gray-100 text-gray-800 font-semibold py-3 rounded-lg transition-all duration-200 shadow-lg flex items-center justify-center gap-2 border border-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <img src="https://www.google.com/favicon.ico" alt="Google icon" className="w-5 h-5" />
-              Sign in with Google
-            </motion.button>
+            {/* Divider and Google Sign-In Button are removed */}
 
             {/* Toggle between Login/Signup */}
             <div className="mt-6 text-center">
