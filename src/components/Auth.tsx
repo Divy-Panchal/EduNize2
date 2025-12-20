@@ -5,7 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
 
 export function Auth() {
-  const { signIn, signUp } = useAuth(); // Removed signInWithGoogle
+  const { signIn, signUp } = useAuth();
   const [isLogin, setIsLogin] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -25,7 +25,7 @@ export function Auth() {
       } else {
         if (formData.password !== formData.confirmPassword) {
           toast.error('Passwords do not match');
-          setLoading(false); // Stop loading on validation error
+          setLoading(false);
           return;
         }
         await signUp(formData.email, formData.password);
@@ -43,8 +43,6 @@ export function Auth() {
       [e.target.name]: e.target.value
     });
   };
-
-  // handleGoogleSignIn function is removed
 
   return (
     <div className="min-h-screen relative overflow-hidden">
@@ -73,8 +71,6 @@ export function Auth() {
                  clipPath: 'polygon(0% 100%, 0% 80%, 25% 65%, 40% 75%, 55% 60%, 70% 70%, 85% 55%, 100% 65%, 100% 100%)'
                }} />
         </div>
-
-        {/* ... (rest of the decorative elements) ... */}
       </div>
 
       {/* Content */}
@@ -203,25 +199,6 @@ export function Auth() {
                 )}
               </AnimatePresence>
 
-              {/* Remember Me / Forgot Password */}
-              {isLogin && (
-                <div className="flex items-center justify-between text-sm">
-                  <label className="flex items-center gap-2 text-gray-600">
-                    <input
-                      type="checkbox"
-                      className="w-4 h-4 rounded border-gray-300 bg-white bg-opacity-50 focus:ring-2 focus:ring-blue-500"
-                    />
-                    Remember Me
-                  </label>
-                  <button
-                    type="button"
-                    className="text-gray-600 hover:text-gray-800 transition-colors"
-                  >
-                    Forgot Password?
-                  </button>
-                </div>
-              )}
-
               {/* Submit Button */}
               <motion.button
                 whileHover={{ scale: 1.02 }}
@@ -240,8 +217,6 @@ export function Auth() {
                 )}
               </motion.button>
             </form>
-
-            {/* Divider and Google Sign-In Button are removed */}
 
             {/* Toggle between Login/Signup */}
             <div className="mt-6 text-center">

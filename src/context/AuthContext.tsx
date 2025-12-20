@@ -4,9 +4,7 @@ import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   signOut as firebaseSignOut,
-  onAuthStateChanged,
-  GoogleAuthProvider,
-  signInWithPopup
+  onAuthStateChanged
 } from 'firebase/auth';
 import { auth } from '../firebaseConfig';
 import toast from 'react-hot-toast';
@@ -17,7 +15,6 @@ interface AuthContextType {
   signUp: (email: string, password: string) => Promise<void>;
   signIn: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
-  signInWithGoogle: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -97,48 +94,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const signInWithGoogle = async () => {
-    const provider = new GoogleAuthProvider();
-    try {
-      const result = await signInWithPopup(auth, provider);
-
-      // Check if this is a different user than the one stored
-      const storedUserId = localStorage.getItem('currentUserId');
-      if (storedUserId && storedUserId !== result.user.uid) {
-        clearUserData();
-      }
-
-      toast.success('Signed in with Google successfully!');
-    } catch (error: any) {
-      const code = error?.code;
-      const message = error?.message;
-      console.error('Google sign-in error:', { code, message });
-
-      if (code === 'auth/popup-closed-by-user') {
-        throw new Error('Sign-in cancelled. Please try again.');
-      } else if (code === 'auth/popup-blocked') {
-        throw new Error('Popup was blocked by your browser. Please allow popups and try again.');
-      } else if (code === 'auth/operation-not-allowed') {
-        throw new Error('Google Sign-In is not enabled. Please contact support.');
-      } else if (code === 'auth/network-request-failed') {
-        throw new Error('Network error. Please check your internet connection and try again.');
-      } else if (code === 'auth/unauthorized-domain') {
-        throw new Error('This domain is not authorized for Google Sign-In. Please contact support.');
-      } else if (code === 'auth/account-exists-with-different-credential') {
-        throw new Error('An account already exists with the same email but different sign-in method. Try signing in with email/password.');
-      }
-      throw new Error(message || 'Failed to sign in with Google. Please try again.');
-    }
-  };
-
   return (
     <AuthContext.Provider value={{
       user,
       loading,
       signUp,
       signIn,
-      signOut,
-      signInWithGoogle
+      signOut
     }}>
       {children}
     </AuthContext.Provider>
