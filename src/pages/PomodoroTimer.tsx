@@ -27,15 +27,25 @@ const AnimatedDigit = ({ digit }: { digit: number }) => {
   );
 };
 
+const STORAGE_KEYS = {
+  DURATIONS: 'pomodoroDurations',
+  SESSIONS: 'pomodoroSessions',
+  TOTAL_MINUTES: 'pomodoroTotalMinutes'
+};
+
+const DEFAULT_DURATIONS = { work: 25 * 60, short: 5 * 60, long: 15 * 60 };
+const MAX_MINUTES = 60;
+const MAX_SECONDS = 60 * 60;
+
 export function PomodoroTimer() {
   const { themeConfig } = useTheme();
 
   const [durations, setDurations] = useState(() => {
     try {
-      const savedDurations = localStorage.getItem('pomodoroDurations');
-      return savedDurations ? JSON.parse(savedDurations) : { work: 25 * 60, short: 5 * 60, long: 15 * 60 };
-    } catch (e) {
-      return { work: 25 * 60, short: 5 * 60, long: 15 * 60 };
+      const saved = localStorage.getItem(STORAGE_KEYS.DURATIONS);
+      return saved ? JSON.parse(saved) : DEFAULT_DURATIONS;
+    } catch {
+      return DEFAULT_DURATIONS;
     }
   });
 
@@ -45,12 +55,12 @@ export function PomodoroTimer() {
   const [isAlarmPlaying, setIsAlarmPlaying] = useState(false);
 
   const [sessions, setSessions] = useState(() => {
-    const savedSessions = localStorage.getItem('pomodoroSessions');
-    return savedSessions ? parseInt(savedSessions, 10) : 0;
+    const saved = localStorage.getItem(STORAGE_KEYS.SESSIONS);
+    return saved ? parseInt(saved, 10) : 0;
   });
 
   const [totalMinutes, setTotalMinutes] = useState(() => {
-    const saved = localStorage.getItem('pomodoroTotalMinutes');
+    const saved = localStorage.getItem(STORAGE_KEYS.TOTAL_MINUTES);
     return saved ? parseInt(saved, 10) : 0;
   });
 
@@ -60,23 +70,22 @@ export function PomodoroTimer() {
   const isDragging = useRef(false);
   const alarmRef = useRef<HTMLAudioElement | null>(null);
 
+  // Initialize audio
   useEffect(() => {
     alarmRef.current = new Audio('/alarm.mp3');
     alarmRef.current.loop = true;
-
-    // Handle missing audio file
     alarmRef.current.addEventListener('error', () => {
       if (import.meta.env.DEV) {
-        console.warn('Alarm audio file not found, will use Web Audio API fallback');
+        console.warn('Alarm audio file not found, using Web Audio API fallback');
       }
     });
   }, []);
 
+  // Handle window resize
   useEffect(() => {
     const handleResize = () => {
       if (circleRef.current) {
-        const circleWidth = circleRef.current.offsetWidth;
-        setRadius(circleWidth / 2 - 16);
+        setRadius(circleRef.current.offsetWidth / 2 - 16);
       }
     };
     handleResize();
@@ -84,50 +93,44 @@ export function PomodoroTimer() {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
+  // Persist data to localStorage
   useEffect(() => {
-    localStorage.setItem('pomodoroDurations', JSON.stringify(durations));
+    localStorage.setItem(STORAGE_KEYS.DURATIONS, JSON.stringify(durations));
   }, [durations]);
 
   useEffect(() => {
-    localStorage.setItem('pomodoroSessions', sessions.toString());
+    localStorage.setItem(STORAGE_KEYS.SESSIONS, sessions.toString());
   }, [sessions]);
 
   useEffect(() => {
-    localStorage.setItem('pomodoroTotalMinutes', totalMinutes.toString());
+    localStorage.setItem(STORAGE_KEYS.TOTAL_MINUTES, totalMinutes.toString());
   }, [totalMinutes]);
 
-  const playAlarm = () => {
-    // Create a gentle bell chime sound using Web Audio API
+  const playAlarm = useCallback(() => {
     try {
       const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
 
-      // Function to create a single bell tone
       const createBellTone = (frequency: number, startTime: number, duration: number) => {
         const oscillator = audioContext.createOscillator();
         const gainNode = audioContext.createGain();
-
-        // Add a subtle vibrato for more natural bell sound
         const vibrato = audioContext.createOscillator();
         const vibratoGain = audioContext.createGain();
 
-        vibrato.frequency.value = 5; // 5 Hz vibrato
-        vibratoGain.gain.value = 2; // Subtle pitch variation
+        vibrato.frequency.value = 5;
+        vibratoGain.gain.value = 2;
 
         vibrato.connect(vibratoGain);
         vibratoGain.connect(oscillator.frequency);
-
         oscillator.connect(gainNode);
         gainNode.connect(audioContext.destination);
 
-        // Bell-like tone (sine wave with harmonics)
         oscillator.type = 'sine';
         oscillator.frequency.value = frequency;
 
-        // Natural bell envelope: quick attack, long decay
         const now = audioContext.currentTime + startTime;
         gainNode.gain.setValueAtTime(0, now);
-        gainNode.gain.linearRampToValueAtTime(0.5, now + 0.01); // Quick attack - increased volume
-        gainNode.gain.exponentialRampToValueAtTime(0.01, now + duration); // Long decay
+        gainNode.gain.linearRampToValueAtTime(0.5, now + 0.01);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, now + duration);
 
         oscillator.start(now);
         vibrato.start(now);
@@ -135,16 +138,12 @@ export function PomodoroTimer() {
         vibrato.stop(now + duration);
       };
 
-      // Create a pleasant bell chord (C major - C, E, G)
-      // Main bell tone
-      createBellTone(523.25, 0, 2.0);    // C5
-      createBellTone(659.25, 0, 1.8);    // E5
-      createBellTone(783.99, 0, 1.6);    // G5
+      // Create pleasant bell chord (C major)
+      createBellTone(523.25, 0, 2.0);
+      createBellTone(659.25, 0, 1.8);
+      createBellTone(783.99, 0, 1.6);
+      createBellTone(1046.50, 0, 1.2);
 
-      // Add subtle harmonics for richness
-      createBellTone(1046.50, 0, 1.2);   // C6 (octave up, quieter)
-
-      // Optional: Play a second chime after a short delay
       setTimeout(() => {
         createBellTone(523.25, 0, 1.5);
         createBellTone(659.25, 0, 1.3);
@@ -152,27 +151,19 @@ export function PomodoroTimer() {
       }, 800);
 
       setIsAlarmPlaying(true);
-
-      // Auto-stop alarm after sound completes
-      setTimeout(() => {
-        setIsAlarmPlaying(false);
-      }, 3000);
-
+      setTimeout(() => setIsAlarmPlaying(false), 3000);
     } catch (error) {
-      console.error("Error creating bell chime sound:", error);
-      // Fallback to simple beep if Web Audio API fails
-      if (alarmRef.current) {
-        alarmRef.current.play().catch(e => console.warn("Alarm playback failed:", e));
-      }
+      console.error('Error creating bell chime sound:', error);
+      alarmRef.current?.play().catch(e => console.warn('Alarm playback failed:', e));
     }
-  };
+  }, []);
 
   const stopAlarm = useCallback(() => {
     if (alarmRef.current) {
       alarmRef.current.pause();
       alarmRef.current.currentTime = 0;
-      setIsAlarmPlaying(false);
     }
+    setIsAlarmPlaying(false);
   }, []);
 
   const switchMode = useCallback((newMode: 'work' | 'short' | 'long', showToast = false) => {
@@ -180,6 +171,7 @@ export function PomodoroTimer() {
     setIsActive(false);
     setMode(newMode);
     setTimeLeft(durations[newMode]);
+    
     if (showToast) {
       const messages = {
         work: '🎯 Break over! Ready for another work session?',
@@ -190,30 +182,34 @@ export function PomodoroTimer() {
     }
   }, [durations, stopAlarm]);
 
+  // Timer countdown logic
   useEffect(() => {
-    let interval: NodeJS.Timeout | null = null;
+    if (!isActive || timeLeft === 0) return;
 
-    if (isActive && timeLeft > 0) {
-      interval = setInterval(() => {
-        setTimeLeft((prev: number) => prev - 1);
-        if (mode === 'work') {
-          setTotalMinutes((prev: number) => prev + 1 / 60);
-        }
-      }, 1000);
-    } else if (isActive && timeLeft === 0) {
-      playAlarm();
+    const interval = setInterval(() => {
+      setTimeLeft((prev: number) => prev - 1);
       if (mode === 'work') {
-        const newSessions = sessions + 1;
-        setSessions(newSessions);
-        if (newSessions > 0 && newSessions % 4 === 0) switchMode('long', true);
-        else switchMode('short', true);
-      } else {
-        switchMode('work', true);
+        setTotalMinutes(prev => prev + 1 / 60);
       }
-    }
+    }, 1000);
 
-    return () => { if (interval) clearInterval(interval); };
-  }, [isActive, timeLeft, mode, sessions, switchMode]);
+    return () => clearInterval(interval);
+  }, [isActive, timeLeft, mode]);
+
+  // Handle timer completion
+  useEffect(() => {
+    if (!isActive || timeLeft > 0) return;
+
+    playAlarm();
+    
+    if (mode === 'work') {
+      const newSessions = sessions + 1;
+      setSessions(newSessions);
+      switchMode(newSessions % 4 === 0 ? 'long' : 'short', true);
+    } else {
+      switchMode('work', true);
+    }
+  }, [isActive, timeLeft, mode, sessions, switchMode, playAlarm]);
 
   const toggleTimer = () => {
     setIsActive(!isActive);
@@ -224,95 +220,126 @@ export function PomodoroTimer() {
     stopAlarm();
     setIsActive(false);
     setTimeLeft(durations[mode]);
-  }
+  };
 
-  const handlePan = (_event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+  const handlePan = useCallback((_event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
     if (isActive || !circleRef.current) return;
 
     const circle = circleRef.current.getBoundingClientRect();
     const centerX = circle.left + circle.width / 2;
     const centerY = circle.top + circle.height / 2;
 
-    // Calculate angle from cursor position
-    const angle = Math.atan2(info.point.y - centerY, info.point.x - centerX);
-
-    // Convert to degrees (0° = right, 90° = bottom, -90° = top)
-    let degrees = angle * (180 / Math.PI);
-
-    // Normalize to 0-360 starting from top (clockwise)
-    // Top = 0°, Right = 90°, Bottom = 180°, Left = 270°
-    let normalizedDegrees = (degrees + 90) % 360;
-    if (normalizedDegrees < 0) normalizedDegrees += 360;
-
-    // Calculate time based on angle (360° = 60 minutes)
-    const maxMinutes = 60;
-    const elapsedMinutes = (normalizedDegrees / 360) * maxMinutes;
-    const newTime = Math.round((maxMinutes - elapsedMinutes) * 60); // Remaining time in seconds
+    const angle = Math.atan2(info.point.y - centerY, info.point.x - centerX) + Math.PI / 2;
+    const normalizedDegrees = ((angle * (180 / Math.PI)) + 360) % 360;
+    const newTime = Math.round((normalizedDegrees / 360) * MAX_MINUTES * 60);
 
     setTimeLeft(newTime);
 
-    // Position dot at cursor angle (add 90° to match SVG rotation)
-    const dotAngle = angle + (90 * Math.PI / 180);
+    // Update dot position immediately during drag
+    const progress = newTime / MAX_SECONDS;
+    const dragAngle = (progress * 360 - 90) * (Math.PI / 180);
     controls.set({
-      x: radius * Math.cos(dotAngle),
-      y: radius * Math.sin(dotAngle)
+      x: radius * Math.cos(dragAngle),
+      y: radius * Math.sin(dragAngle)
     });
-  };
+  }, [isActive, radius, controls]);
 
-  const onPanStart = () => {
+  const onPanStart = useCallback(() => {
     if (isActive) return;
     stopAlarm();
     isDragging.current = true;
     controls.stop();
-  };
+  }, [isActive, stopAlarm, controls]);
 
-  const onPanEnd = () => {
+  const onPanEnd = useCallback(() => {
     if (isActive) return;
     isDragging.current = false;
-    // Save the new duration when drag ends
-    setDurations((prev: typeof durations) => ({ ...prev, [mode]: timeLeft }));
-  };
+    setDurations((prev: any) => ({ ...prev, [mode]: timeLeft }));
+  }, [isActive, mode, timeLeft]);
 
   const minutes = Math.floor(timeLeft / 60);
   const seconds = timeLeft % 60;
-  // Use 60 minutes (3600 seconds) as base for progress calculation to match drag behavior
-  const maxSeconds = 60 * 60; // 60 minutes in seconds
-  // Progress based on elapsed time (0% at start, 100% when complete)
-  const progress = maxSeconds > 0 ? (maxSeconds - timeLeft) / maxSeconds : 0;
+  const progress = timeLeft / MAX_SECONDS;
 
   const minutesStr = String(minutes).padStart(2, '0');
   const secondsStr = String(seconds).padStart(2, '0');
 
+  // Animate dot position when not dragging
   useEffect(() => {
-    // Don't update position during drag - let handlePan control it
     if (isDragging.current) return;
 
-    // Calculate angle for clockwise progress starting from top (matching SVG rotate-90)
-    const angle = (progress * 360 + 90) * (Math.PI / 180);
+    const angle = (progress * 360 - 90) * (Math.PI / 180);
     controls.start({
       x: radius * Math.cos(angle),
       y: radius * Math.sin(angle),
       transition: { type: 'spring', stiffness: 300, damping: 30 }
     });
-  }, [progress, radius, controls, timeLeft]);
+  }, [progress, radius, controls]);
 
   const getModeColor = () => {
     if (isAlarmPlaying) return 'from-red-500 to-red-600';
-    switch (mode) {
-      case 'work': return 'from-blue-500 to-blue-600';
-      case 'short': return 'from-green-500 to-green-600';
-      case 'long': return 'from-purple-500 to-purple-600';
-    }
+    const colors = {
+      work: 'from-blue-500 to-blue-600',
+      short: 'from-green-500 to-green-600',
+      long: 'from-purple-500 to-purple-600'
+    };
+    return colors[mode];
   };
 
   const getModeRingColor = () => {
     if (isAlarmPlaying) return 'text-red-500';
-    switch (mode) {
-      case 'work': return 'text-blue-500';
-      case 'short': return 'text-green-500';
-      case 'long': return 'text-purple-500';
-    }
+    const colors = {
+      work: 'text-blue-500',
+      short: 'text-green-500',
+      long: 'text-purple-500'
+    };
+    return colors[mode];
   };
+
+  const ModeButton = ({ 
+    modeType, 
+    icon: Icon, 
+    label, 
+    gradientColor 
+  }: { 
+    modeType: 'work' | 'short' | 'long'; 
+    icon: any; 
+    label: string; 
+    gradientColor: string;
+  }) => (
+    <motion.button
+      whileHover={{ scale: 1.02 }}
+      whileTap={{ scale: 0.98 }}
+      onClick={() => switchMode(modeType)}
+      className={`w-full p-6 rounded-2xl shadow-lg border transition-all ${
+        mode === modeType
+          ? `bg-gradient-to-br ${gradientColor} text-white border-${gradientColor.split('-')[1]}-600`
+          : `${themeConfig.card} border-gray-200 dark:border-gray-700 hover:border-${gradientColor.split('-')[1]}-500`
+      }`}
+    >
+      <div className="flex items-center gap-4">
+        <div className={`p-3 rounded-xl ${
+          mode === modeType 
+            ? 'bg-white/20' 
+            : `bg-${gradientColor.split('-')[1]}-100 dark:bg-${gradientColor.split('-')[1]}-900/30`
+        }`}>
+          <Icon className={`w-6 h-6 ${
+            mode === modeType 
+              ? 'text-white' 
+              : `text-${gradientColor.split('-')[1]}-600 dark:text-${gradientColor.split('-')[1]}-400`
+          }`} />
+        </div>
+        <div className="text-left">
+          <p className={`font-bold text-lg ${mode === modeType ? 'text-white' : themeConfig.text}`}>
+            {label}
+          </p>
+          <p className={`text-sm ${mode === modeType ? 'text-white/80' : themeConfig.textSecondary}`}>
+            {durations[modeType] / 60} minutes
+          </p>
+        </div>
+      </div>
+    </motion.button>
+  );
 
   return (
     <div className="max-w-7xl mx-auto space-y-8">
@@ -407,11 +434,11 @@ export function PomodoroTimer() {
             onPan={handlePan}
             onPanEnd={onPanEnd}
           >
-            {/* Background Circle with Gradient */}
+            {/* Background Circle */}
             <div className={`absolute inset-0 rounded-full bg-gradient-to-br ${getModeColor()} opacity-10`} />
 
             {/* SVG Progress Ring */}
-            <svg className="absolute w-full h-full transform rotate-90" viewBox="0 0 100 100">
+            <svg className="absolute w-full h-full transform -rotate-90" viewBox="0 0 100 100">
               <circle
                 cx="50"
                 cy="50"
@@ -429,11 +456,11 @@ export function PomodoroTimer() {
                 strokeWidth="3"
                 fill="transparent"
                 strokeDasharray={`${2 * Math.PI * 45}`}
-                strokeDashoffset={`${(2 * Math.PI * 45) * progress}`}
+                strokeDashoffset={`${(2 * Math.PI * 45) * (1 - progress)}`}
                 className={getModeRingColor()}
                 strokeLinecap="round"
                 transition={{ duration: 0.1 }}
-                style={{ filter: 'drop-shadow(0 0 8px currentColor)' }}
+                style={{ filter: `drop-shadow(0 0 8px currentColor)` }}
               />
             </svg>
 
@@ -471,10 +498,11 @@ export function PomodoroTimer() {
                     <AnimatedDigit digit={parseInt(secondsStr[1])} />
                   </div>
                   <div className="flex items-center gap-2 mt-4">
-                    {mode === 'work' ?
-                      <BookOpen className={`w-6 h-6 ${getModeRingColor()}`} /> :
+                    {mode === 'work' ? (
+                      <BookOpen className={`w-6 h-6 ${getModeRingColor()}`} />
+                    ) : (
                       <Coffee className={`w-6 h-6 ${getModeRingColor()}`} />
-                    }
+                    )}
                     <span className={`text-base font-semibold ${themeConfig.text} uppercase tracking-wider`}>
                       {mode === 'work' ? 'Focus Time' : mode === 'short' ? 'Short Break' : 'Long Break'}
                     </span>
@@ -490,7 +518,11 @@ export function PomodoroTimer() {
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={toggleTimer}
-              className={`${isActive ? 'bg-gradient-to-br from-red-500 to-red-600 hover:from-red-600 hover:to-red-700' : 'bg-gradient-to-br from-green-500 to-green-600 hover:from-green-600 hover:to-green-700'} text-white p-5 rounded-2xl shadow-xl`}
+              className={`${
+                isActive 
+                  ? 'bg-gradient-to-br from-red-500 to-red-600 hover:from-red-600 hover:to-red-700' 
+                  : 'bg-gradient-to-br from-green-500 to-green-600 hover:from-green-600 hover:to-green-700'
+              } text-white p-5 rounded-2xl shadow-xl`}
             >
               {isActive ? <Pause size={32} /> : <Play size={32} className="ml-1" />}
             </motion.button>
@@ -514,80 +546,26 @@ export function PomodoroTimer() {
         >
           <h3 className={`text-xl font-bold ${themeConfig.text} mb-4`}>Select Mode</h3>
 
-          {/* Work Mode */}
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={() => switchMode('work')}
-            className={`w-full p-6 rounded-2xl shadow-lg border transition-all ${mode === 'work'
-              ? 'bg-gradient-to-br from-blue-500 to-blue-600 text-white border-blue-600'
-              : `${themeConfig.card} border-gray-200 dark:border-gray-700 hover:border-blue-500`
-              }`}
-          >
-            <div className="flex items-center gap-4">
-              <div className={`p-3 rounded-xl ${mode === 'work' ? 'bg-white/20' : 'bg-blue-100 dark:bg-blue-900/30'}`}>
-                <BookOpen className={`w-6 h-6 ${mode === 'work' ? 'text-white' : 'text-blue-600 dark:text-blue-400'}`} />
-              </div>
-              <div className="text-left">
-                <p className={`font-bold text-lg ${mode === 'work' ? 'text-white' : themeConfig.text}`}>
-                  Work Session
-                </p>
-                <p className={`text-sm ${mode === 'work' ? 'text-white/80' : themeConfig.textSecondary}`}>
-                  {durations.work / 60} minutes
-                </p>
-              </div>
-            </div>
-          </motion.button>
+          <ModeButton 
+            modeType="work" 
+            icon={BookOpen} 
+            label="Work Session" 
+            gradientColor="from-blue-500 to-blue-600"
+          />
 
-          {/* Short Break */}
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={() => switchMode('short')}
-            className={`w-full p-6 rounded-2xl shadow-lg border transition-all ${mode === 'short'
-              ? 'bg-gradient-to-br from-green-500 to-green-600 text-white border-green-600'
-              : `${themeConfig.card} border-gray-200 dark:border-gray-700 hover:border-green-500`
-              }`}
-          >
-            <div className="flex items-center gap-4">
-              <div className={`p-3 rounded-xl ${mode === 'short' ? 'bg-white/20' : 'bg-green-100 dark:bg-green-900/30'}`}>
-                <Coffee className={`w-6 h-6 ${mode === 'short' ? 'text-white' : 'text-green-600 dark:text-green-400'}`} />
-              </div>
-              <div className="text-left">
-                <p className={`font-bold text-lg ${mode === 'short' ? 'text-white' : themeConfig.text}`}>
-                  Short Break
-                </p>
-                <p className={`text-sm ${mode === 'short' ? 'text-white/80' : themeConfig.textSecondary}`}>
-                  {durations.short / 60} minutes
-                </p>
-              </div>
-            </div>
-          </motion.button>
+          <ModeButton 
+            modeType="short" 
+            icon={Coffee} 
+            label="Short Break" 
+            gradientColor="from-green-500 to-green-600"
+          />
 
-          {/* Long Break */}
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={() => switchMode('long')}
-            className={`w-full p-6 rounded-2xl shadow-lg border transition-all ${mode === 'long'
-              ? 'bg-gradient-to-br from-purple-500 to-purple-600 text-white border-purple-600'
-              : `${themeConfig.card} border-gray-200 dark:border-gray-700 hover:border-purple-500`
-              }`}
-          >
-            <div className="flex items-center gap-4">
-              <div className={`p-3 rounded-xl ${mode === 'long' ? 'bg-white/20' : 'bg-purple-100 dark:bg-purple-900/30'}`}>
-                <Coffee className={`w-6 h-6 ${mode === 'long' ? 'text-white' : 'text-purple-600 dark:text-purple-400'}`} />
-              </div>
-              <div className="text-left">
-                <p className={`font-bold text-lg ${mode === 'long' ? 'text-white' : themeConfig.text}`}>
-                  Long Break
-                </p>
-                <p className={`text-sm ${mode === 'long' ? 'text-white/80' : themeConfig.textSecondary}`}>
-                  {durations.long / 60} minutes
-                </p>
-              </div>
-            </div>
-          </motion.button>
+          <ModeButton 
+            modeType="long" 
+            icon={Coffee} 
+            label="Long Break" 
+            gradientColor="from-purple-500 to-purple-600"
+          />
         </motion.div>
       </div>
     </div>
