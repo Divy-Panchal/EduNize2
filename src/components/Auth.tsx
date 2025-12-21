@@ -1,14 +1,16 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Eye, EyeOff, Mail, Lock, GraduationCap } from 'lucide-react';
+import { Eye, EyeOff, Mail, Lock, GraduationCap, Send } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
 
 export function Auth() {
-  const { signIn, signUp } = useAuth();
+  const { signIn, signUp, resetPassword } = useAuth();
   const [isLogin, setIsLogin] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [resetEmail, setResetEmail] = useState('');
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -36,6 +38,21 @@ export function Auth() {
       setLoading(false);
     }
   };
+  
+  const handleResetPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      await resetPassword(resetEmail);
+      setShowForgotPassword(false);
+      setResetEmail('');
+    } catch (error: any) {
+      toast.error(error.message || 'An error occurred while sending the reset email.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
@@ -217,6 +234,17 @@ export function Auth() {
                 )}
               </motion.button>
             </form>
+            
+            {isLogin && (
+              <div className="text-center mt-4">
+                <button 
+                  onClick={() => setShowForgotPassword(true)} 
+                  className="text-sm text-gray-600 hover:text-blue-600 transition-colors"
+                >
+                  Forgot password?
+                </button>
+              </div>
+            )}
 
             {/* Toggle between Login/Signup */}
             <div className="mt-6 text-center">
@@ -248,6 +276,56 @@ export function Auth() {
           </motion.div>
         </motion.div>
       </div>
+      
+      {/* Forgot Password Modal */}
+      <AnimatePresence>
+        {showForgotPassword && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-20 bg-black bg-opacity-50 flex items-center justify-center p-4"
+          >
+            <motion.div
+              initial={{ y: -50, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: -50, opacity: 0 }}
+              className="bg-white rounded-2xl p-8 shadow-2xl w-full max-w-md"
+            >
+              <h3 className="text-2xl font-bold text-gray-800 mb-4">Reset Password</h3>
+              <p className="text-gray-600 mb-6">Enter your email address and we'll send you a link to reset your password.</p>
+              <form onSubmit={handleResetPassword}>
+                <div className="relative mb-4">
+                  <Mail className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
+                  <input
+                    type="email"
+                    value={resetEmail}
+                    onChange={(e) => setResetEmail(e.target.value)}
+                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="your@email.com"
+                    required
+                  />
+                </div>
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  type="submit"
+                  disabled={loading}
+                  className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg transition-colors duration-200 shadow-lg disabled:opacity-50"
+                >
+                  {loading ? 'Sending...' : 'Send Reset Link'}
+                </motion.button>
+              </form>
+              <button 
+                onClick={() => setShowForgotPassword(false)} 
+                className="mt-4 text-sm text-gray-600 hover:text-blue-600 transition-colors w-full"
+              >
+                Cancel
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

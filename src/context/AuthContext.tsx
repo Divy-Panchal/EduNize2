@@ -4,7 +4,8 @@ import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   signOut as firebaseSignOut,
-  onAuthStateChanged
+  onAuthStateChanged,
+  sendPasswordResetEmail
 } from 'firebase/auth';
 import { auth } from '../firebaseConfig';
 import toast from 'react-hot-toast';
@@ -15,23 +16,15 @@ interface AuthContextType {
   signUp: (email: string, password: string) => Promise<void>;
   signIn: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
+  resetPassword: (email: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 const clearUserData = () => {
-  const keysToRemove = [
-    'hasCompletedProfileSetup',
-    'userData',
-    'currentUserId'
-  ];
-  keysToRemove.forEach(key => localStorage.removeItem(key));
-  const allKeys = Object.keys(localStorage);
-  allKeys.forEach(key => {
-    if (key.startsWith('hasCompletedProfileSetup_') || key.startsWith('userData_')) {
-      localStorage.removeItem(key);
-    }
-  });
+  // We only want to clear the session identifier, not the user's
+  // persistent data like their profile setup status.
+  localStorage.removeItem('currentUserId');
 };
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
@@ -94,13 +87,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const resetPassword = async (email: string) => {
+    try {
+      await sendPasswordResetEmail(auth, email);
+      toast.success('Password reset email sent! Please check your inbox.');
+    } catch (error: any) {
+      const code = error?.code;
+      if (code === 'auth/user-not-found') {
+        throw new Error('No user found with this email address.');
+      }
+      throw new Error(error?.message || 'Failed to send reset email.');
+    }
+  };
+
   return (
     <AuthContext.Provider value={{
       user,
       loading,
       signUp,
       signIn,
-      signOut
+      signOut,
+      resetPassword
     }}>
       {children}
     </AuthContext.Provider>

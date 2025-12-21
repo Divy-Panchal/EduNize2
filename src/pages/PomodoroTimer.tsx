@@ -3,6 +3,7 @@ import { motion, PanInfo, useAnimation } from 'framer-motion';
 import { Play, Pause, RotateCcw, Coffee, BookOpen, VolumeX, TrendingUp, Target, Clock } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import toast from 'react-hot-toast';
+import alarmSound from '../../public/alarm.mp3';
 
 const AnimatedDigit = ({ digit }: { digit: number }) => {
   const digitHeight = 80;
@@ -72,7 +73,7 @@ export function PomodoroTimer() {
 
   // Initialize audio
   useEffect(() => {
-    alarmRef.current = new Audio('/alarm.mp3');
+    alarmRef.current = new Audio(alarmSound);
     alarmRef.current.loop = true;
     alarmRef.current.addEventListener('error', () => {
       if (import.meta.env.DEV) {
