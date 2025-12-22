@@ -238,8 +238,8 @@ export function Dashboard() {
               <div className="relative text-center py-12 px-6">
                 {/* Glassmorphism background */}
                 <div className={`absolute inset-0 rounded-xl border ${theme === 'dark'
-                    ? 'bg-gradient-to-br from-gray-800/40 to-gray-900/40 backdrop-blur-sm border-gray-700/50'
-                    : 'bg-gradient-to-br from-blue-50/50 to-purple-50/50 backdrop-blur-sm border-gray-200/50'
+                  ? 'bg-gradient-to-br from-gray-800/40 to-gray-900/40 backdrop-blur-sm border-gray-700/50'
+                  : 'bg-gradient-to-br from-blue-50/50 to-purple-50/50 backdrop-blur-sm border-gray-200/50'
                   }`} />
 
                 {/* Content */}
@@ -313,22 +313,22 @@ export function Dashboard() {
                     No classes scheduled. It's a perfect time to crush your personal goals.
                   </motion.p>
 
-                  {/* Gradient button with glow */}
+                  {/* Theme-based button */}
                   <Link to="/timetable">
                     <motion.button
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: 0.4 }}
-                      whileHover={{ scale: 1.05, boxShadow: "0 0 20px rgba(59, 130, 246, 0.5)" }}
+                      whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
-                      className={`relative px-6 py-3 rounded-xl text-sm font-semibold text-white flex items-center gap-2 mx-auto overflow-hidden group
-                        bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700
-                        shadow-lg shadow-blue-500/30 dark:shadow-blue-500/20 transition-all duration-300`}
+                      className={`px-6 py-3 rounded-xl text-sm font-semibold flex items-center gap-2 mx-auto transition-all duration-200
+                        ${theme === 'dark'
+                          ? 'bg-blue-900 text-blue-200 hover:bg-blue-800'
+                          : 'bg-blue-50 text-blue-600 hover:bg-blue-100'
+                        } shadow-sm`}
                     >
-                      {/* Shimmer effect */}
-                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-1000" />
-                      <Plus className="w-5 h-5 relative z-10" />
-                      <span className="relative z-10">Schedule Now</span>
+                      <Plus className="w-5 h-5" />
+                      <span>Schedule Now</span>
                     </motion.button>
                   </Link>
                 </div>

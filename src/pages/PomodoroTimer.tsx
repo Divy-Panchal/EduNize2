@@ -39,7 +39,7 @@ const MAX_MINUTES = 60;
 const MAX_SECONDS = 60 * 60;
 
 export function PomodoroTimer() {
-  const { themeConfig } = useTheme();
+  const { themeConfig, theme } = useTheme();
 
   const [durations, setDurations] = useState(() => {
     try {
@@ -172,7 +172,7 @@ export function PomodoroTimer() {
     setIsActive(false);
     setMode(newMode);
     setTimeLeft(durations[newMode]);
-    
+
     if (showToast) {
       const messages = {
         work: '🎯 Break over! Ready for another work session?',
@@ -202,7 +202,7 @@ export function PomodoroTimer() {
     if (!isActive || timeLeft > 0) return;
 
     playAlarm();
-    
+
     if (mode === 'work') {
       const newSessions = sessions + 1;
       setSessions(newSessions);
@@ -297,50 +297,71 @@ export function PomodoroTimer() {
     return colors[mode];
   };
 
-  const ModeButton = ({ 
-    modeType, 
-    icon: Icon, 
-    label, 
-    gradientColor 
-  }: { 
-    modeType: 'work' | 'short' | 'long'; 
-    icon: any; 
-    label: string; 
+  const ModeButton = ({
+    modeType,
+    icon: Icon,
+    label,
+    gradientColor
+  }: {
+    modeType: 'work' | 'short' | 'long';
+    icon: any;
+    label: string;
     gradientColor: string;
-  }) => (
-    <motion.button
-      whileHover={{ scale: 1.02 }}
-      whileTap={{ scale: 0.98 }}
-      onClick={() => switchMode(modeType)}
-      className={`w-full p-6 rounded-2xl shadow-lg border transition-all ${
-        mode === modeType
-          ? `bg-gradient-to-br ${gradientColor} text-white border-${gradientColor.split('-')[1]}-600`
-          : `${themeConfig.card} border-gray-200 dark:border-gray-700 hover:border-${gradientColor.split('-')[1]}-500`
-      }`}
-    >
-      <div className="flex items-center gap-4">
-        <div className={`p-3 rounded-xl ${
-          mode === modeType 
-            ? 'bg-white/20' 
-            : `bg-${gradientColor.split('-')[1]}-100 dark:bg-${gradientColor.split('-')[1]}-900/30`
-        }`}>
-          <Icon className={`w-6 h-6 ${
-            mode === modeType 
-              ? 'text-white' 
-              : `text-${gradientColor.split('-')[1]}-600 dark:text-${gradientColor.split('-')[1]}-400`
-          }`} />
+  }) => {
+    const getIconBg = () => {
+      if (mode === modeType) return 'bg-white/20';
+
+      if (theme === 'dark') {
+        if (modeType === 'work') return 'bg-blue-900/30';
+        if (modeType === 'short') return 'bg-green-900/30';
+        return 'bg-purple-900/30';
+      } else {
+        if (modeType === 'work') return 'bg-blue-100';
+        if (modeType === 'short') return 'bg-green-100';
+        return 'bg-purple-100';
+      }
+    };
+
+    const getIconColor = () => {
+      if (mode === modeType) return 'text-white';
+
+      if (theme === 'dark') {
+        if (modeType === 'work') return 'text-blue-400';
+        if (modeType === 'short') return 'text-green-400';
+        return 'text-purple-400';
+      } else {
+        if (modeType === 'work') return 'text-blue-600';
+        if (modeType === 'short') return 'text-green-600';
+        return 'text-purple-600';
+      }
+    };
+
+    return (
+      <motion.button
+        whileHover={{ scale: 1.02 }}
+        whileTap={{ scale: 0.98 }}
+        onClick={() => switchMode(modeType)}
+        className={`w-full p-6 rounded-2xl shadow-lg border transition-all ${mode === modeType
+            ? `bg-gradient-to-br ${gradientColor} text-white border-${gradientColor.split('-')[1]}-600`
+            : `${themeConfig.card} border-gray-200 dark:border-gray-700 hover:border-${gradientColor.split('-')[1]}-500`
+          }`}
+      >
+        <div className="flex items-center gap-4">
+          <div className={`p-3 rounded-xl ${getIconBg()}`}>
+            <Icon className={`w-6 h-6 ${getIconColor()}`} />
+          </div>
+          <div className="text-left">
+            <p className={`font-bold text-lg ${mode === modeType ? 'text-white' : themeConfig.text}`}>
+              {label}
+            </p>
+            <p className={`text-sm ${mode === modeType ? 'text-white/80' : themeConfig.textSecondary}`}>
+              {durations[modeType] / 60} minutes
+            </p>
+          </div>
         </div>
-        <div className="text-left">
-          <p className={`font-bold text-lg ${mode === modeType ? 'text-white' : themeConfig.text}`}>
-            {label}
-          </p>
-          <p className={`text-sm ${mode === modeType ? 'text-white/80' : themeConfig.textSecondary}`}>
-            {durations[modeType] / 60} minutes
-          </p>
-        </div>
-      </div>
-    </motion.button>
-  );
+      </motion.button>
+    );
+  };
 
   return (
     <div className="max-w-7xl mx-auto space-y-8">
@@ -406,7 +427,7 @@ export function PomodoroTimer() {
           </div>
 
           {/* Productivity Tip */}
-          <div className={`${themeConfig.card} p-6 rounded-2xl shadow-lg border dark:border-gray-700 bg-gradient-to-br from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20`}>
+          <div className={`${themeConfig.card} p-6 rounded-2xl shadow-lg border dark:border-gray-700`}>
             <div className="flex items-start gap-3">
               <TrendingUp className="w-5 h-5 text-purple-600 dark:text-purple-400 mt-1" />
               <div>
@@ -519,11 +540,10 @@ export function PomodoroTimer() {
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={toggleTimer}
-              className={`${
-                isActive 
-                  ? 'bg-gradient-to-br from-red-500 to-red-600 hover:from-red-600 hover:to-red-700' 
-                  : 'bg-gradient-to-br from-green-500 to-green-600 hover:from-green-600 hover:to-green-700'
-              } text-white p-5 rounded-2xl shadow-xl`}
+              className={`${isActive
+                ? 'bg-gradient-to-br from-red-500 to-red-600 hover:from-red-600 hover:to-red-700'
+                : 'bg-gradient-to-br from-green-500 to-green-600 hover:from-green-600 hover:to-green-700'
+                } text-white p-5 rounded-2xl shadow-xl`}
             >
               {isActive ? <Pause size={32} /> : <Play size={32} className="ml-1" />}
             </motion.button>
@@ -547,24 +567,24 @@ export function PomodoroTimer() {
         >
           <h3 className={`text-xl font-bold ${themeConfig.text} mb-4`}>Select Mode</h3>
 
-          <ModeButton 
-            modeType="work" 
-            icon={BookOpen} 
-            label="Work Session" 
+          <ModeButton
+            modeType="work"
+            icon={BookOpen}
+            label="Work Session"
             gradientColor="from-blue-500 to-blue-600"
           />
 
-          <ModeButton 
-            modeType="short" 
-            icon={Coffee} 
-            label="Short Break" 
+          <ModeButton
+            modeType="short"
+            icon={Coffee}
+            label="Short Break"
             gradientColor="from-green-500 to-green-600"
           />
 
-          <ModeButton 
-            modeType="long" 
-            icon={Coffee} 
-            label="Long Break" 
+          <ModeButton
+            modeType="long"
+            icon={Coffee}
+            label="Long Break"
             gradientColor="from-purple-500 to-purple-600"
           />
         </motion.div>

@@ -6,7 +6,7 @@ import { useTheme } from '../context/ThemeContext';
 import { useSubject } from '../context/SubjectContext';
 
 export function Subjects() {
-  const { themeConfig } = useTheme();
+  const { themeConfig, theme } = useTheme();
   const { subjects, addSubject, deleteSubject } = useSubject();
   const navigate = useNavigate();
   const [showAddModal, setShowAddModal] = useState(false);
@@ -129,17 +129,21 @@ export function Subjects() {
       >
         <motion.button
           onClick={() => setShowAddModal(true)}
-          whileHover={{ scale: 1.02 }}
+          whileHover={{ scale: 1.02, y: -2 }}
           whileTap={{ scale: 0.98 }}
-          className={`w-full bg-gradient-to-r from-emerald-500 to-cyan-500 rounded-2xl p-6 shadow-lg border-2 border-dashed border-white/20 hover:border-white/40 transition-all duration-300`}
+          className={`w-full rounded-2xl p-6 shadow-md border-2 border-dashed transition-all duration-300
+            ${theme === 'dark'
+              ? 'bg-green-900/50 border-green-700/50 hover:bg-green-900/70 hover:border-green-600 hover:shadow-green-900/30'
+              : 'bg-green-50 border-green-300/50 hover:bg-green-100 hover:border-green-400 hover:shadow-green-200/50'
+            } hover:shadow-lg`}
         >
           <div className="flex items-center justify-center gap-3">
-            <div className="bg-white/20 backdrop-blur-sm p-3 rounded-full">
-              <Plus className="w-8 h-8 text-white" />
+            <div className={`p-3 rounded-full ${theme === 'dark' ? 'bg-green-800/50' : 'bg-green-200/50'}`}>
+              <Plus className={`w-8 h-8 ${theme === 'dark' ? 'text-green-300' : 'text-green-700'}`} />
             </div>
             <div className="text-left">
-              <h3 className="text-xl font-bold text-white">Add New Subject</h3>
-              <p className="text-sm text-white/80">Click to add your first subject</p>
+              <h3 className={`text-xl font-bold ${theme === 'dark' ? 'text-green-200' : 'text-green-800'}`}>Add New Subject</h3>
+              <p className={`text-sm ${theme === 'dark' ? 'text-green-300/70' : 'text-green-600/80'}`}>Click to add your first subject</p>
             </div>
           </div>
         </motion.button>
@@ -262,7 +266,11 @@ export function Subjects() {
                   onClick={handleAddSubject}
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
-                  className="flex-1 px-4 py-3 rounded-xl font-semibold bg-gradient-to-r from-emerald-500 to-cyan-500 text-white shadow-lg hover:shadow-xl transition-all"
+                  className={`flex-1 px-4 py-3 rounded-xl font-semibold shadow-md hover:shadow-lg transition-all
+                    ${theme === 'dark'
+                      ? 'bg-green-700 hover:bg-green-600 text-green-50'
+                      : 'bg-green-600 hover:bg-green-700 text-white'
+                    }`}
                 >
                   Add Subject
                 </motion.button>
