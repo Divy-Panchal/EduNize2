@@ -25,10 +25,18 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const clearUserData = () => {
-  // We only want to clear the session identifier, not the user's
-  // persistent data like their profile setup status.
+const clearUserData = (userId?: string) => {
+  // Clear session identifier
   localStorage.removeItem('currentUserId');
+
+  // If userId provided, clear all user-specific data
+  if (userId) {
+    localStorage.removeItem(`userData_${userId}`);
+    localStorage.removeItem(`hasCompletedProfileSetup_${userId}`);
+    localStorage.removeItem(`grades_${userId}`);
+    // Note: Shared data like tasks, subjects, timetable are not user-specific
+    // and should not be cleared on account deletion
+  }
 };
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
@@ -118,7 +126,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       await deleteUser(user);
 
       // Clear all user data from localStorage
-      clearUserData();
+      clearUserData(user.uid);
 
       toast.success('Account deleted successfully');
     } catch (error: any) {

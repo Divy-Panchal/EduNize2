@@ -29,7 +29,16 @@ export function TaskProvider({ children }: { children: React.ReactNode }) {
     const savedTasks = localStorage.getItem('eduorganize-tasks');
     if (savedTasks) {
       try {
-        setTasks(JSON.parse(savedTasks));
+        const parsed = JSON.parse(savedTasks);
+        // Validate data structure
+        if (Array.isArray(parsed) && parsed.every(task =>
+          task.id && task.title && task.priority && task.dueDate
+        )) {
+          setTasks(parsed);
+        } else {
+          console.error('Invalid task data structure');
+          setTasks([]);
+        }
       } catch (error) {
         console.error('Failed to parse tasks from localStorage:', error);
         setTasks([]);
@@ -62,13 +71,23 @@ export function TaskProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   useEffect(() => {
-    localStorage.setItem('eduorganize-tasks', JSON.stringify(tasks));
+    try {
+      localStorage.setItem('eduorganize-tasks', JSON.stringify(tasks));
+    } catch (error) {
+      console.error('Failed to save tasks to localStorage:', error);
+      if (error instanceof DOMException && (
+        error.name === 'QuotaExceededError' ||
+        error.name === 'NS_ERROR_DOM_QUOTA_REACHED'
+      )) {
+        alert('Storage quota exceeded. Please delete some old tasks to free up space.');
+      }
+    }
   }, [tasks]);
 
   const addTask = (taskData: Omit<Task, 'id' | 'createdAt'>) => {
     const newTask: Task = {
       ...taskData,
-      id: Date.now().toString(),
+      id: `task_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       createdAt: new Date().toISOString()
     };
     setTasks(prev => [...prev, newTask]);

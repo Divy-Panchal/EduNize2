@@ -44,14 +44,46 @@ export function PomodoroTimer() {
   const [durations, setDurations] = useState(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEYS.DURATIONS);
-      return saved ? JSON.parse(saved) : DEFAULT_DURATIONS;
-    } catch {
+      if (!saved) return DEFAULT_DURATIONS;
+
+      const parsed = JSON.parse(saved);
+
+      // Validate that parsed data has valid integer values (not 0, negative, or decimals)
+      const isValid =
+        parsed.work &&
+        parsed.short &&
+        parsed.long &&
+        Number.isInteger(parsed.work) &&
+        Number.isInteger(parsed.short) &&
+        Number.isInteger(parsed.long) &&
+        parsed.work >= 60 && // At least 1 minute
+        parsed.short >= 60 &&
+        parsed.long >= 60 &&
+        parsed.work <= MAX_SECONDS &&
+        parsed.short <= MAX_SECONDS &&
+        parsed.long <= MAX_SECONDS;
+
+      if (isValid) {
+        return parsed;
+      }
+
+      // Clear corrupted data and return defaults
+      if (import.meta.env.DEV) {
+        console.log('Clearing corrupted Pomodoro data:', parsed);
+      }
+      localStorage.removeItem(STORAGE_KEYS.DURATIONS);
+      return DEFAULT_DURATIONS;
+    } catch (error) {
+      if (import.meta.env.DEV) {
+        console.error('Error parsing Pomodoro durations:', error);
+      }
+      localStorage.removeItem(STORAGE_KEYS.DURATIONS);
       return DEFAULT_DURATIONS;
     }
   });
 
   const [mode, setMode] = useState<'work' | 'short' | 'long'>('work');
-  const [timeLeft, setTimeLeft] = useState(durations[mode]);
+  const [timeLeft, setTimeLeft] = useState(() => durations['work']);
   const [isActive, setIsActive] = useState(false);
   const [isAlarmPlaying, setIsAlarmPlaying] = useState(false);
 
@@ -96,15 +128,40 @@ export function PomodoroTimer() {
 
   // Persist data to localStorage
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEYS.DURATIONS, JSON.stringify(durations));
+    try {
+      localStorage.setItem(STORAGE_KEYS.DURATIONS, JSON.stringify(durations));
+    } catch (error) {
+      console.error('Failed to save Pomodoro durations:', error);
+      if (error instanceof DOMException && (
+        error.name === 'QuotaExceededError' ||
+        error.name === 'NS_ERROR_DOM_QUOTA_REACHED'
+      )) {
+        alert('Storage quota exceeded. Unable to save timer settings.');
+      }
+    }
   }, [durations]);
 
+  // Sync timeLeft with durations when component mounts or mode changes
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEYS.SESSIONS, sessions.toString());
+    if (!isActive) {
+      setTimeLeft(durations[mode]);
+    }
+  }, [durations, mode, isActive]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEYS.SESSIONS, sessions.toString());
+    } catch (error) {
+      console.error('Failed to save Pomodoro sessions:', error);
+    }
   }, [sessions]);
 
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEYS.TOTAL_MINUTES, totalMinutes.toString());
+    try {
+      localStorage.setItem(STORAGE_KEYS.TOTAL_MINUTES, totalMinutes.toString());
+    } catch (error) {
+      console.error('Failed to save Pomodoro total minutes:', error);
+    }
   }, [totalMinutes]);
 
   const playAlarm = useCallback(() => {
@@ -342,8 +399,8 @@ export function PomodoroTimer() {
         whileTap={{ scale: 0.98 }}
         onClick={() => switchMode(modeType)}
         className={`w-full p-6 rounded-2xl shadow-lg border transition-all ${mode === modeType
-            ? `bg-gradient-to-br ${gradientColor} text-white border-${gradientColor.split('-')[1]}-600`
-            : `${themeConfig.card} border-gray-200 dark:border-gray-700 hover:border-${gradientColor.split('-')[1]}-500`
+          ? `bg-gradient-to-br ${gradientColor} text-white border-${gradientColor.split('-')[1]}-600`
+          : `${themeConfig.card} border-gray-200 dark:border-gray-700 hover:border-${gradientColor.split('-')[1]}-500`
           }`}
       >
         <div className="flex items-center gap-4">

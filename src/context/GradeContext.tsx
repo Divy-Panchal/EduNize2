@@ -183,19 +183,18 @@ export function useGrade() {
 // Helper functions
 function percentageToGPA(percentage: number): number {
     // More accurate GPA conversion using standard 4.0 scale
-    if (percentage >= 97) return 4.0;
-    if (percentage >= 93) return 4.0;
-    if (percentage >= 90) return 3.7;
-    if (percentage >= 87) return 3.3;
-    if (percentage >= 83) return 3.0;
-    if (percentage >= 80) return 2.7;
-    if (percentage >= 77) return 2.3;
-    if (percentage >= 73) return 2.0;
-    if (percentage >= 70) return 1.7;
-    if (percentage >= 67) return 1.3;
-    if (percentage >= 65) return 1.0;
-    if (percentage >= 60) return 0.7;
-    return 0.0;
+    if (percentage >= 93) return 4.0;  // A (93-100)
+    if (percentage >= 90) return 3.7;  // A- (90-92)
+    if (percentage >= 87) return 3.3;  // B+ (87-89)
+    if (percentage >= 83) return 3.0;  // B (83-86)
+    if (percentage >= 80) return 2.7;  // B- (80-82)
+    if (percentage >= 77) return 2.3;  // C+ (77-79)
+    if (percentage >= 73) return 2.0;  // C (73-76)
+    if (percentage >= 70) return 1.7;  // C- (70-72)
+    if (percentage >= 67) return 1.3;  // D+ (67-69)
+    if (percentage >= 65) return 1.0;  // D (65-66)
+    if (percentage >= 60) return 0.7;  // D- (60-64)
+    return 0.0;  // F (below 60)
 }
 
 function getSubjectColor(average: number): string {

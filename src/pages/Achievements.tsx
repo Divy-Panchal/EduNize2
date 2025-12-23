@@ -12,6 +12,7 @@ import {
   Zap
 } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
+import { useAuth } from '../context/AuthContext';
 
 const initialAchievements = [
   {
@@ -126,9 +127,15 @@ const levels = [
 export function Achievements() {
   const { themeConfig } = useTheme();
   const [achievements, setAchievements] = useState(initialAchievements);
+  const { user } = useAuth();
 
+  // Calculate achievement progress
   useEffect(() => {
-    const pomodoroSessions = parseInt(localStorage.getItem('pomodoroSessions') || '0', 10);
+    if (!user) return;
+
+    // Use the same key as PomodoroTimer component
+    const POMODORO_SESSIONS_KEY = 'pomodoroSessions';
+    const pomodoroSessions = parseInt(localStorage.getItem(POMODORO_SESSIONS_KEY) || '0', 10);
 
     setAchievements(prevAchievements =>
       prevAchievements.map(ach => {

@@ -100,7 +100,7 @@ export function SubjectProvider({ children }: { children: React.ReactNode }) {
     const addSubject = (subjectData: Omit<Subject, 'id' | 'notes' | 'topics' | 'resources'>) => {
         const newSubject: Subject = {
             ...subjectData,
-            id: Date.now().toString(),
+            id: `subject_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
             notes: [],
             topics: [],
             resources: [],
@@ -118,7 +118,7 @@ export function SubjectProvider({ children }: { children: React.ReactNode }) {
             if (subject.id === subjectId) {
                 const newNote: Note = {
                     ...noteData,
-                    id: Date.now().toString(),
+                    id: `note_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
                     createdAt: new Date().toISOString(),
                 };
                 return { ...subject, notes: [...subject.notes, newNote] };
@@ -142,7 +142,7 @@ export function SubjectProvider({ children }: { children: React.ReactNode }) {
             if (subject.id === subjectId) {
                 const newTopic: Topic = {
                     ...topicData,
-                    id: Date.now().toString(),
+                    id: `topic_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
                 };
                 return { ...subject, topics: [...subject.topics, newTopic] };
             }
@@ -179,7 +179,7 @@ export function SubjectProvider({ children }: { children: React.ReactNode }) {
             if (subject.id === subjectId) {
                 const newResource: Resource = {
                     ...resourceData,
-                    id: Date.now().toString(),
+                    id: `resource_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
                 };
                 return { ...subject, resources: [...subject.resources, newResource] };
             }

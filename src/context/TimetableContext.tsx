@@ -29,14 +29,26 @@ export function TimetableProvider({ children }: { children: React.ReactNode }) {
         if (savedClasses) {
             try {
                 const parsed = JSON.parse(savedClasses);
-                // Ensure all classes have IDs (migration for old data)
-                const classesWithIds = parsed.map((cls: TimetableClass, index: number) => ({
-                    ...cls,
-                    id: cls.id || `${Date.now()}-${index}`
-                }));
-                setClasses(classesWithIds);
+                // Validate data structure
+                if (Array.isArray(parsed) && parsed.every(cls =>
+                    cls.day !== undefined && cls.time && cls.subject
+                )) {
+                    // Ensure all classes have IDs (migration for old data)
+                    const classesWithIds = parsed.map((cls: TimetableClass, index: number) => ({
+                        ...cls,
+                        id: cls.id || `${Date.now()}-${index}`
+                    }));
+                    setClasses(classesWithIds);
+                } else {
+                    if (import.meta.env.DEV) {
+                        console.error('Invalid timetable data structure');
+                    }
+                    setClasses([]);
+                }
             } catch (error) {
-                console.error('Error loading timetable:', error);
+                if (import.meta.env.DEV) {
+                    console.error('Error loading timetable:', error);
+                }
                 setClasses([]);
             }
         }
@@ -45,7 +57,19 @@ export function TimetableProvider({ children }: { children: React.ReactNode }) {
     // Save classes to localStorage whenever they change
     useEffect(() => {
         if (classes.length > 0) {
-            localStorage.setItem('edunize-timetable', JSON.stringify(classes));
+            try {
+                localStorage.setItem('edunize-timetable', JSON.stringify(classes));
+            } catch (error) {
+                if (import.meta.env.DEV) {
+                    console.error('Failed to save timetable to localStorage:', error);
+                }
+                if (error instanceof DOMException && (
+                    error.name === 'QuotaExceededError' ||
+                    error.name === 'NS_ERROR_DOM_QUOTA_REACHED'
+                )) {
+                    alert('Storage quota exceeded. Please delete some old classes to free up space.');
+                }
+            }
         } else {
             // Clear localStorage if no classes remain
             localStorage.removeItem('edunize-timetable');
