@@ -114,24 +114,44 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const deleteAccount = async (password: string) => {
     try {
+      console.log('🔴 Starting account deletion process...');
+
       if (!user || !user.email) {
+        console.error('❌ No user is currently logged in');
         throw new Error('No user is currently logged in.');
       }
+
+      console.log('📧 User email:', user.email);
+      console.log('🔑 Attempting to reauthenticate user...');
 
       // Reauthenticate user before deletion
       const credential = EmailAuthProvider.credential(user.email, password);
       await reauthenticateWithCredential(user, credential);
 
-      // Delete the user account
+      console.log('✅ Reauthentication successful');
+      console.log('🗑️ Attempting to delete user from Firebase Authentication...');
+
+      // Delete the user account from Firebase
       await deleteUser(user);
+
+      console.log('✅ User successfully deleted from Firebase Authentication');
+      console.log('🧹 Clearing local user data...');
 
       // Clear all user data from localStorage
       clearUserData(user.uid);
+
+      console.log('✅ Local data cleared successfully');
+      console.log('🎉 Account deletion completed successfully!');
 
       toast.success('Account deleted successfully');
     } catch (error: any) {
       const code = error?.code;
       const message = error?.message;
+
+      console.error('❌ Account deletion failed');
+      console.error('Error code:', code);
+      console.error('Error message:', message);
+      console.error('Full error:', error);
 
       if (code === 'auth/wrong-password' || code === 'auth/invalid-credential') {
         throw new Error('Incorrect password. Please try again.');

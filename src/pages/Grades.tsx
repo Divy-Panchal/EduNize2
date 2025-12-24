@@ -201,21 +201,23 @@ export function Grades() {
                                     strokeWidth="8"
                                     className="text-gray-200 dark:text-gray-600"
                                 />
-                                <motion.circle
-                                    cx="50%"
-                                    cy="50%"
-                                    r="45%"
-                                    fill="none"
-                                    stroke="url(#gradient)"
-                                    strokeWidth="8"
-                                    strokeLinecap="round"
-                                    strokeDasharray={`${2 * Math.PI * 45}`}
-                                    initial={{ strokeDashoffset: 2 * Math.PI * 45 }}
-                                    animate={{
-                                        strokeDashoffset: 2 * Math.PI * 45 * (1 - Math.min(100, Math.max(0, currentPercentage)) / 100),
-                                    }}
-                                    transition={{ duration: 1.5, ease: 'easeOut' }}
-                                />
+                                {grades.length > 0 && (
+                                    <motion.circle
+                                        cx="50%"
+                                        cy="50%"
+                                        r="45%"
+                                        fill="none"
+                                        stroke="url(#gradient)"
+                                        strokeWidth="8"
+                                        strokeLinecap="round"
+                                        strokeDasharray={`${2 * Math.PI * 45}`}
+                                        initial={{ strokeDashoffset: 2 * Math.PI * 45 }}
+                                        animate={{
+                                            strokeDashoffset: 2 * Math.PI * 45 * (1 - Math.min(100, Math.max(0, currentPercentage)) / 100),
+                                        }}
+                                        transition={{ duration: 1.5, ease: 'easeOut' }}
+                                    />
+                                )}
                                 <defs>
                                     <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
                                         <stop offset="0%" stopColor="#3b82f6" />
@@ -225,7 +227,7 @@ export function Grades() {
                             </svg>
                             <div className="absolute inset-0 flex flex-col items-center justify-center">
                                 <span className={`text-3xl md:text-4xl font-bold ${themeConfig.text}`}>
-                                    {stats.overallGPA.toFixed(1)}
+                                    {grades.length > 0 ? stats.overallGPA.toFixed(1) : '--'}
                                 </span>
                                 <span className={`text-sm ${themeConfig.textSecondary}`}>GPA</span>
                             </div>
@@ -236,11 +238,11 @@ export function Grades() {
                     <div className="md:col-span-2 grid grid-cols-2 gap-4">
                         <div className={`${themeConfig.background} p-4 rounded-xl`}>
                             <div className="flex items-center gap-2 mb-2">
-                                <Award className={`w-5 h-5 ${getGradeColor(currentPercentage)}`} />
+                                <Award className={`w-5 h-5 ${grades.length > 0 ? getGradeColor(currentPercentage) : themeConfig.textSecondary}`} />
                                 <span className={`text-sm ${themeConfig.textSecondary}`}>Letter Grade</span>
                             </div>
-                            <span className={`text-3xl font-bold ${getGradeColor(currentPercentage)}`}>
-                                {stats.letterGrade}
+                            <span className={`text-3xl font-bold ${grades.length > 0 ? getGradeColor(currentPercentage) : themeConfig.textSecondary}`}>
+                                {grades.length > 0 ? stats.letterGrade : 'N/A'}
                             </span>
                         </div>
 
@@ -250,7 +252,7 @@ export function Grades() {
                                 <span className={`text-sm ${themeConfig.textSecondary}`}>Percentage</span>
                             </div>
                             <span className={`text-3xl font-bold ${themeConfig.text}`}>
-                                {Math.round(currentPercentage)}%
+                                {grades.length > 0 ? `${Math.round(currentPercentage)}%` : 'N/A'}
                             </span>
                         </div>
 

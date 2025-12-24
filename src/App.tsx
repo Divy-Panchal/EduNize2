@@ -20,6 +20,8 @@ import { TaskProvider } from './context/TaskContext';
 import { SubjectProvider } from './context/SubjectContext';
 import { TimetableProvider } from './context/TimetableContext';
 import { GradeProvider } from './context/GradeContext';
+import { DailyStatsProvider } from './context/DailyStatsContext';
+import { PomodoroProvider } from './context/PomodoroContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { Auth } from './components/Auth';
 import { DarkModeTransition } from './components/DarkModeTransition';
@@ -206,10 +208,14 @@ function App() {
             <SubjectProvider>
               <TimetableProvider>
                 <GradeProvider>
-                  <Router>
-                    <Toaster position="top-right" />
-                    <AppContent />
-                  </Router>
+                  <DailyStatsProvider>
+                    <PomodoroProvider>
+                      <Router>
+                        <Toaster position="top-right" />
+                        <AppContent />
+                      </Router>
+                    </PomodoroProvider>
+                  </DailyStatsProvider>
                 </GradeProvider>
               </TimetableProvider>
             </SubjectProvider>

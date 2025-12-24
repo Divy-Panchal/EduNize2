@@ -1,6 +1,8 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useAuth } from './AuthContext';
 import { Grade, SubjectGrade, GradeStats, getLetterGrade } from '../types/grade';
+import { warnIfStorageNearLimit } from '../utils/storageUtils';
+import toast from 'react-hot-toast';
 
 interface GradeContextType {
     grades: Grade[];
@@ -39,11 +41,20 @@ export function GradeProvider({ children }: { children: React.ReactNode }) {
             const storageKey = `grades_${user.uid}`;
             try {
                 localStorage.setItem(storageKey, JSON.stringify(grades));
+
+                // Warn if storage is getting full
+                if (warnIfStorageNearLimit()) {
+                    toast.error('Storage is getting full! Consider deleting old grades to free up space.', {
+                        duration: 5000,
+                    });
+                }
             } catch (error) {
                 console.error('Failed to save grades to localStorage:', error);
                 // Handle quota exceeded or other localStorage errors
                 if (error instanceof DOMException && error.name === 'QuotaExceededError') {
-                    alert('Storage quota exceeded. Please delete some old grades to free up space.');
+                    toast.error('Storage quota exceeded! Please delete some old grades to free up space.', {
+                        duration: 6000,
+                    });
                 } else {
                     console.warn('Could not save grades. Data may not persist.');
                 }

@@ -19,6 +19,7 @@ import { useTask } from '../context/TaskContext';
 import { useTheme } from '../context/ThemeContext';
 import { useTimetable } from '../context/TimetableContext';
 import { useGrade } from '../context/GradeContext';
+import { useDailyStats } from '../context/DailyStatsContext';
 import { DashboardProfile } from '../components/DashboardProfile';
 
 export function Dashboard() {
@@ -26,33 +27,42 @@ export function Dashboard() {
   const { theme, themeConfig } = useTheme();
   const { getTodayClasses } = useTimetable();
   const { getGradeStats } = useGrade();
+  const { studyMinutes, focusSessions, getStudyHours } = useDailyStats();
 
   const gradeStats = getGradeStats();
   const completedTasks = tasks.filter(task => task.completed).length;
   const totalTasks = tasks.length;
   const completionRate = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
 
+  // Calculate progress for study hours (goal: 6 hours = 360 minutes)
+  const studyGoalMinutes = 360; // 6 hours
+  const studyProgress = Math.min(100, (studyMinutes / studyGoalMinutes) * 100);
+
+  // Calculate progress for focus sessions (goal: 12 sessions)
+  const focusGoal = 12;
+  const focusProgress = Math.min(100, (focusSessions / focusGoal) * 100);
+
   const stats = [
     {
       title: 'Tasks Completed',
-      value: `${completedTasks}/${totalTasks}`,
+      value: totalTasks === 0 ? 'No tasks' : `${completedTasks}/${totalTasks}`,
       icon: CheckCircle2,
       color: 'bg-green-500',
       progress: completionRate
     },
     {
       title: 'Study Hours',
-      value: '24.5h',
+      value: getStudyHours(),
       icon: BookOpen,
       color: 'bg-blue-500',
-      progress: 82
+      progress: studyProgress
     },
     {
       title: 'Focus Sessions',
-      value: '18',
+      value: focusSessions.toString(),
       icon: Target,
       color: 'bg-purple-500',
-      progress: 90
+      progress: focusProgress
     },
     {
       title: 'Average Grade',
