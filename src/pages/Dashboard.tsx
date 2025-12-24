@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import {
   BookOpen,
@@ -12,7 +12,8 @@ import {
   Zap,
   TrendingUp,
   Plus,
-  Sparkles
+  Sparkles,
+  X
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useTask } from '../context/TaskContext';
@@ -20,12 +21,22 @@ import { useTheme } from '../context/ThemeContext';
 import { useTimetable } from '../context/TimetableContext';
 import { useGrade } from '../context/GradeContext';
 import { DashboardProfile } from '../components/DashboardProfile';
+import { format, startOfWeek, addDays } from 'date-fns';
 
 export function Dashboard() {
   const { tasks } = useTask();
   const { theme, themeConfig } = useTheme();
-  const { getTodayClasses } = useTimetable();
+  const { getTodayClasses, addClass } = useTimetable();
   const { getGradeStats } = useGrade();
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [newClass, setNewClass] = useState({
+    subject: '',
+    type: '',
+    day: 0,
+    time: '09:00',
+    duration: 1,
+    color: 'bg-blue-500'
+  });
 
   const gradeStats = getGradeStats();
   const completedTasks = tasks.filter(task => task.completed).length;
@@ -76,7 +87,36 @@ export function Dashboard() {
       .slice(0, 3);
   }, [tasks]);
 
-  const todayClasses = getTodayClasses();
+  const { classes } = useTimetable();
+  const todayClasses = React.useMemo(() => getTodayClasses(), [classes, getTodayClasses]);
+
+  const weekStart = startOfWeek(new Date(), { weekStartsOn: 1 });
+  const weekDays = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
+
+  const timeSlots = [
+    '09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00'
+  ];
+
+  const colorOptions = [
+    'bg-blue-500', 'bg-purple-500', 'bg-green-500', 'bg-orange-500',
+    'bg-red-500', 'bg-indigo-500', 'bg-pink-500', 'bg-teal-500'
+  ];
+
+  const handleAddClass = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newClass.subject || !newClass.type) return;
+
+    addClass(newClass);
+    setNewClass({
+      subject: '',
+      type: '',
+      day: 0,
+      time: '09:00',
+      duration: 1,
+      color: 'bg-blue-500'
+    });
+    setShowAddModal(false);
+  };
 
   return (
     <div className="space-y-6">
@@ -308,29 +348,10 @@ export function Dashboard() {
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.3 }}
-                    className={`text-sm ${themeConfig.textSecondary} mb-6 max-w-md mx-auto`}
+                    className={`text-sm ${themeConfig.textSecondary} max-w-md mx-auto`}
                   >
                     No classes scheduled. It's a perfect time to crush your personal goals.
                   </motion.p>
-
-                  {/* Theme-based button */}
-                  <Link to="/timetable">
-                    <motion.button
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.4 }}
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      className={`px-6 py-3 rounded-xl text-sm font-semibold flex items-center gap-2 mx-auto transition-all duration-200
-                        ${theme === 'dark'
-                          ? 'bg-blue-900 text-blue-200 hover:bg-blue-800'
-                          : 'bg-blue-50 text-blue-600 hover:bg-blue-100'
-                        } shadow-sm`}
-                    >
-                      <Plus className="w-5 h-5" />
-                      <span>Schedule Now</span>
-                    </motion.button>
-                  </Link>
                 </div>
               </div>
             ) : (
@@ -405,6 +426,134 @@ export function Dashboard() {
           </div>
         </motion.div>
       </div>
+
+      {/* Add Class Modal */}
+      {showAddModal && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+          onClick={() => setShowAddModal(false)}
+        >
+          <motion.div
+            initial={{ scale: 0.8, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.8, opacity: 0 }}
+            className={`${themeConfig.card} p-4 md:p-6 rounded-xl shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto`}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between mb-6">
+              <h2 className={`text-lg md:text-xl font-semibold ${themeConfig.text}`}>Add New Class</h2>
+              <button
+                onClick={() => setShowAddModal(false)}
+                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors duration-200"
+              >
+                <X className={`w-5 h-5 ${themeConfig.textSecondary}`} />
+              </button>
+            </div>
+
+            <form onSubmit={handleAddClass} className="space-y-4">
+              <div>
+                <label className={`block text-sm font-medium ${themeConfig.text} mb-2`}>
+                  Subject *
+                </label>
+                <input
+                  type="text"
+                  value={newClass.subject}
+                  onChange={(e) => setNewClass({ ...newClass, subject: e.target.value })}
+                  className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm md:text-base ${themeConfig.background} ${themeConfig.text} dark:border-gray-600`}
+                  placeholder="e.g., Mathematics"
+                />
+              </div>
+
+              <div>
+                <label className={`block text-sm font-medium ${themeConfig.text} mb-2`}>
+                  Type *
+                </label>
+                <input
+                  type="text"
+                  value={newClass.type}
+                  onChange={(e) => setNewClass({ ...newClass, type: e.target.value })}
+                  className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm md:text-base ${themeConfig.background} ${themeConfig.text} dark:border-gray-600`}
+                  placeholder="e.g., Lecture, Lab, Tutorial"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className={`block text-sm font-medium ${themeConfig.text} mb-2`}>
+                    Day
+                  </label>
+                  <select
+                    value={newClass.day}
+                    onChange={(e) => setNewClass({ ...newClass, day: parseInt(e.target.value) })}
+                    className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm md:text-base ${themeConfig.background} ${themeConfig.text} dark:border-gray-600`}
+                  >
+                    {weekDays.map((day, index) => (
+                      <option key={index} value={index} className="text-gray-900 bg-white">
+                        {format(day, 'EEEE')}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className={`block text-sm font-medium ${themeConfig.text} mb-2`}>
+                    Time
+                  </label>
+                  <select
+                    value={newClass.time}
+                    onChange={(e) => setNewClass({ ...newClass, time: e.target.value })}
+                    className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm md:text-base ${themeConfig.background} ${themeConfig.text} dark:border-gray-600`}
+                  >
+                    {timeSlots.map(time => (
+                      <option key={time} value={time} className="text-gray-900 bg-white">{time}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className={`block text-sm font-medium ${themeConfig.text} mb-2`}>
+                  Color
+                </label>
+                <div className="grid grid-cols-4 gap-2">
+                  {colorOptions.map(color => (
+                    <button
+                      key={color}
+                      type="button"
+                      onClick={() => setNewClass({ ...newClass, color })}
+                      className={`w-8 h-8 ${color} rounded-lg border-2 ${newClass.color === color ? 'border-gray-800 dark:border-gray-200' : 'border-gray-200 dark:border-gray-600'
+                        } transition-all duration-200`}
+                    />
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex gap-3 pt-4">
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  type="submit"
+                  className={`flex-1 ${themeConfig.primary} ${themeConfig.primaryHover} text-white py-2 md:py-3 rounded-lg font-medium transition-colors duration-200 text-sm md:text-base`}
+                >
+                  Add Class
+                </motion.button>
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  type="button"
+                  onClick={() => setShowAddModal(false)}
+                  className={`${themeConfig.card} px-4 md:px-6 py-2 md:py-3 border dark:border-gray-600 rounded-lg font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200 text-sm md:text-base`}
+                >
+                  Cancel
+                </motion.button>
+              </div>
+            </form>
+          </motion.div>
+        </motion.div>
+      )}
     </div>
   );
 }

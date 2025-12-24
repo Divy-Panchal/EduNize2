@@ -31,8 +31,15 @@ const AnimatedDigit = ({ digit }: { digit: number }) => {
 const STORAGE_KEYS = {
   DURATIONS: 'pomodoroDurations',
   SESSIONS: 'pomodoroSessions',
-  TOTAL_MINUTES: 'pomodoroTotalMinutes'
+  TOTAL_MINUTES: 'pomodoroTotalMinutes',
+  ANALYTICS: 'pomodoroAnalytics'
 };
+
+interface DailyStats {
+  date: string; // YYYY-MM-DD format
+  studyMinutes: number;
+  breakMinutes: number;
+}
 
 const DEFAULT_DURATIONS = { work: 25 * 60, short: 5 * 60, long: 15 * 60 };
 const MAX_MINUTES = 60;
@@ -96,6 +103,49 @@ export function PomodoroTimer() {
     const saved = localStorage.getItem(STORAGE_KEYS.TOTAL_MINUTES);
     return saved ? parseInt(saved, 10) : 0;
   });
+
+  const [analyticsData, setAnalyticsData] = useState<DailyStats[]>(() => {
+    const saved = localStorage.getItem(STORAGE_KEYS.ANALYTICS);
+    return saved ? JSON.parse(saved) : [];
+  });
+
+  // Helper function to get today's date in YYYY-MM-DD format
+  const getTodayDate = () => {
+    const today = new Date();
+    return today.toISOString().split('T')[0];
+  };
+
+  // Helper function to update analytics data
+  const updateAnalytics = (isStudy: boolean, minutes: number) => {
+    console.log('📊 updateAnalytics called:', { isStudy, minutes });
+    const today = getTodayDate();
+    setAnalyticsData(prev => {
+      const existing = prev.find(d => d.date === today);
+      let updated: DailyStats[];
+
+      if (existing) {
+        updated = prev.map(d =>
+          d.date === today
+            ? { ...d, studyMinutes: d.studyMinutes + (isStudy ? minutes : 0), breakMinutes: d.breakMinutes + (isStudy ? 0 : minutes) }
+            : d
+        );
+      } else {
+        updated = [...prev, {
+          date: today,
+          studyMinutes: isStudy ? minutes : 0,
+          breakMinutes: isStudy ? 0 : minutes
+        }];
+      }
+
+      // Keep only last 7 days
+      const sevenDaysAgo = new Date();
+      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+      const filtered = updated.filter(d => new Date(d.date) >= sevenDaysAgo);
+
+      console.log('📊 Updated analytics:', filtered);
+      return filtered;
+    });
+  };
 
   const circleRef = useRef<HTMLDivElement>(null);
   const controls = useAnimation();
@@ -163,6 +213,10 @@ export function PomodoroTimer() {
       console.error('Failed to save Pomodoro total minutes:', error);
     }
   }, [totalMinutes]);
+
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEYS.ANALYTICS, JSON.stringify(analyticsData));
+  }, [analyticsData]);
 
   const playAlarm = useCallback(() => {
     try {
@@ -261,13 +315,23 @@ export function PomodoroTimer() {
     playAlarm();
 
     if (mode === 'work') {
+      // Record completed work session
+      const completedMinutes = durations.work / 60;
+      console.log('🎯 Work session completed:', completedMinutes, 'minutes');
+      updateAnalytics(true, completedMinutes);
       const newSessions = sessions + 1;
       setSessions(newSessions);
       switchMode(newSessions % 4 === 0 ? 'long' : 'short', true);
     } else {
+      // Record completed break session (short or long)
+      const completedMinutes = mode === 'short' ? durations.short / 60 : durations.long / 60;
+      console.log(`☕ ${mode} break completed:`, completedMinutes, 'minutes');
+      console.log('Current mode:', mode);
+      console.log('Durations:', durations);
+      updateAnalytics(false, completedMinutes);
       switchMode('work', true);
     }
-  }, [isActive, timeLeft, mode, sessions, switchMode, playAlarm]);
+  }, [isActive, timeLeft, mode, sessions, switchMode, playAlarm, durations, updateAnalytics]);
 
   const toggleTimer = () => {
     setIsActive(!isActive);
@@ -417,6 +481,221 @@ export function PomodoroTimer() {
           </div>
         </div>
       </motion.button>
+    );
+  };
+
+  // Bar Chart Component
+  const BarChart = () => {
+    // Get last 7 days starting from Monday
+    const getLast7Days = () => {
+      const days = [];
+      const today = new Date();
+      const currentDay = today.getDay(); // 0 = Sunday, 1 = Monday, etc.
+
+      // Calculate days since Monday (0 = Monday, 6 = Sunday)
+      const daysSinceMonday = currentDay === 0 ? 6 : currentDay - 1;
+
+      // Start from this week's Monday
+      const monday = new Date(today);
+      monday.setDate(today.getDate() - daysSinceMonday);
+
+      // Get 7 days starting from Monday
+      for (let i = 0; i < 7; i++) {
+        const date = new Date(monday);
+        date.setDate(monday.getDate() + i);
+        days.push(date.toISOString().split('T')[0]);
+      }
+      return days;
+    };
+
+    const last7Days = getLast7Days();
+    const chartData = last7Days.map(date => {
+      const data = analyticsData.find(d => d.date === date);
+      return {
+        date,
+        studyMinutes: data?.studyMinutes || 0,
+        breakMinutes: data?.breakMinutes || 0
+      };
+    });
+
+    const maxValue = Math.max(...chartData.map(d => d.studyMinutes + d.breakMinutes), 60);
+    const getDayLabel = (dateStr: string) => {
+      const date = new Date(dateStr);
+      return date.toLocaleDateString('en-US', { weekday: 'short' });
+    };
+
+    return (
+      <div className={`${themeConfig.card} p-6 rounded-2xl shadow-lg border dark:border-gray-700`}>
+        <h3 className={`text-lg font-bold ${themeConfig.text} mb-6`}>📊 Weekly Study Time</h3>
+        <div className="flex items-end justify-between gap-2 h-48">
+          {chartData.map((day, index) => {
+            const studyHeight = (day.studyMinutes / maxValue) * 100;
+            const breakHeight = (day.breakMinutes / maxValue) * 100;
+
+            return (
+              <div key={day.date} className="flex-1 flex flex-col items-center gap-2">
+                <div className="w-full flex flex-col justify-end h-40 relative">
+                  {/* Study time bar */}
+                  <motion.div
+                    initial={{ height: 0 }}
+                    animate={{ height: `${studyHeight}%` }}
+                    transition={{ duration: 0.5, delay: index * 0.1 }}
+                    className="w-full bg-gradient-to-t from-blue-500 to-blue-400 rounded-t-lg relative group"
+                    style={{ minHeight: day.studyMinutes > 0 ? '4px' : '0' }}
+                  >
+                    {day.studyMinutes > 0 && (
+                      <span className="absolute -top-6 left-1/2 transform -translate-x-1/2 text-xs font-semibold opacity-0 group-hover:opacity-100 transition-opacity bg-blue-500 text-white px-2 py-1 rounded whitespace-nowrap">
+                        {Math.round(day.studyMinutes)}m
+                      </span>
+                    )}
+                  </motion.div>
+                  {/* Break time bar */}
+                  <motion.div
+                    initial={{ height: 0 }}
+                    animate={{ height: `${breakHeight}%` }}
+                    transition={{ duration: 0.5, delay: index * 0.1 + 0.05 }}
+                    className="w-full bg-gradient-to-t from-green-500 to-green-400 rounded-b-lg relative group"
+                    style={{ minHeight: day.breakMinutes > 0 ? '4px' : '0' }}
+                  >
+                    {day.breakMinutes > 0 && (
+                      <span className="absolute -bottom-6 left-1/2 transform -translate-x-1/2 text-xs font-semibold opacity-0 group-hover:opacity-100 transition-opacity bg-green-500 text-white px-2 py-1 rounded whitespace-nowrap">
+                        {Math.round(day.breakMinutes)}m
+                      </span>
+                    )}
+                  </motion.div>
+                </div>
+                <span className={`text-xs font-medium ${themeConfig.textSecondary}`}>
+                  {getDayLabel(day.date)}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+        {/* Legend */}
+        <div className="flex items-center justify-center gap-6 mt-6">
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-3 bg-gradient-to-br from-blue-500 to-blue-400 rounded"></div>
+            <span className={`text-xs ${themeConfig.textSecondary}`}>Study Time</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-3 bg-gradient-to-br from-green-500 to-green-400 rounded"></div>
+            <span className={`text-xs ${themeConfig.textSecondary}`}>Break Time</span>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  // Donut Chart Component
+  const DonutChart = () => {
+    const totalStudy = analyticsData.reduce((sum, d) => sum + d.studyMinutes, 0);
+    const totalBreak = analyticsData.reduce((sum, d) => sum + d.breakMinutes, 0);
+    const total = totalStudy + totalBreak;
+
+    const studyPercentage = total > 0 ? (totalStudy / total) * 100 : 0;
+    const breakPercentage = total > 0 ? (totalBreak / total) * 100 : 0;
+
+    const radius = 70;
+    const circumference = 2 * Math.PI * radius;
+    const studyDashoffset = circumference - (studyPercentage / 100) * circumference;
+    const breakDashoffset = circumference - (breakPercentage / 100) * circumference;
+
+    return (
+      <div className={`${themeConfig.card} p-6 rounded-2xl shadow-lg border dark:border-gray-700`}>
+        <h3 className={`text-lg font-bold ${themeConfig.text} mb-6`}>⏱️ Time Distribution</h3>
+        <div className="flex flex-col items-center">
+          {/* Donut Chart */}
+          <div className="relative w-48 h-48">
+            <svg className="w-full h-full transform -rotate-90" viewBox="0 0 160 160">
+              {/* Background circle */}
+              <circle
+                cx="80"
+                cy="80"
+                r={radius}
+                fill="transparent"
+                stroke="currentColor"
+                strokeWidth="20"
+                className="text-gray-200 dark:text-gray-700"
+              />
+              {/* Study time arc */}
+              <motion.circle
+                cx="80"
+                cy="80"
+                r={radius}
+                fill="transparent"
+                stroke="url(#studyGradient)"
+                strokeWidth="20"
+                strokeDasharray={circumference}
+                initial={{ strokeDashoffset: circumference }}
+                animate={{ strokeDashoffset: studyDashoffset }}
+                transition={{ duration: 1, ease: "easeOut" }}
+                strokeLinecap="round"
+              />
+              {/* Break time arc */}
+              <motion.circle
+                cx="80"
+                cy="80"
+                r={radius}
+                fill="transparent"
+                stroke="url(#breakGradient)"
+                strokeWidth="20"
+                strokeDasharray={circumference}
+                initial={{ strokeDashoffset: circumference }}
+                animate={{
+                  strokeDashoffset: breakDashoffset,
+                  strokeDasharray: circumference,
+                  transform: `rotate(${(studyPercentage / 100) * 360}deg)`
+                }}
+                transition={{ duration: 1, ease: "easeOut", delay: 0.2 }}
+                strokeLinecap="round"
+                style={{ transformOrigin: '80px 80px' }}
+              />
+              {/* Gradients */}
+              <defs>
+                <linearGradient id="studyGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stopColor="#3b82f6" />
+                  <stop offset="100%" stopColor="#60a5fa" />
+                </linearGradient>
+                <linearGradient id="breakGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stopColor="#10b981" />
+                  <stop offset="100%" stopColor="#34d399" />
+                </linearGradient>
+              </defs>
+            </svg>
+            {/* Center text */}
+            <div className="absolute inset-0 flex flex-col items-center justify-center">
+              <p className={`text-3xl font-bold ${themeConfig.text}`}>
+                {Math.round(total)}
+              </p>
+              <p className={`text-xs ${themeConfig.textSecondary}`}>minutes</p>
+            </div>
+          </div>
+
+          {/* Stats */}
+          <div className="w-full mt-6 space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 bg-gradient-to-br from-blue-500 to-blue-400 rounded-full"></div>
+                <span className={`text-sm ${themeConfig.textSecondary}`}>Study Time</span>
+              </div>
+              <div className="text-right">
+                <p className={`text-lg font-bold ${themeConfig.text}`}>{Math.round(totalStudy)}m</p>
+                <p className={`text-xs ${themeConfig.textSecondary}`}>{Math.round(studyPercentage)}%</p>
+              </div>
+            </div>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 bg-gradient-to-br from-green-500 to-green-400 rounded-full"></div>
+                <span className={`text-sm ${themeConfig.textSecondary}`}>Break Time</span>
+              </div>
+              <div className="text-right">
+                <p className={`text-lg font-bold ${themeConfig.text}`}>{Math.round(totalBreak)}m</p>
+                <p className={`text-xs ${themeConfig.textSecondary}`}>{Math.round(breakPercentage)}%</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     );
   };
 
@@ -646,6 +925,17 @@ export function PomodoroTimer() {
           />
         </motion.div>
       </div>
+
+      {/* Analytics Section */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.5 }}
+        className="grid grid-cols-1 lg:grid-cols-2 gap-6"
+      >
+        <BarChart />
+        <DonutChart />
+      </motion.div>
     </div>
   );
 }
