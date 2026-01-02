@@ -48,6 +48,7 @@ const MAX_SECONDS = 60 * 60;
 export function PomodoroProvider({ children }: { children: React.ReactNode }) {
     useAuth();
     const { addStudyTime, incrementFocusSession } = useDailyStats();
+
     const alarmRef = useRef<HTMLAudioElement | null>(null);
 
     // Load durations from localStorage

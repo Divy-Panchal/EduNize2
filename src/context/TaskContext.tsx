@@ -24,6 +24,7 @@ const TaskContext = createContext<TaskContextType | undefined>(undefined);
 
 export function TaskProvider({ children }: { children: React.ReactNode }) {
   const [tasks, setTasks] = useState<Task[]>([]);
+  const [isInitialized, setIsInitialized] = useState(false);
 
   useEffect(() => {
     const savedTasks = localStorage.getItem('eduorganize-tasks');
@@ -68,9 +69,12 @@ export function TaskProvider({ children }: { children: React.ReactNode }) {
         }
       ]);
     }
+    setIsInitialized(true);
   }, []);
 
   useEffect(() => {
+    if (!isInitialized) return;
+
     try {
       localStorage.setItem('eduorganize-tasks', JSON.stringify(tasks));
     } catch (error) {
@@ -82,7 +86,7 @@ export function TaskProvider({ children }: { children: React.ReactNode }) {
         alert('Storage quota exceeded. Please delete some old tasks to free up space.');
       }
     }
-  }, [tasks]);
+  }, [tasks, isInitialized]);
 
   const addTask = (taskData: Omit<Task, 'id' | 'createdAt'>) => {
     const newTask: Task = {

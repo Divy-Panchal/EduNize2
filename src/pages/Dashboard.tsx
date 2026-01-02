@@ -21,6 +21,7 @@ import { useTimetable } from '../context/TimetableContext';
 import { useGrade } from '../context/GradeContext';
 import { useDailyStats } from '../context/DailyStatsContext';
 import { DashboardProfile } from '../components/DashboardProfile';
+import { NotificationButton } from '../components/NotificationButton';
 
 export function Dashboard() {
   const { tasks } = useTask();
@@ -104,7 +105,10 @@ export function Dashboard() {
             Here's what's happening with your studies today
           </p>
         </div>
-        <DashboardProfile />
+        <div className="flex items-center gap-3">
+          <NotificationButton />
+          <DashboardProfile />
+        </div>
       </motion.div>
 
       {/* Quick Actions */}
