@@ -76,6 +76,41 @@ const getStoredUserData = (user: User | null) => {
     return newUserData;
 };
 
+// Function to calculate profile completeness percentage
+const calculateProfileCompleteness = (userData: typeof initialUserData): number => {
+    const fields = [
+        // Check if full name is filled and not default
+        !!(userData.fullName && userData.fullName.trim() !== '' && userData.fullName !== 'Student'),
+
+        // Check if email is filled (usually auto-filled from Firebase)
+        !!(userData.contact?.email && userData.contact.email.trim() !== '' && userData.contact.email !== 'alex.doe@example.com'),
+
+        // Check if phone is filled
+        !!(userData.contact?.phone && userData.contact.phone.trim() !== '' && userData.contact.phone !== '+1 234 567 8900'),
+
+        // Check if institution is filled
+        !!(userData.education?.institution && userData.education.institution.trim() !== '' && userData.education.institution !== 'University of Innovation'),
+
+        // Check if grade is filled
+        !!(userData.education?.grade && userData.education.grade.trim() !== '' && userData.education.grade !== '3rd Year'),
+
+        // Check if bio is filled
+        !!(userData.bio && userData.bio.trim() !== '' && userData.bio !== 'Passionate student focused on learning and growth. Always eager to take on new challenges and expand my knowledge.'),
+
+        // Check if at least one achievement exists
+        !!(userData.achievements && userData.achievements.length > 0),
+
+        // Check if custom profile photo is uploaded
+        !!(userData.profilePhoto && userData.profilePhoto !== initialUserData.profilePhoto),
+    ];
+
+    const filledFields = fields.filter(field => field === true).length;
+    const totalFields = fields.length;
+
+    return Math.round((filledFields / totalFields) * 100);
+};
+
+
 const ProgressCircle = ({ progress }: { progress: number }) => {
     const { themeConfig } = useTheme();
     const radius = 50;
@@ -85,11 +120,27 @@ const ProgressCircle = ({ progress }: { progress: number }) => {
     return (
         <div className="relative w-32 h-32">
             <svg className="w-full h-full" viewBox="0 0 120 120">
-                <circle cx="60" cy="60" r={radius} strokeWidth="10" className="stroke-gray-200 dark:stroke-gray-700" fill="transparent" />
+                {/* Background circle */}
+                <circle
+                    cx="60"
+                    cy="60"
+                    r={radius}
+                    strokeWidth="10"
+                    className="stroke-gray-200 dark:stroke-gray-700"
+                    fill="transparent"
+                />
+                {/* Progress circle */}
                 <motion.circle
-                    cx="60" cy="60" r={radius} strokeWidth="10" className="stroke-blue-500"
-                    fill="transparent" strokeLinecap="round" transform="rotate(-90 60 60)"
+                    cx="60"
+                    cy="60"
+                    r={radius}
+                    strokeWidth="10"
+                    className="stroke-blue-500"
+                    fill="transparent"
+                    strokeLinecap="round"
+                    transform="rotate(-90 60 60)"
                     strokeDasharray={circumference}
+                    strokeDashoffset={circumference}
                     initial={{ strokeDashoffset: circumference }}
                     animate={{ strokeDashoffset }}
                     transition={{ duration: 1.5, ease: "easeOut" }}
@@ -97,7 +148,9 @@ const ProgressCircle = ({ progress }: { progress: number }) => {
             </svg>
             <motion.div
                 className={`absolute inset-0 flex items-center justify-center text-xl font-bold ${themeConfig.text}`}
-                initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 1, delay: 0.5 }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 1, delay: 0.5 }}
             >
                 {progress}%
             </motion.div>
@@ -173,10 +226,24 @@ export function Profile() {
         setUserData(getStoredUserData(user));
     }, [user]);
 
+    // Recalculate profile completeness when userData changes
+    useEffect(() => {
+        const newCompleteness = calculateProfileCompleteness(userData);
+        if (newCompleteness !== userData.profileCompleteness) {
+            setUserData(prev => ({ ...prev, profileCompleteness: newCompleteness }));
+        }
+    }, [userData.fullName, userData.contact, userData.education, userData.bio, userData.achievements, userData.profilePhoto]);
+
     const handleSave = () => {
         if (!user) return;
         const userDataKey = `userData_${user.uid}`;
-        localStorage.setItem(userDataKey, JSON.stringify(userData));
+        // Calculate profile completeness before saving
+        const updatedData = {
+            ...userData,
+            profileCompleteness: calculateProfileCompleteness(userData)
+        };
+        localStorage.setItem(userDataKey, JSON.stringify(updatedData));
+        setUserData(updatedData);
         setIsEditing(false);
     };
 
@@ -337,11 +404,11 @@ export function Profile() {
                             <div className="flex-1 w-full">
                                 <h4 className={`text-lg font-bold ${themeConfig.text} mb-3`}>Quick Stats</h4>
                                 <div className="grid grid-cols-2 gap-4">
-                                    <div className={`p-3 rounded-lg ${themeConfig.background}`}>
+                                    <div className="p-3 rounded-lg bg-transparent border border-gray-200 dark:border-gray-700">
                                         <p className={`text-2xl font-bold ${themeConfig.text}`}>{userData.achievements.length}</p>
                                         <p className={`text-sm ${themeConfig.textSecondary}`}>Achievements</p>
                                     </div>
-                                    <div className={`p-3 rounded-lg ${themeConfig.background}`}>
+                                    <div className="p-3 rounded-lg bg-transparent border border-gray-200 dark:border-gray-700">
                                         <p className={`text-2xl font-bold ${themeConfig.text}`}>
                                             {Object.values(userData.sectionVisibility).filter(v => v).length}
                                         </p>
@@ -374,7 +441,7 @@ export function Profile() {
                                 value={userData.contact?.email || ''}
                                 onChange={handleInputChange}
                                 disabled={!isEditing}
-                                className={`w-full p-3 rounded-lg ${themeConfig.background} ${themeConfig.text} ${isEditing ? 'border-2 border-blue-500' : 'border border-gray-300 dark:border-gray-600'}`}
+                                className={`w-full p-3 rounded-lg bg-transparent ${themeConfig.text} ${isEditing ? 'border-2 border-blue-500' : 'border border-gray-300 dark:border-gray-600'}`}
                             />
                         </div>
                         <div>
@@ -387,7 +454,7 @@ export function Profile() {
                                 value={userData.contact?.phone || ''}
                                 onChange={handleInputChange}
                                 disabled={!isEditing}
-                                className={`w-full p-3 rounded-lg ${themeConfig.background} ${themeConfig.text} ${isEditing ? 'border-2 border-blue-500' : 'border border-gray-300 dark:border-gray-600'}`}
+                                className={`w-full p-3 rounded-lg bg-transparent ${themeConfig.text} ${isEditing ? 'border-2 border-blue-500' : 'border border-gray-300 dark:border-gray-600'}`}
                             />
                         </div>
                     </div>
