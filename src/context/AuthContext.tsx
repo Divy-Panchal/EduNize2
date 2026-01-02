@@ -12,6 +12,8 @@ import {
 } from 'firebase/auth';
 import { auth } from '../firebaseConfig';
 import toast from 'react-hot-toast';
+import { logger } from '../utils/logger';
+import { RateLimiter } from '../utils/rateLimiter';
 
 interface AuthContextType {
   user: User | null;
@@ -76,10 +78,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const signIn = async (email: string, password: string) => {
+    const rateLimitKey = `login_${email}`;
+    const limitCheck = RateLimiter.checkLimit(rateLimitKey);
+
+    if (!limitCheck.allowed) {
+      throw new Error(
+        `Too many login attempts. Please try again in ${limitCheck.remainingTime} seconds.`
+      );
+    }
+
     try {
       await signInWithEmailAndPassword(auth, email, password);
+      RateLimiter.reset(rateLimitKey);
       toast.success('Welcome back!');
     } catch (error: any) {
+      RateLimiter.recordAttempt(rateLimitKey);
       const code = error?.code;
       const message = error?.message;
       if (code === 'auth/user-not-found' || code === 'auth/wrong-password' || code === 'auth/invalid-credential') {
@@ -114,44 +127,44 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const deleteAccount = async (password: string) => {
     try {
-      console.log('🔴 Starting account deletion process...');
+      logger.log('🔴 Starting account deletion process...');
 
       if (!user || !user.email) {
-        console.error('❌ No user is currently logged in');
+        logger.error('❌ No user is currently logged in');
         throw new Error('No user is currently logged in.');
       }
 
-      console.log('📧 User email:', user.email);
-      console.log('🔑 Attempting to reauthenticate user...');
+      logger.log('📧 User email:', user.email);
+      logger.log('🔑 Attempting to reauthenticate user...');
 
       // Reauthenticate user before deletion
       const credential = EmailAuthProvider.credential(user.email, password);
       await reauthenticateWithCredential(user, credential);
 
-      console.log('✅ Reauthentication successful');
-      console.log('🗑️ Attempting to delete user from Firebase Authentication...');
+      logger.log('✅ Reauthentication successful');
+      logger.log('🗑️ Attempting to delete user from Firebase Authentication...');
 
       // Delete the user account from Firebase
       await deleteUser(user);
 
-      console.log('✅ User successfully deleted from Firebase Authentication');
-      console.log('🧹 Clearing local user data...');
+      logger.log('✅ User successfully deleted from Firebase Authentication');
+      logger.log('🧹 Clearing local user data...');
 
       // Clear all user data from localStorage
       clearUserData(user.uid);
 
-      console.log('✅ Local data cleared successfully');
-      console.log('🎉 Account deletion completed successfully!');
+      logger.log('✅ Local data cleared successfully');
+      logger.log('🎉 Account deletion completed successfully!');
 
       toast.success('Account deleted successfully');
     } catch (error: any) {
       const code = error?.code;
       const message = error?.message;
 
-      console.error('❌ Account deletion failed');
-      console.error('Error code:', code);
-      console.error('Error message:', message);
-      console.error('Full error:', error);
+      logger.error('❌ Account deletion failed');
+      logger.error('Error code:', code);
+      logger.error('Error message:', message);
+      logger.error('Full error:', error);
 
       if (code === 'auth/wrong-password' || code === 'auth/invalid-credential') {
         throw new Error('Incorrect password. Please try again.');
