@@ -477,7 +477,7 @@ export function Grades() {
                                         }
                                     }
                                 }}
-                                className="w-full py-3 rounded-lg bg-gradient-to-r from-blue-500 to-purple-500 text-white font-medium"
+                                className={`w-full py-3 rounded-lg ${themeConfig.primary} text-white font-medium`}
                             >
                                 Calculate
                             </motion.button>
