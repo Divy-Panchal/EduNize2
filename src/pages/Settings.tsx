@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Palette, Bell, User, Shield, HelpCircle, LogOut, Download, Trash2, AlertTriangle, Eye, EyeOff } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
@@ -12,6 +12,7 @@ export function Settings() {
   const [deletePassword, setDeletePassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const toastShownRef = useRef<{ [key: string]: number }>({});
 
   // Notification settings state with localStorage persistence
   const [notificationSettings, setNotificationSettings] = useState(() => {
@@ -45,10 +46,17 @@ export function Settings() {
         [key]: !prev[key]
       };
 
-      // Show toast notification
-      const label = key.replace(/([A-Z])/g, ' $1').trim();
-      const capitalizedLabel = label.charAt(0).toUpperCase() + label.slice(1);
-      toast.success(`${capitalizedLabel} ${newSettings[key] ? 'enabled' : 'disabled'}`);
+      // Prevent duplicate toasts using ref
+      const now = Date.now();
+      const lastToast = toastShownRef.current[key] || 0;
+
+      // Only show toast if more than 500ms has passed since last toast for this key
+      if (now - lastToast > 500) {
+        toastShownRef.current[key] = now;
+        const label = key.replace(/([A-Z])/g, ' $1').trim();
+        const capitalizedLabel = label.charAt(0).toUpperCase() + label.slice(1);
+        toast.success(`${capitalizedLabel} ${newSettings[key] ? 'enabled' : 'disabled'}`);
+      }
 
       return newSettings;
     });

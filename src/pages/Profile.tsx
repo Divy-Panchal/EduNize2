@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import {
     Edit, Save, BookOpen, Award, Upload, X,
@@ -29,17 +29,14 @@ const initialUserData = {
         email: 'alex.doe@example.com',
         phone: '+1 234 567 8900',
     },
-    bio: 'Passionate student focused on learning and growth. Always eager to take on new challenges and expand my knowledge.',
-    achievements: [
-        'Dean\'s List 2023',
-        'Top Project Award',
-    ],
+    bio: '',
+    achievements: [],
     sectionVisibility: {
         contact: true,
         bio: true,
         achievements: true,
     },
-    profileCompleteness: 85,
+    profileCompleteness: 0,
 };
 
 // Function to get data from localStorage
@@ -95,7 +92,7 @@ const calculateProfileCompleteness = (userData: typeof initialUserData): number 
         !!(userData.education?.grade && userData.education.grade.trim() !== '' && userData.education.grade !== '3rd Year'),
 
         // Check if bio is filled
-        !!(userData.bio && userData.bio.trim() !== '' && userData.bio !== 'Passionate student focused on learning and growth. Always eager to take on new challenges and expand my knowledge.'),
+        !!(userData.bio && userData.bio.trim() !== ''),
 
         // Check if at least one achievement exists
         !!(userData.achievements && userData.achievements.length > 0),
@@ -218,6 +215,7 @@ export function Profile() {
     const navigate = useNavigate();
     const [isFlipped, setIsFlipped] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
+    const [showPhotoZoom, setShowPhotoZoom] = useState(false);
     const [userData, setUserData] = useState(() => getStoredUserData(user));
     const [newAchievement, setNewAchievement] = useState('');
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -350,7 +348,17 @@ export function Profile() {
                                 {/* Front Side */}
                                 <div className={`absolute w-full h-full p-6 rounded-2xl shadow-lg ${themeConfig.card} border dark:border-gray-700 [backface-visibility:hidden] flex flex-col items-center justify-center`}>
                                     <div className="relative">
-                                        <img src={userData.profilePhoto} alt="Profile" className="w-32 h-32 rounded-full object-cover border-4 border-blue-200 dark:border-blue-800" />
+                                        <img
+                                            src={userData.profilePhoto}
+                                            alt="Profile"
+                                            className={`w-32 h-32 rounded-full object-cover border-4 border-blue-200 dark:border-blue-800 ${!isEditing ? 'cursor-pointer hover:opacity-90 transition-opacity' : ''}`}
+                                            onClick={(e) => {
+                                                if (!isEditing) {
+                                                    e.stopPropagation();
+                                                    setShowPhotoZoom(true);
+                                                }
+                                            }}
+                                        />
                                         {isEditing && (
                                             <>
                                                 <motion.button
@@ -376,7 +384,6 @@ export function Profile() {
                                         <input type="file" ref={fileInputRef} onChange={handlePhotoUpload} accept="image/*" className="hidden" />
                                     </div>
                                     <input type="text" name="fullName" value={userData.fullName} onChange={handleInputChange} disabled={!isEditing} className={`mt-4 text-2xl font-bold text-center w-full bg-transparent ${themeConfig.text} ${isEditing ? 'border-b-2 border-blue-500' : ''}`} />
-                                    <input type="text" name="role" value={userData.role} onChange={handleInputChange} disabled={!isEditing} className={`text-md text-center w-full bg-transparent ${themeConfig.textSecondary} ${isEditing ? 'border-b-2 border-blue-500' : ''}`} />
                                     <p className={`mt-4 text-xs ${themeConfig.textSecondary}`}>{isEditing ? 'Click save to apply' : 'Click to flip for more details'}</p>
                                 </div>
                                 {/* Back Side */}
@@ -534,6 +541,42 @@ export function Profile() {
                     )}
                 </SectionCard>
             </div>
+
+            {/* Photo Zoom Modal */}
+            <AnimatePresence>
+                {showPhotoZoom && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        onClick={() => setShowPhotoZoom(false)}
+                        className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+                    >
+                        <motion.div
+                            initial={{ scale: 0.5, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0.5, opacity: 0 }}
+                            transition={{ type: "spring", damping: 25 }}
+                            onClick={(e) => e.stopPropagation()}
+                            className="relative max-w-4xl max-h-[90vh] w-full"
+                        >
+                            <img
+                                src={userData.profilePhoto}
+                                alt="Profile Zoomed"
+                                className="w-full h-full object-contain rounded-2xl shadow-2xl"
+                            />
+                            <motion.button
+                                whileHover={{ scale: 1.1 }}
+                                whileTap={{ scale: 0.9 }}
+                                onClick={() => setShowPhotoZoom(false)}
+                                className="absolute top-4 right-4 bg-red-500 text-white p-3 rounded-full hover:bg-red-600 shadow-lg"
+                            >
+                                <X size={24} />
+                            </motion.button>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </motion.div>
     );
 }

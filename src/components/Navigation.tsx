@@ -18,12 +18,12 @@ export function Navigation() {
   const { themeConfig } = useTheme();
 
   return (
-    <nav className="fixed bottom-6 left-0 right-0 flex justify-center z-50 px-4">
+    <nav className="fixed bottom-3 sm:bottom-6 left-0 right-0 flex justify-center z-50 px-3 sm:px-4 md:px-6">
       <motion.div
         initial={{ y: 100, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ type: "spring", stiffness: 260, damping: 20 }}
-        className={`flex items-center gap-1 ${themeConfig.card} backdrop-blur-lg rounded-full shadow-lg border ${themeConfig.text === 'text-white' ? 'border-gray-700/30' : 'border-gray-200/30'} px-4 py-3`}
+        className={`flex items-center gap-2 sm:gap-3 md:gap-4 ${themeConfig.card} backdrop-blur-lg rounded-full shadow-lg border ${themeConfig.text === 'text-white' ? 'border-gray-700/30' : 'border-gray-200/30'} px-5 sm:px-6 md:px-8 py-3 sm:py-3.5 md:py-4 w-auto max-w-[98%] sm:max-w-[95%] md:max-w-5xl`}
       >
         {navigationItems.map((item) => {
           const isActive = location.pathname === item.path;
@@ -33,10 +33,10 @@ export function Navigation() {
             <Link
               key={item.path}
               to={item.path}
-              className="relative group"
+              className="relative group flex-shrink-0"
             >
               <motion.div
-                className="relative flex flex-col items-center justify-center px-4 py-2"
+                className="relative flex flex-col items-center justify-center px-4 sm:px-5 md:px-6 py-2"
                 whileTap={{ scale: 0.95 }}
                 transition={{ duration: 0.1 }}
               >

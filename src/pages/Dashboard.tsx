@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { motion } from 'framer-motion';
 import {
   BookOpen,
@@ -21,7 +21,7 @@ import { useTimetable } from '../context/TimetableContext';
 import { useGrade } from '../context/GradeContext';
 import { useDailyStats } from '../context/DailyStatsContext';
 import { DashboardProfile } from '../components/DashboardProfile';
-import { NotificationButton } from '../components/NotificationButton';
+import { useNotification } from '../context/NotificationContext';
 
 export function Dashboard() {
   const { tasks } = useTask();
@@ -29,11 +29,36 @@ export function Dashboard() {
   const { getTodayClasses } = useTimetable();
   const { getGradeStats } = useGrade();
   const { studyMinutes, focusSessions, getStudyHours } = useDailyStats();
+  const { notifications, addNotification } = useNotification();
 
   const gradeStats = getGradeStats();
   const completedTasks = tasks.filter(task => task.completed).length;
   const totalTasks = tasks.length;
   const completionRate = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
+
+  // Add sample notifications on first load (only if no notifications exist)
+  useEffect(() => {
+    const hasAddedSamples = localStorage.getItem('sampleNotificationsAdded');
+
+    if (!hasAddedSamples && notifications.length === 0 && addNotification) {
+      // Add sample notifications
+      setTimeout(() => {
+        addNotification({
+          type: 'task',
+          title: 'Welcome to EduNize!',
+          message: 'Start organizing your tasks and boost your productivity.',
+        });
+
+        addNotification({
+          type: 'achievement',
+          title: 'Getting Started',
+          message: 'Complete your first task to unlock achievements!',
+        });
+
+        localStorage.setItem('sampleNotificationsAdded', 'true');
+      }, 100);
+    }
+  }, [notifications.length, addNotification]); // Run when notifications are loaded
 
   // Calculate progress for study hours (goal: 6 hours = 360 minutes)
   const studyGoalMinutes = 360; // 6 hours
@@ -106,7 +131,6 @@ export function Dashboard() {
           </p>
         </div>
         <div className="flex items-center gap-3">
-          <NotificationButton />
           <DashboardProfile />
         </div>
       </motion.div>
