@@ -220,8 +220,24 @@ export function Profile() {
     const [newAchievement, setNewAchievement] = useState('');
     const fileInputRef = useRef<HTMLInputElement>(null);
 
+    // Achievement state
+    const [achievements, setAchievements] = useState(() => {
+        if (!user) return [];
+        const saved = localStorage.getItem(`achievements_${user.uid}`);
+        return saved ? JSON.parse(saved) : [
+            { id: 'early_bird', name: 'Early Bird', icon: '🌅', description: 'Study before 8 AM', unlocked: false, claimed: false, progress: 0, maxProgress: 1 },
+            { id: 'night_owl', name: 'Night Owl', icon: '🦉', description: 'Study after 10 PM', unlocked: false, claimed: false, progress: 0, maxProgress: 1 },
+            { id: 'streak_master', name: 'Streak Master', icon: '🔥', description: '7 day study streak', unlocked: false, claimed: false, progress: 0, maxProgress: 7 },
+            { id: 'task_crusher', name: 'Task Crusher', icon: '✅', description: 'Complete 50 tasks', unlocked: false, claimed: false, progress: 0, maxProgress: 50 },
+        ];
+    });
+
     useEffect(() => {
         setUserData(getStoredUserData(user));
+        // Check achievements on mount
+        if (user) {
+            checkAchievements();
+        }
     }, [user]);
 
     // Recalculate profile completeness when userData changes
@@ -303,6 +319,83 @@ export function Profile() {
         const defaultPhoto = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"%3E%3Ccircle cx="50" cy="50" r="50" fill="%23e0e0e0"/%3E%3Ccircle cx="50" cy="40" r="18" fill="%23999"/%3E%3Cpath d="M 20 85 Q 20 60 50 60 Q 80 60 80 85 Z" fill="%23999"/%3E%3C/svg%3E';
         setUserData(prev => ({ ...prev, profilePhoto: defaultPhoto }));
     }, []);
+
+    // Check and update achievements
+    const checkAchievements = useCallback(() => {
+        if (!user) return;
+
+        const now = new Date();
+        const hour = now.getHours();
+
+        // Get stats from localStorage
+        const completedTasks = parseInt(localStorage.getItem(`completedTasksCount_${user.uid}`) || '0');
+        const studyStreak = parseInt(localStorage.getItem(`studyStreak_${user.uid}`) || '0');
+
+        setAchievements((prev: any) => {
+            const updated = [...prev];
+            let hasChanges = false;
+
+            // Early Bird - Study before 8 AM
+            if (hour < 8) {
+                const earlyBird = updated.find((a: any) => a.id === 'early_bird');
+                if (earlyBird && !earlyBird.unlocked) {
+                    earlyBird.progress = 1;
+                    earlyBird.unlocked = true;
+                    hasChanges = true;
+                }
+            }
+
+            // Night Owl - Study after 10 PM
+            if (hour >= 22) {
+                const nightOwl = updated.find((a: any) => a.id === 'night_owl');
+                if (nightOwl && !nightOwl.unlocked) {
+                    nightOwl.progress = 1;
+                    nightOwl.unlocked = true;
+                    hasChanges = true;
+                }
+            }
+
+            // Streak Master - 7 day streak
+            const streakMaster = updated.find((a: any) => a.id === 'streak_master');
+            if (streakMaster) {
+                streakMaster.progress = Math.min(studyStreak, 7);
+                if (studyStreak >= 7 && !streakMaster.unlocked) {
+                    streakMaster.unlocked = true;
+                    hasChanges = true;
+                }
+            }
+
+            // Task Crusher - Complete 50 tasks
+            const taskCrusher = updated.find((a: any) => a.id === 'task_crusher');
+            if (taskCrusher) {
+                taskCrusher.progress = Math.min(completedTasks, 50);
+                if (completedTasks >= 50 && !taskCrusher.unlocked) {
+                    taskCrusher.unlocked = true;
+                    hasChanges = true;
+                }
+            }
+
+            if (hasChanges) {
+                localStorage.setItem(`achievements_${user.uid}`, JSON.stringify(updated));
+            }
+            return hasChanges ? updated : prev;
+        });
+    }, [user]);
+
+    // Claim achievement
+    const claimAchievement = useCallback((achievementId: string) => {
+        if (!user) return;
+
+        setAchievements((prev: any) => {
+            const updated = prev.map((a: any) =>
+                a.id === achievementId && a.unlocked && !a.claimed
+                    ? { ...a, claimed: true }
+                    : a
+            );
+            localStorage.setItem(`achievements_${user.uid}`, JSON.stringify(updated));
+            return updated;
+        });
+    }, [user]);
 
     const animationVariants = {
         initial: { opacity: 0, y: 20 },
@@ -487,58 +580,87 @@ export function Profile() {
                     />
                 </SectionCard>
 
-                {/* Achievements */}
+                {/* Achievements & Badges */}
                 <SectionCard
-                    title="Achievements"
+                    title="Achievements & Badges 🏆"
                     icon={Award}
-                    sectionKey="achievements"
-                    isVisible={userData.sectionVisibility.achievements}
-                    onToggleVisibility={() => toggleSectionVisibility('achievements')}
+                    sectionKey="badges"
+                    isVisible={true}
+                    onToggleVisibility={() => { }}
                     themeConfig={themeConfig}
                 >
-                    <div className="space-y-2 mb-4">
-                        {userData.achievements.map((achievement, index) => (
-                            <motion.div
-                                key={index}
-                                initial={{ opacity: 0, x: 20 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                transition={{ delay: index * 0.1 }}
-                                className={`flex items-center justify-between gap-2 p-3 rounded-lg ${themeConfig.background}`}
-                            >
-                                <div className="flex items-center gap-2">
-                                    <Award size={16} className="text-yellow-500" />
-                                    <span className={themeConfig.text}>{achievement}</span>
-                                </div>
-                                {isEditing && (
-                                    <button
-                                        onClick={() => handleRemoveAchievement(index)}
-                                        className="text-red-500 hover:text-red-700"
-                                    >
-                                        <X size={16} />
-                                    </button>
-                                )}
-                            </motion.div>
-                        ))}
+                    <div className="space-y-3">
+                        {achievements.map((achievement: any, index: number) => {
+                            const progressPercentage = (achievement.progress / achievement.maxProgress) * 100;
+
+                            return (
+                                <motion.div
+                                    key={achievement.id}
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ delay: index * 0.1 }}
+                                    className={`p-4 rounded-xl border-2 ${achievement.claimed
+                                            ? 'bg-gradient-to-r from-yellow-50 to-amber-50 dark:from-yellow-900/20 dark:to-amber-900/20 border-yellow-400 dark:border-yellow-600'
+                                            : achievement.unlocked
+                                                ? 'bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 border-blue-400 dark:border-blue-600'
+                                                : `${themeConfig.background} border-gray-300 dark:border-gray-600 opacity-60`
+                                        }`}
+                                >
+                                    <div className="flex items-start justify-between mb-3">
+                                        <div className="flex items-center gap-3">
+                                            <span className="text-4xl">{achievement.icon}</span>
+                                            <div>
+                                                <h4 className={`font-bold ${themeConfig.text}`}>
+                                                    {achievement.name}
+                                                    {achievement.claimed && <span className="ml-2 text-yellow-500">✓</span>}
+                                                </h4>
+                                                <p className={`text-sm ${themeConfig.textSecondary}`}>
+                                                    {achievement.description}
+                                                </p>
+                                            </div>
+                                        </div>
+                                        {achievement.unlocked && !achievement.claimed && (
+                                            <motion.button
+                                                whileHover={{ scale: 1.05 }}
+                                                whileTap={{ scale: 0.95 }}
+                                                onClick={() => claimAchievement(achievement.id)}
+                                                className="px-4 py-2 rounded-lg bg-gradient-to-r from-blue-500 to-purple-500 text-white font-medium text-sm"
+                                            >
+                                                Claim
+                                            </motion.button>
+                                        )}
+                                    </div>
+
+                                    <div className="space-y-1">
+                                        <div className="flex justify-between text-xs">
+                                            <span className={themeConfig.textSecondary}>Progress</span>
+                                            <span className={`font-semibold ${achievement.unlocked ? 'text-green-600 dark:text-green-400' : themeConfig.textSecondary}`}>
+                                                {achievement.progress}/{achievement.maxProgress}
+                                            </span>
+                                        </div>
+                                        <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                                            <motion.div
+                                                className={`h-2 rounded-full ${achievement.claimed
+                                                        ? 'bg-gradient-to-r from-yellow-400 to-amber-500'
+                                                        : achievement.unlocked
+                                                            ? 'bg-gradient-to-r from-blue-500 to-purple-500'
+                                                            : 'bg-gray-400 dark:bg-gray-600'
+                                                    }`}
+                                                initial={{ width: 0 }}
+                                                animate={{ width: `${progressPercentage}%` }}
+                                                transition={{ duration: 1, delay: index * 0.1 }}
+                                            />
+                                        </div>
+                                    </div>
+                                </motion.div>
+                            );
+                        })}
                     </div>
-                    {isEditing && (
-                        <div className="flex gap-2">
-                            <input
-                                type="text"
-                                value={newAchievement}
-                                onChange={(e) => setNewAchievement(e.target.value)}
-                                onKeyPress={(e) => e.key === 'Enter' && handleAddAchievement()}
-                                placeholder="Add an achievement"
-                                className={`flex-grow p-3 rounded-lg ${themeConfig.background} ${themeConfig.text} border-2 border-blue-500`}
-                            />
-                            <motion.button
-                                onClick={handleAddAchievement}
-                                className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600"
-                                whileTap={{ scale: 0.95 }}
-                            >
-                                <Award size={20} />
-                            </motion.button>
-                        </div>
-                    )}
+                    <div className={`mt-4 p-3 rounded-lg ${themeConfig.background} text-center`}>
+                        <p className={`text-sm ${themeConfig.textSecondary}`}>
+                            {achievements.filter((a: any) => a.claimed).length} / {achievements.length} Claimed
+                        </p>
+                    </div>
                 </SectionCard>
             </div>
 

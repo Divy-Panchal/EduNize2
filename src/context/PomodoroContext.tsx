@@ -39,7 +39,9 @@ const PomodoroContext = createContext<PomodoroContextType | undefined>(undefined
 const STORAGE_KEYS = {
     DURATIONS: 'pomodoroDurations',
     SESSIONS: 'pomodoroSessions',
-    TOTAL_MINUTES: 'pomodoroTotalMinutes'
+    TOTAL_MINUTES: 'pomodoroTotalMinutes',
+    TIMER_STATE: 'pomodoroTimerState',
+    LAST_UPDATE: 'pomodoroLastUpdate'
 };
 
 const DEFAULT_DURATIONS = { work: 25 * 60, short: 5 * 60, long: 15 * 60 };
@@ -85,9 +87,46 @@ export function PomodoroProvider({ children }: { children: React.ReactNode }) {
         }
     });
 
-    const [mode, setMode] = useState<PomodoroMode>('work');
-    const [timeLeft, setTimeLeft] = useState(() => durations.work);
-    const [isActive, setIsActive] = useState(false);
+    // Load timer state from localStorage with time calculation
+    const loadTimerState = () => {
+        try {
+            const savedState = localStorage.getItem(STORAGE_KEYS.TIMER_STATE);
+            const lastUpdate = localStorage.getItem(STORAGE_KEYS.LAST_UPDATE);
+
+            if (savedState && lastUpdate) {
+                const state = JSON.parse(savedState);
+                const elapsed = Math.floor((Date.now() - parseInt(lastUpdate)) / 1000);
+
+                if (state.isActive && state.timeLeft > 0) {
+                    const newTimeLeft = Math.max(0, state.timeLeft - elapsed);
+                    return {
+                        mode: state.mode as PomodoroMode,
+                        timeLeft: newTimeLeft,
+                        isActive: newTimeLeft > 0 ? state.isActive : false
+                    };
+                }
+
+                return {
+                    mode: state.mode as PomodoroMode,
+                    timeLeft: state.timeLeft,
+                    isActive: false
+                };
+            }
+        } catch (error) {
+            console.error('Failed to load timer state:', error);
+        }
+
+        return {
+            mode: 'work' as PomodoroMode,
+            timeLeft: DEFAULT_DURATIONS.work,
+            isActive: false
+        };
+    };
+
+    const initialState = loadTimerState();
+    const [mode, setMode] = useState<PomodoroMode>(initialState.mode);
+    const [timeLeft, setTimeLeft] = useState(initialState.timeLeft);
+    const [isActive, setIsActive] = useState(initialState.isActive);
     const [isAlarmPlaying, setIsAlarmPlaying] = useState(false);
 
     const [sessions, setSessions] = useState(() => {
@@ -133,6 +172,21 @@ export function PomodoroProvider({ children }: { children: React.ReactNode }) {
             console.error('Failed to save Pomodoro total minutes:', error);
         }
     }, [totalMinutes]);
+
+    // Persist timer state
+    useEffect(() => {
+        try {
+            const state = {
+                mode,
+                timeLeft,
+                isActive
+            };
+            localStorage.setItem(STORAGE_KEYS.TIMER_STATE, JSON.stringify(state));
+            localStorage.setItem(STORAGE_KEYS.LAST_UPDATE, Date.now().toString());
+        } catch (error) {
+            console.error('Failed to save timer state:', error);
+        }
+    }, [mode, timeLeft, isActive]);
 
     // Play alarm sound
     const playAlarm = useCallback(() => {

@@ -153,7 +153,7 @@ export function Grades() {
     }, [showAddModal]);
 
     return (
-        <div className="space-y-6 pb-8">
+        <div className="space-y-6 pb-32">
             {/* Header */}
             <motion.div
                 initial={{ opacity: 0, y: -20 }}
@@ -401,6 +401,142 @@ export function Grades() {
                     </div>
                 </div>
             )}
+
+            {/* Grade Calculator Section */}
+            <div>
+                <h2 className={`text-xl font-semibold ${themeConfig.text} mb-4`}>
+                    Grade Calculator 🧮
+                </h2>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    {/* Final Grade Calculator */}
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className={`${themeConfig.card} p-6 rounded-xl shadow-sm border dark:border-gray-700`}
+                    >
+                        <h3 className={`text-lg font-semibold ${themeConfig.text} mb-4 flex items-center gap-2`}>
+                            <Award className="w-5 h-5 text-blue-500" />
+                            What Grade Do I Need?
+                        </h3>
+                        <div className="space-y-4">
+                            <div>
+                                <label className={`block text-sm font-medium ${themeConfig.text} mb-2`}>
+                                    Current Grade (%)
+                                </label>
+                                <input
+                                    type="number"
+                                    placeholder="85"
+                                    className={`w-full px-4 py-2 rounded-lg border ${themeConfig.background} ${themeConfig.text} border-gray-300 dark:border-gray-600 focus:border-blue-500 focus:outline-none`}
+                                    id="current-grade"
+                                />
+                            </div>
+                            <div>
+                                <label className={`block text-sm font-medium ${themeConfig.text} mb-2`}>
+                                    Final Exam Weight (%)
+                                </label>
+                                <input
+                                    type="number"
+                                    placeholder="30"
+                                    className={`w-full px-4 py-2 rounded-lg border ${themeConfig.background} ${themeConfig.text} border-gray-300 dark:border-gray-600 focus:border-blue-500 focus:outline-none`}
+                                    id="final-weight"
+                                />
+                            </div>
+                            <div>
+                                <label className={`block text-sm font-medium ${themeConfig.text} mb-2`}>
+                                    Desired Grade (%)
+                                </label>
+                                <input
+                                    type="number"
+                                    placeholder="90"
+                                    className={`w-full px-4 py-2 rounded-lg border ${themeConfig.background} ${themeConfig.text} border-gray-300 dark:border-gray-600 focus:border-blue-500 focus:outline-none`}
+                                    id="desired-grade"
+                                />
+                            </div>
+                            <motion.button
+                                whileHover={{ scale: 1.02 }}
+                                whileTap={{ scale: 0.98 }}
+                                onClick={() => {
+                                    const current = parseFloat((document.getElementById('current-grade') as HTMLInputElement)?.value || '0');
+                                    const weight = parseFloat((document.getElementById('final-weight') as HTMLInputElement)?.value || '0');
+                                    const desired = parseFloat((document.getElementById('desired-grade') as HTMLInputElement)?.value || '0');
+
+                                    if (weight <= 0 || weight > 100) {
+                                        alert('Final weight must be between 0 and 100');
+                                        return;
+                                    }
+
+                                    const needed = (desired * 100 - current * (100 - weight)) / weight;
+                                    const resultDiv = document.getElementById('final-result');
+                                    if (resultDiv) {
+                                        if (needed > 100) {
+                                            resultDiv.innerHTML = `<div class="p-4 rounded-lg bg-red-50 dark:bg-red-900/20 text-center"><p class="text-2xl font-bold text-red-600 dark:text-red-400">Not Possible</p><p class="text-sm text-gray-600 dark:text-gray-400 mt-1">You need more than 100%</p></div>`;
+                                        } else if (needed < 0) {
+                                            resultDiv.innerHTML = `<div class="p-4 rounded-lg bg-green-50 dark:bg-green-900/20 text-center"><p class="text-2xl font-bold text-green-600 dark:text-green-400">Already Achieved!</p><p class="text-sm text-gray-600 dark:text-gray-400 mt-1">You can score 0% and still reach your goal!</p></div>`;
+                                        } else {
+                                            resultDiv.innerHTML = `<div class="p-4 rounded-lg bg-blue-50 dark:bg-blue-900/20 text-center"><p class="text-3xl font-bold text-blue-600 dark:text-blue-400">${needed.toFixed(1)}%</p><p class="text-sm text-gray-600 dark:text-gray-400 mt-1">Needed on final exam</p></div>`;
+                                        }
+                                    }
+                                }}
+                                className="w-full py-3 rounded-lg bg-gradient-to-r from-blue-500 to-purple-500 text-white font-medium"
+                            >
+                                Calculate
+                            </motion.button>
+                            <div id="final-result"></div>
+                        </div>
+                    </motion.div>
+
+                    {/* GPA Calculator */}
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.1 }}
+                        className={`${themeConfig.card} p-6 rounded-xl shadow-sm border dark:border-gray-700`}
+                    >
+                        <h3 className={`text-lg font-semibold ${themeConfig.text} mb-4 flex items-center gap-2`}>
+                            <TrendingUp className="w-5 h-5 text-green-500" />
+                            GPA Calculator
+                        </h3>
+                        <div className="space-y-3">
+                            <p className={`text-sm ${themeConfig.textSecondary}`}>
+                                Based on your current grades:
+                            </p>
+                            <div className={`p-4 rounded-lg ${themeConfig.background}`}>
+                                <div className="flex items-center justify-between mb-2">
+                                    <span className={`text-sm ${themeConfig.textSecondary}`}>Overall GPA</span>
+                                    <span className={`text-3xl font-bold ${themeConfig.text}`}>
+                                        {grades.length > 0 ? stats.overallGPA.toFixed(2) : 'N/A'}
+                                    </span>
+                                </div>
+                                <div className="flex items-center justify-between">
+                                    <span className={`text-sm ${themeConfig.textSecondary}`}>Letter Grade</span>
+                                    <span className={`text-2xl font-bold ${grades.length > 0 ? getGradeColor(currentPercentage) : themeConfig.textSecondary}`}>
+                                        {grades.length > 0 ? stats.letterGrade : 'N/A'}
+                                    </span>
+                                </div>
+                            </div>
+
+                            {stats.subjectGrades.length > 0 && (
+                                <div className="space-y-2">
+                                    <p className={`text-sm font-medium ${themeConfig.text} mt-4`}>By Subject:</p>
+                                    {stats.subjectGrades.map((sg) => (
+                                        <div key={sg.subjectId} className={`p-3 rounded-lg ${themeConfig.background} flex items-center justify-between`}>
+                                            <span className={`text-sm ${themeConfig.text}`}>{sg.subjectName}</span>
+                                            <div className="flex items-center gap-3">
+                                                <span className={`text-sm font-semibold ${getGradeColor(sg.average)}`}>
+                                                    {Math.round(sg.average)}%
+                                                </span>
+                                                <span className={`text-lg font-bold ${getGradeColor(sg.average)}`}>
+                                                    {sg.letterGrade}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    </motion.div>
+                </div>
+            </div>
 
             {/* Recent Grades */}
             <div>
