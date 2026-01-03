@@ -160,7 +160,7 @@ export function Achievements() {
     : 100;
 
   return (
-    <div className="space-y-4 pb-20">
+    <div className="space-y-4 pb-4 md:pb-28 relative z-[60]">
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}

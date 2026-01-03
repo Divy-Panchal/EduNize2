@@ -404,7 +404,7 @@ export function Profile() {
 
     return (
         <motion.div
-            className={`p-4 sm:p-6 ${themeConfig.background} min-h-screen`}
+            className={`p-4 sm:p-6 pb-4 md:pb-28 ${themeConfig.background} min-h-screen`}
             variants={animationVariants} initial="initial" animate="animate"
         >
             <div className="max-w-6xl mx-auto">
@@ -600,10 +600,10 @@ export function Profile() {
                                     animate={{ opacity: 1, y: 0 }}
                                     transition={{ delay: index * 0.1 }}
                                     className={`p-4 rounded-xl border-2 ${achievement.claimed
-                                            ? 'bg-gradient-to-r from-yellow-50 to-amber-50 dark:from-yellow-900/20 dark:to-amber-900/20 border-yellow-400 dark:border-yellow-600'
-                                            : achievement.unlocked
-                                                ? 'bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 border-blue-400 dark:border-blue-600'
-                                                : `${themeConfig.background} border-gray-300 dark:border-gray-600 opacity-60`
+                                        ? 'bg-gradient-to-r from-yellow-50 to-amber-50 dark:from-yellow-900/20 dark:to-amber-900/20 border-yellow-400 dark:border-yellow-600'
+                                        : achievement.unlocked
+                                            ? 'bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 border-blue-400 dark:border-blue-600'
+                                            : `${themeConfig.background} border-gray-300 dark:border-gray-600 opacity-60`
                                         }`}
                                 >
                                     <div className="flex items-start justify-between mb-3">
@@ -641,10 +641,10 @@ export function Profile() {
                                         <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                                             <motion.div
                                                 className={`h-2 rounded-full ${achievement.claimed
-                                                        ? 'bg-gradient-to-r from-yellow-400 to-amber-500'
-                                                        : achievement.unlocked
-                                                            ? 'bg-gradient-to-r from-blue-500 to-purple-500'
-                                                            : 'bg-gray-400 dark:bg-gray-600'
+                                                    ? 'bg-gradient-to-r from-yellow-400 to-amber-500'
+                                                    : achievement.unlocked
+                                                        ? 'bg-gradient-to-r from-blue-500 to-purple-500'
+                                                        : 'bg-gray-400 dark:bg-gray-600'
                                                     }`}
                                                 initial={{ width: 0 }}
                                                 animate={{ width: `${progressPercentage}%` }}

@@ -115,7 +115,7 @@ export function Dashboard() {
   const todayClasses = getTodayClasses();
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-4 md:pb-28">
       <motion.div
         className="flex justify-between items-start"
         initial={{ opacity: 0, y: -20 }}
