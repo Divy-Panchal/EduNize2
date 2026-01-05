@@ -18,7 +18,7 @@ export function Navigation() {
   const { themeConfig } = useTheme();
 
   return (
-    <nav className="fixed bottom-3 sm:bottom-6 left-0 right-0 flex justify-center z-50 px-3 sm:px-4 md:px-6">
+    <nav className="fixed bottom-3 sm:bottom-6 left-0 right-0 flex justify-center z-[9999] px-3 sm:px-4 md:px-6">
       <motion.div
         initial={{ y: 100, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}

@@ -22,6 +22,7 @@ import { useGrade } from '../context/GradeContext';
 import { useDailyStats } from '../context/DailyStatsContext';
 import { DashboardProfile } from '../components/DashboardProfile';
 import { useNotification } from '../context/NotificationContext';
+import { useAuth } from '../context/AuthContext';
 
 export function Dashboard() {
   const { tasks } = useTask();
@@ -30,15 +31,19 @@ export function Dashboard() {
   const { getGradeStats } = useGrade();
   const { studyMinutes, focusSessions, getStudyHours } = useDailyStats();
   const { notifications, addNotification } = useNotification();
+  const { user } = useAuth();
 
-  const gradeStats = getGradeStats();
+  const gradeStats = React.useMemo(() => getGradeStats(), [getGradeStats]);
   const completedTasks = tasks.filter(task => task.completed).length;
   const totalTasks = tasks.length;
   const completionRate = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
 
   // Add sample notifications on first load (only if no notifications exist)
   useEffect(() => {
-    const hasAddedSamples = localStorage.getItem('sampleNotificationsAdded');
+    if (!user) return;
+
+    const sampleKey = `sampleNotificationsAdded_${user.uid}`;
+    const hasAddedSamples = localStorage.getItem(sampleKey);
 
     if (!hasAddedSamples && notifications.length === 0 && addNotification) {
       // Add sample notifications
@@ -55,10 +60,10 @@ export function Dashboard() {
           message: 'Complete your first task to unlock achievements!',
         });
 
-        localStorage.setItem('sampleNotificationsAdded', 'true');
+        localStorage.setItem(sampleKey, 'true');
       }, 100);
     }
-  }, [notifications.length, addNotification]); // Run when notifications are loaded
+  }, [notifications.length, addNotification, user]); // Run when notifications are loaded
 
   // Calculate progress for study hours (goal: 6 hours = 360 minutes)
   const studyGoalMinutes = 360; // 6 hours
@@ -102,11 +107,14 @@ export function Dashboard() {
   const upcomingTasks = React.useMemo(() => {
     return tasks
       .filter(task => !task.completed)
+      .filter(task => {
+        // Filter out tasks with invalid dates
+        const date = new Date(task.dueDate);
+        return !isNaN(date.getTime());
+      })
       .sort((a, b) => {
         const dateA = new Date(a.dueDate).getTime();
         const dateB = new Date(b.dueDate).getTime();
-        if (isNaN(dateA)) return 1; // move invalid dates to end
-        if (isNaN(dateB)) return -1;
         return dateA - dateB;
       })
       .slice(0, 3);

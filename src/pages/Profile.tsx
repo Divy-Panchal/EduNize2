@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
 import {
     Edit, Save, BookOpen, Award, Upload, X,
     Mail, Phone, User as UserIcon,
@@ -223,104 +224,57 @@ export function Profile() {
     // Achievement state
     const [achievements, setAchievements] = useState(() => {
         if (!user) return [];
-        const saved = localStorage.getItem(`achievements_${user.uid}`);
-        return saved ? JSON.parse(saved) : [
-            { id: 'early_bird', name: 'Early Bird', icon: '🌅', description: 'Study before 8 AM', unlocked: false, claimed: false, progress: 0, maxProgress: 1 },
-            { id: 'night_owl', name: 'Night Owl', icon: '🦉', description: 'Study after 10 PM', unlocked: false, claimed: false, progress: 0, maxProgress: 1 },
-            { id: 'streak_master', name: 'Streak Master', icon: '🔥', description: '7 day study streak', unlocked: false, claimed: false, progress: 0, maxProgress: 7 },
-            { id: 'task_crusher', name: 'Task Crusher', icon: '✅', description: 'Complete 50 tasks', unlocked: false, claimed: false, progress: 0, maxProgress: 50 },
+
+        // Define all available achievements with levels
+        const allAchievements = [
+            // Early Bird - Levels
+            { id: 'early_bird_1', name: 'Early Bird I', icon: '🌅', description: 'Study before 8 AM', unlocked: false, claimed: false, progress: 0, maxProgress: 1, level: 1, points: 100 },
+            { id: 'early_bird_2', name: 'Early Bird II', icon: '🌅', description: 'Study before 8 AM for 5 days', unlocked: false, claimed: false, progress: 0, maxProgress: 5, level: 2, points: 250 },
+            { id: 'early_bird_3', name: 'Early Bird III', icon: '🌅', description: 'Study before 8 AM for 15 days', unlocked: false, claimed: false, progress: 0, maxProgress: 15, level: 3, points: 500 },
+
+            // Night Owl - Levels
+            { id: 'night_owl_1', name: 'Night Owl I', icon: '🦉', description: 'Study after 10 PM', unlocked: false, claimed: false, progress: 0, maxProgress: 1, level: 1, points: 100 },
+            { id: 'night_owl_2', name: 'Night Owl II', icon: '🦉', description: 'Study after 10 PM for 5 days', unlocked: false, claimed: false, progress: 0, maxProgress: 5, level: 2, points: 250 },
+            { id: 'night_owl_3', name: 'Night Owl III', icon: '🦉', description: 'Study after 10 PM for 15 days', unlocked: false, claimed: false, progress: 0, maxProgress: 15, level: 3, points: 500 },
+
+            // Streak Master - Levels
+            { id: 'streak_master_1', name: 'Streak Master I', icon: '🔥', description: '7 day study streak', unlocked: false, claimed: false, progress: 0, maxProgress: 7, level: 1, points: 300 },
+            { id: 'streak_master_2', name: 'Streak Master II', icon: '🔥', description: '30 day study streak', unlocked: false, claimed: false, progress: 0, maxProgress: 30, level: 2, points: 1000 },
+            { id: 'streak_master_3', name: 'Streak Master III', icon: '🔥', description: '100 day study streak', unlocked: false, claimed: false, progress: 0, maxProgress: 100, level: 3, points: 3000 },
+
+            // Task Crusher - Levels
+            { id: 'task_crusher_1', name: 'Task Crusher I', icon: '✅', description: 'Complete 25 tasks', unlocked: false, claimed: false, progress: 0, maxProgress: 25, level: 1, points: 400 },
+            { id: 'task_crusher_2', name: 'Task Crusher II', icon: '✅', description: 'Complete 50 tasks', unlocked: false, claimed: false, progress: 0, maxProgress: 50, level: 2, points: 800 },
+            { id: 'task_crusher_3', name: 'Task Crusher III', icon: '✅', description: 'Complete 100 tasks', unlocked: false, claimed: false, progress: 0, maxProgress: 100, level: 3, points: 1500 },
+
+            // Focus Master - Levels
+            { id: 'focus_master_1', name: 'Focus Master I', icon: '🧠', description: 'Complete 10 Pomodoro sessions', unlocked: false, claimed: false, progress: 0, maxProgress: 10, level: 1, points: 300 },
+            { id: 'focus_master_2', name: 'Focus Master II', icon: '🧠', description: 'Complete 25 Pomodoro sessions', unlocked: false, claimed: false, progress: 0, maxProgress: 25, level: 2, points: 600 },
+            { id: 'focus_master_3', name: 'Focus Master III', icon: '🧠', description: 'Complete 50 Pomodoro sessions', unlocked: false, claimed: false, progress: 0, maxProgress: 50, level: 3, points: 1200 },
+
+            // Speed Demon - Levels
+            { id: 'speed_demon_1', name: 'Speed Demon I', icon: '⚡', description: 'Complete 5 tasks in one day', unlocked: false, claimed: false, progress: 0, maxProgress: 5, level: 1, points: 200 },
+            { id: 'speed_demon_2', name: 'Speed Demon II', icon: '⚡', description: 'Complete 10 tasks in one day', unlocked: false, claimed: false, progress: 0, maxProgress: 10, level: 2, points: 400 },
+            { id: 'speed_demon_3', name: 'Speed Demon III', icon: '⚡', description: 'Complete 20 tasks in one day', unlocked: false, claimed: false, progress: 0, maxProgress: 20, level: 3, points: 800 },
         ];
+
+        // Get saved achievements from localStorage
+        const saved = localStorage.getItem(`achievements_${user.uid}`);
+        const savedAchievements = saved ? JSON.parse(saved) : [];
+
+        // Merge: keep existing progress, add new achievements
+        const merged = allAchievements.map(newAch => {
+            const existing = savedAchievements.find((a: any) => a.id === newAch.id);
+            return existing || newAch;
+        });
+
+        // Save merged achievements back to localStorage
+        localStorage.setItem(`achievements_${user.uid}`, JSON.stringify(merged));
+
+        return merged;
     });
 
-    useEffect(() => {
-        setUserData(getStoredUserData(user));
-        // Check achievements on mount
-        if (user) {
-            checkAchievements();
-        }
-    }, [user]);
-
-    // Recalculate profile completeness when userData changes
-    useEffect(() => {
-        const newCompleteness = calculateProfileCompleteness(userData);
-        if (newCompleteness !== userData.profileCompleteness) {
-            setUserData(prev => ({ ...prev, profileCompleteness: newCompleteness }));
-        }
-    }, [userData.fullName, userData.contact, userData.education, userData.bio, userData.achievements, userData.profilePhoto]);
-
-    const handleSave = () => {
-        if (!user) return;
-        const userDataKey = `userData_${user.uid}`;
-        // Calculate profile completeness before saving
-        const updatedData = {
-            ...userData,
-            profileCompleteness: calculateProfileCompleteness(userData)
-        };
-        localStorage.setItem(userDataKey, JSON.stringify(updatedData));
-        setUserData(updatedData);
-        setIsEditing(false);
-    };
-
-    const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-        const { name, value } = e.target;
-        const [section, field] = name.split('.');
-
-        if (section === 'education') {
-            setUserData(prev => ({ ...prev, education: { ...prev.education, [field]: value } }));
-        } else if (section === 'contact') {
-            setUserData(prev => ({
-                ...prev,
-                contact: {
-                    ...(prev.contact || { email: '', phone: '' }),
-                    [field]: value
-                }
-            }));
-        } else {
-            setUserData(prev => ({ ...prev, [name]: value }));
-        }
-    }, []);
-
-    const handleAddAchievement = useCallback(() => {
-        if (newAchievement.trim()) {
-            setUserData(prev => ({ ...prev, achievements: [...prev.achievements, newAchievement.trim()] }));
-            setNewAchievement('');
-        }
-    }, [newAchievement]);
-
-    const handleRemoveAchievement = useCallback((index: number) => {
-        setUserData(prev => ({
-            ...prev,
-            achievements: prev.achievements.filter((_: any, i: number) => i !== index)
-        }));
-    }, []);
-
-    const toggleSectionVisibility = useCallback((section: keyof typeof userData.sectionVisibility) => {
-        setUserData(prev => ({
-            ...prev,
-            sectionVisibility: {
-                ...prev.sectionVisibility,
-                [section]: !prev.sectionVisibility[section]
-            }
-        }));
-    }, []);
-
-    const handlePhotoUpload = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-        if (e.target.files && e.target.files[0]) {
-            const reader = new FileReader();
-            reader.onload = (event) => {
-                setUserData(prev => ({ ...prev, profilePhoto: event.target?.result as string }));
-            };
-            reader.readAsDataURL(e.target.files[0]);
-        }
-    }, []);
-
-    const handleRemovePhoto = useCallback(() => {
-        // Reset to default profile photo
-        const defaultPhoto = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"%3E%3Ccircle cx="50" cy="50" r="50" fill="%23e0e0e0"/%3E%3Ccircle cx="50" cy="40" r="18" fill="%23999"/%3E%3Cpath d="M 20 85 Q 20 60 50 60 Q 80 60 80 85 Z" fill="%23999"/%3E%3C/svg%3E';
-        setUserData(prev => ({ ...prev, profilePhoto: defaultPhoto }));
-    }, []);
-
-    // Check and update achievements
+    // Check and update achievements - defined early to avoid hoisting issues
     const checkAchievements = useCallback(() => {
         if (!user) return;
 
@@ -380,22 +334,166 @@ export function Profile() {
             }
             return hasChanges ? updated : prev;
         });
-    }, [user]);
+    }, [user, setAchievements]);
 
-    // Claim achievement
-    const claimAchievement = useCallback((achievementId: string) => {
+    useEffect(() => {
+        setUserData(getStoredUserData(user));
+        // Check achievements on mount
+        if (user) {
+            checkAchievements();
+        }
+    }, [user, checkAchievements]);
+
+    // Recalculate profile completeness when userData changes - using useMemo for optimization
+    const profileCompleteness = React.useMemo(() => {
+        return calculateProfileCompleteness(userData);
+    }, [
+        userData.fullName,
+        userData.contact?.email,
+        userData.contact?.phone,
+        userData.education?.institution,
+        userData.education?.grade,
+        userData.bio,
+        userData.achievements?.length,
+        userData.profilePhoto
+    ]);
+
+    // Update userData with new completeness value when it changes
+    useEffect(() => {
+        if (profileCompleteness !== userData.profileCompleteness) {
+            setUserData((prev: typeof initialUserData) => ({ ...prev, profileCompleteness }));
+        }
+    }, [profileCompleteness]);
+
+    const handleSave = () => {
         if (!user) return;
+        const userDataKey = `userData_${user.uid}`;
+        // Calculate profile completeness before saving
+        const updatedData = {
+            ...userData,
+            profileCompleteness: calculateProfileCompleteness(userData)
+        };
+        localStorage.setItem(userDataKey, JSON.stringify(updatedData));
+        setUserData(updatedData);
+        setIsEditing(false);
+    };
+
+    const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+        const { name, value } = e.target;
+        const [section, field] = name.split('.');
+
+        if (section === 'education') {
+            setUserData(prev => ({ ...prev, education: { ...prev.education, [field]: value } }));
+        } else if (section === 'contact') {
+            setUserData(prev => ({
+                ...prev,
+                contact: {
+                    ...(prev.contact || { email: '', phone: '' }),
+                    [field]: value
+                }
+            }));
+        } else {
+            setUserData(prev => ({ ...prev, [name]: value }));
+        }
+    }, []);
+
+    const handleAddAchievement = useCallback(() => {
+        if (newAchievement.trim()) {
+            setUserData(prev => ({ ...prev, achievements: [...prev.achievements, newAchievement.trim()] }));
+            setNewAchievement('');
+        }
+    }, [newAchievement]);
+
+    const handleRemoveAchievement = useCallback((index: number) => {
+        setUserData(prev => ({
+            ...prev,
+            achievements: prev.achievements.filter((_: any, i: number) => i !== index)
+        }));
+    }, []);
+
+    // Claim achievement and unlock next level
+    const claimAchievement = useCallback((achievementId: string) => {
+        console.log('🎯 Claim clicked for:', achievementId);
+
+        if (!user) {
+            console.log('❌ No user found');
+            return;
+        }
 
         setAchievements((prev: any) => {
-            const updated = prev.map((a: any) =>
-                a.id === achievementId && a.unlocked && !a.claimed
-                    ? { ...a, claimed: true }
-                    : a
-            );
-            localStorage.setItem(`achievements_${user.uid}`, JSON.stringify(updated));
+            console.log('📋 Current achievements:', prev);
+            const updated = [...prev];
+            const achievement = updated.find((a: any) => a.id === achievementId);
+
+            console.log('🔍 Found achievement:', achievement);
+
+            if (achievement && achievement.unlocked && !achievement.claimed) {
+                console.log('✅ Achievement is claimable!');
+
+                // Mark as claimed
+                achievement.claimed = true;
+
+                // Award points (you can add points system later)
+                toast.success(`🎉 Claimed ${achievement.name}! +${achievement.points} points`);
+                console.log('🎉 Toast shown');
+
+                // Find and unlock next level
+                const baseName = achievementId.replace(/_\d+$/, ''); // Remove _1, _2, _3
+                const currentLevel = achievement.level;
+                const nextLevel = currentLevel + 1;
+                const nextLevelId = `${baseName}_${nextLevel}`;
+
+                console.log('🔎 Looking for next level:', nextLevelId);
+
+                const nextAchievement = updated.find((a: any) => a.id === nextLevelId);
+                if (nextAchievement && !nextAchievement.unlocked) {
+                    // Don't auto-unlock, just make it visible
+                    toast.success(`🔓 ${nextAchievement.name} is now available!`);
+                    console.log('🔓 Next level notification shown');
+                } else {
+                    console.log('ℹ️ No next level or already unlocked');
+                }
+
+                // Save to localStorage
+                localStorage.setItem(`achievements_${user.uid}`, JSON.stringify(updated));
+                console.log('💾 Saved to localStorage');
+            } else {
+                console.log('❌ Cannot claim:', {
+                    exists: !!achievement,
+                    unlocked: achievement?.unlocked,
+                    claimed: achievement?.claimed
+                });
+            }
+
             return updated;
         });
-    }, [user]);
+    }, [user, setAchievements]);
+
+    const toggleSectionVisibility = useCallback((section: keyof typeof userData.sectionVisibility) => {
+        setUserData(prev => ({
+            ...prev,
+            sectionVisibility: {
+                ...prev.sectionVisibility,
+                [section]: !prev.sectionVisibility[section]
+            }
+        }));
+    }, []);
+
+    const handlePhotoUpload = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files && e.target.files[0]) {
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                setUserData(prev => ({ ...prev, profilePhoto: event.target?.result as string }));
+            };
+            reader.readAsDataURL(e.target.files[0]);
+        }
+    }, []);
+
+    const handleRemovePhoto = useCallback(() => {
+        // Reset to default profile photo
+        const defaultPhoto = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"%3E%3Ccircle cx="50" cy="50" r="50" fill="%23e0e0e0"/%3E%3Ccircle cx="50" cy="40" r="18" fill="%23999"/%3E%3Cpath d="M 20 85 Q 20 60 50 60 Q 80 60 80 85 Z" fill="%23999"/%3E%3C/svg%3E';
+        setUserData(prev => ({ ...prev, profilePhoto: defaultPhoto }));
+    }, []);
 
     const animationVariants = {
         initial: { opacity: 0, y: 20 },
@@ -404,7 +502,7 @@ export function Profile() {
 
     return (
         <motion.div
-            className={`p-4 sm:p-6 pb-4 md:pb-28 ${themeConfig.background} min-h-screen`}
+            className={`p-4 sm:p-6 pb-32 md:pb-28 ${themeConfig.background} min-h-screen`}
             variants={animationVariants} initial="initial" animate="animate"
         >
             <div className="max-w-6xl mx-auto">
@@ -584,9 +682,9 @@ export function Profile() {
                 <SectionCard
                     title="Achievements & Badges 🏆"
                     icon={Award}
-                    sectionKey="badges"
-                    isVisible={true}
-                    onToggleVisibility={() => { }}
+                    sectionKey="achievements"
+                    isVisible={userData.sectionVisibility.achievements}
+                    onToggleVisibility={() => toggleSectionVisibility('achievements')}
                     themeConfig={themeConfig}
                 >
                     <div className="space-y-3">

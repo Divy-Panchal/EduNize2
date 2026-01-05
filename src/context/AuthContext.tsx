@@ -36,9 +36,22 @@ const clearUserData = (userId?: string) => {
     localStorage.removeItem(`userData_${userId}`);
     localStorage.removeItem(`hasCompletedProfileSetup_${userId}`);
     localStorage.removeItem(`grades_${userId}`);
-    // Note: Shared data like tasks, subjects, timetable are not user-specific
-    // and should not be cleared on account deletion
+    localStorage.removeItem(`dailyStats_${userId}`);
+    localStorage.removeItem(`achievements_${userId}`);
+    localStorage.removeItem(`completedTasksCount_${userId}`);
+    localStorage.removeItem(`studyStreak_${userId}`);
   }
+
+  // Clear shared data that should not persist across users
+  localStorage.removeItem('eduorganize-tasks');
+  localStorage.removeItem('edunize-subjects');
+  localStorage.removeItem('edunize-timetable');
+  localStorage.removeItem('pomodoroDurations');
+  localStorage.removeItem('pomodoroSessions');
+  localStorage.removeItem('pomodoroTotalMinutes');
+  localStorage.removeItem('pomodoroTimerState');
+  localStorage.removeItem('pomodoroLastUpdate');
+  localStorage.removeItem('sampleNotificationsAdded');
 };
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {

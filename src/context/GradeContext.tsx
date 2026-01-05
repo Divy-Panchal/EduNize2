@@ -92,15 +92,30 @@ export function GradeProvider({ children }: { children: React.ReactNode }) {
         if (totalWeight === 0) {
             // If no weights, use simple average
             const totalPercentage = subjectGrades.reduce(
-                (sum, grade) => sum + (grade.score / grade.maxScore) * 100,
+                (sum, grade) => {
+                    // Prevent division by zero
+                    if (grade.maxScore === 0) {
+                        console.warn('Grade with maxScore of 0 detected, skipping');
+                        return sum;
+                    }
+                    return sum + (grade.score / grade.maxScore) * 100;
+                },
                 0
             );
-            return totalPercentage / subjectGrades.length;
+            const validGrades = subjectGrades.filter(g => g.maxScore > 0).length;
+            return validGrades > 0 ? totalPercentage / validGrades : 0;
         }
 
         // Weighted average
         const weightedSum = subjectGrades.reduce(
-            (sum, grade) => sum + ((grade.score / grade.maxScore) * 100 * grade.weight),
+            (sum, grade) => {
+                // Prevent division by zero
+                if (grade.maxScore === 0) {
+                    console.warn('Grade with maxScore of 0 detected, skipping');
+                    return sum;
+                }
+                return sum + ((grade.score / grade.maxScore) * 100 * grade.weight);
+            },
             0
         );
         return weightedSum / totalWeight;

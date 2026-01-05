@@ -41,11 +41,11 @@ export function DailyStatsProvider({ children }: { children: React.ReactNode }) 
         if (user) {
             const storageKey = `dailyStats_${user.uid}`;
             const savedStats = localStorage.getItem(storageKey);
+            const today = getTodayDate();
 
             if (savedStats) {
                 try {
                     const parsed: DailyStats = JSON.parse(savedStats);
-                    const today = getTodayDate();
 
                     // Check if the saved date is today
                     if (parsed.date === today) {

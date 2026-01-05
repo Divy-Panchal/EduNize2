@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, Search, Filter, Image as ImageIcon, X, Calendar } from 'lucide-react';
 import { useTask, Task } from '../context/TaskContext';
 import { useTheme } from '../context/ThemeContext';
+import { useNavigate } from 'react-router-dom';
 import { TaskCard } from '../components/TaskCard';
 import { AddTaskModal } from '../components/AddTaskModal';
 import toast from 'react-hot-toast';
@@ -10,13 +11,14 @@ import toast from 'react-hot-toast';
 export function Tasks() {
   const { tasks, toggleTask, deleteTask } = useTask();
   const { themeConfig } = useTheme();
+  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [filterPriority, setFilterPriority] = useState<string>('all');
   const [showAddModal, setShowAddModal] = useState(false);
 
   const filteredTasks = tasks.filter(task => {
     const matchesSearch = task.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         task.description.toLowerCase().includes(searchTerm.toLowerCase());
+      task.description.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesPriority = filterPriority === 'all' || task.priority === filterPriority;
     return matchesSearch && matchesPriority;
   });
@@ -26,13 +28,13 @@ export function Tasks() {
     toast.success('Task updated!');
   };
 
-  const handleDeleteTask = (id:string) => {
+  const handleDeleteTask = (id: string) => {
     deleteTask(id);
     toast.success('Task deleted!');
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-32">
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -112,8 +114,8 @@ export function Tasks() {
         >
           <Calendar className="w-16 h-16 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
           <p className={`text-lg ${themeConfig.textSecondary}`}>
-            {searchTerm || filterPriority !== 'all' 
-              ? 'No tasks match your filters' 
+            {searchTerm || filterPriority !== 'all'
+              ? 'No tasks match your filters'
               : 'No tasks yet! Start adding tasks to boost your productivity.'}
           </p>
           {!(searchTerm || filterPriority !== 'all') && (

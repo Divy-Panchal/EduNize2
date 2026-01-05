@@ -31,6 +31,8 @@ export interface Subject {
     resources: Resource[];
 }
 
+const STORAGE_KEY = 'edunize-subjects';
+
 interface SubjectContextType {
     subjects: Subject[];
     addSubject: (subject: Omit<Subject, 'id' | 'notes' | 'topics' | 'resources'>) => void;
@@ -53,7 +55,7 @@ export function SubjectProvider({ children }: { children: React.ReactNode }) {
 
     // Load subjects from localStorage on mount
     useEffect(() => {
-        const savedSubjects = localStorage.getItem('edunize-subjects');
+        const savedSubjects = localStorage.getItem(STORAGE_KEY);
         if (savedSubjects) {
             try {
                 const parsed = JSON.parse(savedSubjects);
@@ -67,13 +69,16 @@ export function SubjectProvider({ children }: { children: React.ReactNode }) {
                 setSubjects(migratedSubjects);
             } catch (error) {
                 console.error('Error loading subjects:', error);
+                // Provide user-friendly error feedback
+                if (error instanceof Error) {
+                    alert(`Failed to load subjects: ${error.message}. Your data may be corrupted. Please try refreshing the page.`);
+                }
                 // If there's an error, start fresh
                 setSubjects([]);
             }
         }
     }, []);
 
-    // Save subjects to localStorage whenever they change (but not on initial mount)
     useEffect(() => {
         if (isInitialMount.current) {
             isInitialMount.current = false;

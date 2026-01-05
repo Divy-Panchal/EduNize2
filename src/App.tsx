@@ -12,7 +12,6 @@ import { Timetable } from './pages/Timetable';
 import { PomodoroTimer } from './pages/PomodoroTimer';
 import { Results } from './pages/Results';
 import { Settings } from './pages/Settings';
-import { Achievements } from './pages/Achievements';
 import { Profile } from './pages/Profile';
 import { Grades } from './pages/Grades';
 import { ThemeProvider, useTheme } from './context/ThemeContext';
@@ -23,6 +22,7 @@ import { GradeProvider } from './context/GradeContext';
 import { DailyStatsProvider } from './context/DailyStatsContext';
 import { PomodoroProvider } from './context/PomodoroContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { AchievementProvider } from './context/AchievementContext';
 import { Auth } from './components/Auth';
 import { DarkModeTransition } from './components/DarkModeTransition';
 import { Onboarding } from './components/Onboarding';
@@ -185,7 +185,6 @@ function AppContent() {
                   <Route path="/timetable" element={<Timetable />} />
                   <Route path="/grades" element={<Grades />} />
                   <Route path="/pomodoro" element={<PomodoroTimer />} />
-                  <Route path="/achievements" element={<Achievements />} />
                   <Route path="/results" element={<Results />} />
                   <Route path="/settings" element={<Settings />} />
                   <Route path="/profile" element={<Profile />} />
@@ -204,22 +203,24 @@ function App() {
     <ErrorBoundary>
       <AuthProvider>
         <ThemeProvider>
-          <TaskProvider>
-            <SubjectProvider>
-              <TimetableProvider>
-                <GradeProvider>
-                  <DailyStatsProvider>
-                    <PomodoroProvider>
-                      <Router>
-                        <Toaster position="top-right" />
-                        <AppContent />
-                      </Router>
-                    </PomodoroProvider>
-                  </DailyStatsProvider>
-                </GradeProvider>
-              </TimetableProvider>
-            </SubjectProvider>
-          </TaskProvider>
+          <AchievementProvider>
+            <TaskProvider>
+              <SubjectProvider>
+                <TimetableProvider>
+                  <GradeProvider>
+                    <DailyStatsProvider>
+                      <PomodoroProvider>
+                        <Router>
+                          <Toaster position="top-right" />
+                          <AppContent />
+                        </Router>
+                      </PomodoroProvider>
+                    </DailyStatsProvider>
+                  </GradeProvider>
+                </TimetableProvider>
+              </SubjectProvider>
+            </TaskProvider>
+          </AchievementProvider>
         </ThemeProvider>
       </AuthProvider>
     </ErrorBoundary>
