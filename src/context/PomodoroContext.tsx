@@ -41,10 +41,11 @@ const STORAGE_KEYS = {
     SESSIONS: 'pomodoroSessions',
     TOTAL_MINUTES: 'pomodoroTotalMinutes',
     TIMER_STATE: 'pomodoroTimerState',
-    LAST_UPDATE: 'pomodoroLastUpdate'
+    LAST_UPDATE: 'pomodoroLastUpdate',
+    MIGRATION_30MIN: 'pomodoroMigration30Min'
 };
 
-const DEFAULT_DURATIONS = { work: 25 * 60, short: 5 * 60, long: 15 * 60 };
+const DEFAULT_DURATIONS = { work: 30 * 60, short: 5 * 60, long: 15 * 60 };
 const MAX_SECONDS = 60 * 60;
 
 export function PomodoroProvider({ children }: { children: React.ReactNode }) {
@@ -57,6 +58,8 @@ export function PomodoroProvider({ children }: { children: React.ReactNode }) {
     const [durations, setDurations] = useState<PomodoroDurations>(() => {
         try {
             const saved = localStorage.getItem(STORAGE_KEYS.DURATIONS);
+            const migrated = localStorage.getItem(STORAGE_KEYS.MIGRATION_30MIN);
+
             if (!saved) return DEFAULT_DURATIONS;
 
             const parsed = JSON.parse(saved);
@@ -76,6 +79,12 @@ export function PomodoroProvider({ children }: { children: React.ReactNode }) {
                 parsed.long <= MAX_SECONDS;
 
             if (isValid) {
+                // One-time migration: update work duration to 30 minutes
+                if (!migrated) {
+                    parsed.work = 30 * 60;
+                    localStorage.setItem(STORAGE_KEYS.DURATIONS, JSON.stringify(parsed));
+                    localStorage.setItem(STORAGE_KEYS.MIGRATION_30MIN, 'true');
+                }
                 return parsed;
             }
 

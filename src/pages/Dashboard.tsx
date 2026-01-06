@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import {
   BookOpen,
@@ -24,6 +24,28 @@ import { DashboardProfile } from '../components/DashboardProfile';
 import { useNotification } from '../context/NotificationContext';
 import { useAuth } from '../context/AuthContext';
 
+const getStoredUserData = (userId: string | undefined) => {
+  const defaultData = {
+    fullName: 'Student',
+  };
+
+  if (!userId) return defaultData;
+
+  try {
+    const stored = localStorage.getItem(`userData_${userId}`);
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      return { ...defaultData, ...parsed };
+    }
+  } catch (error) {
+    if (import.meta.env.DEV) {
+      console.error('Error parsing user data:', error);
+    }
+  }
+
+  return defaultData;
+};
+
 export function Dashboard() {
   const { tasks } = useTask();
   const { theme, themeConfig } = useTheme();
@@ -32,6 +54,12 @@ export function Dashboard() {
   const { studyMinutes, focusSessions, getStudyHours } = useDailyStats();
   const { notifications, addNotification } = useNotification();
   const { user } = useAuth();
+  const [userData, setUserData] = useState(() => getStoredUserData(user?.uid));
+
+  // Update user data when user changes
+  useEffect(() => {
+    setUserData(getStoredUserData(user?.uid));
+  }, [user]);
 
   const gradeStats = React.useMemo(() => getGradeStats(), [getGradeStats]);
   const completedTasks = tasks.filter(task => task.completed).length;
@@ -132,7 +160,7 @@ export function Dashboard() {
       >
         <div>
           <h1 className={`text-2xl md:text-3xl font-bold ${themeConfig.text} mb-2`}>
-            Welcome back! 👋
+            Welcome back, {userData.fullName}! 👋
           </h1>
           <p className={themeConfig.textSecondary}>
             Here's what's happening with your studies today

@@ -614,7 +614,7 @@ export function Grades() {
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+                        className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[10000] flex items-center justify-center p-4"
                         onClick={() => setShowAddModal(false)}
                         role="dialog"
                         aria-modal="true"
@@ -625,10 +625,10 @@ export function Grades() {
                             animate={{ scale: 1, y: 0 }}
                             exit={{ scale: 0.9, y: 20 }}
                             onClick={(e) => e.stopPropagation()}
-                            className={`${themeConfig.card} rounded-2xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto`}
+                            className={`${themeConfig.card} rounded-2xl shadow-2xl max-w-md w-full max-h-[85vh] overflow-y-auto`}
                         >
-                            <div className="p-6">
-                                <div className="flex items-center justify-between mb-6">
+                            <div className="p-4">
+                                <div className="flex items-center justify-between mb-4">
                                     <h2 id="modal-title" className={`text-2xl font-bold ${themeConfig.text}`}>
                                         Add New Grade
                                     </h2>
@@ -640,7 +640,7 @@ export function Grades() {
                                     </button>
                                 </div>
 
-                                <form onSubmit={handleSubmit} className="space-y-4">
+                                <form onSubmit={handleSubmit} className="space-y-3">
                                     {/* Subject */}
                                     <div>
                                         <label className={`block text-sm font-medium ${themeConfig.text} mb-2`}>
@@ -760,7 +760,7 @@ export function Grades() {
                                         <textarea
                                             value={formData.notes}
                                             onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                                            rows={3}
+                                            rows={2}
                                             className={`w-full px-4 py-2 rounded-lg ${themeConfig.background} ${themeConfig.text} border dark:border-gray-700 focus:ring-2 focus:ring-blue-500 outline-none resize-none`}
                                             placeholder="Add any notes about this grade..."
                                         />
@@ -783,7 +783,7 @@ export function Grades() {
                                     )}
 
                                     {/* Buttons */}
-                                    <div className="flex gap-3 pt-4">
+                                    <div className="flex gap-3 pt-2">
                                         <button
                                             type="button"
                                             onClick={() => setShowAddModal(false)}
