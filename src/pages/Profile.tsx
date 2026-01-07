@@ -95,9 +95,6 @@ const calculateProfileCompleteness = (userData: typeof initialUserData): number 
         // Check if bio is filled
         !!(userData.bio && userData.bio.trim() !== ''),
 
-        // Check if at least one achievement exists
-        !!(userData.achievements && userData.achievements.length > 0),
-
         // Check if custom profile photo is uploaded
         !!(userData.profilePhoto && userData.profilePhoto !== initialUserData.profilePhoto),
     ];
