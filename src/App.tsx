@@ -211,7 +211,14 @@ function App() {
                     <DailyStatsProvider>
                       <PomodoroProvider>
                         <Router>
-                          <Toaster position="top-right" />
+                          <Toaster
+                            position="top-right"
+                            toastOptions={{
+                              style: {
+                                zIndex: 10001,
+                              },
+                            }}
+                          />
                           <AppContent />
                         </Router>
                       </PomodoroProvider>
