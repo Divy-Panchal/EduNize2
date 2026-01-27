@@ -18,13 +18,13 @@
     --chart-4: 39, 92%, 53%;
     --chart-5: 220, 13%, 66%;
   }
-  
+
   /* Fix select dropdown options in dark mode */
   select option {
     background-color: white;
     color: black;
   }
-  
+
   .dark select option {
     background-color: rgb(31 41 55);
     color: white;
@@ -32,14 +32,196 @@
 }
 
 @layer utilities {
+
   /* Hide scrollbar for Chrome, Safari and Opera */
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
   }
-  
+
   /* Hide scrollbar for IE, Edge and Firefox */
   .scrollbar-hide {
-    -ms-overflow-style: none;  /* IE and Edge */
-    scrollbar-width: none;  /* Firefox */
+    -ms-overflow-style: none;
+    /* IE and Edge */
+    scrollbar-width: none;
+    /* Firefox */
   }
+}
+
+/* ===== Login Page - Clean Teal Design ===== */
+
+/* Main teal background */
+.teal-background {
+  background: linear-gradient(135deg, #5ab9b3 0%, #4aa8a2 50%, #3d9994 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Decorative floating dots */
+.floating-dot {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.dot-white {
+  background-color: rgba(255, 255, 255, 0.9);
+}
+
+.dot-outline {
+  background-color: transparent;
+  border: 2px solid rgba(255, 255, 255, 0.6);
+}
+
+.dot-filled-light {
+  background-color: rgba(255, 255, 255, 0.3);
+}
+
+/* Dot animations */
+@keyframes floatSlow {
+
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+
+  50% {
+    transform: translateY(-15px) rotate(5deg);
+  }
+}
+
+@keyframes floatMedium {
+
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+
+  50% {
+    transform: translateY(-10px) rotate(-3deg);
+  }
+}
+
+@keyframes pulse {
+
+  0%,
+  100% {
+    opacity: 0.6;
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: 1;
+    transform: scale(1.1);
+  }
+}
+
+.animate-float-slow {
+  animation: floatSlow 6s ease-in-out infinite;
+}
+
+.animate-float-medium {
+  animation: floatMedium 4s ease-in-out infinite;
+}
+
+.animate-pulse-slow {
+  animation: pulse 3s ease-in-out infinite;
+}
+
+/* White card */
+.white-card {
+  background: white;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+}
+
+/* Clean input fields */
+.clean-input {
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid #e0e0e0;
+  padding: 12px 12px 12px 40px;
+  color: #333;
+  transition: all 0.3s ease;
+  width: 100%;
+}
+
+.clean-input::placeholder {
+  color: #999;
+}
+
+.clean-input:focus {
+  outline: none;
+  border-bottom-color: #4aa8a2;
+}
+
+/* Teal button */
+.teal-button {
+  background: linear-gradient(135deg, #5ab9b3 0%, #4aa8a2 100%);
+  color: white;
+  border: none;
+  padding: 14px 32px;
+  border-radius: 25px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(74, 168, 162, 0.4);
+}
+
+.teal-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(74, 168, 162, 0.5);
+}
+
+/* Blue theme button override */
+.blue-button {
+  background: linear-gradient(135deg, #4a90d9 0%, #357abd 100%);
+  box-shadow: 0 4px 15px rgba(53, 122, 189, 0.4);
+}
+
+.blue-button:hover {
+  box-shadow: 0 6px 20px rgba(53, 122, 189, 0.5);
+}
+
+/* Blue theme background */
+.blue-background {
+  background: linear-gradient(135deg, #5a9fd4 0%, #4a8fc4 50%, #3a7fb4 100%);
+}
+
+/* Illustration container */
+.illustration-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Floating objects around illustration */
+@keyframes floatObject {
+
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+
+  25% {
+    transform: translateY(-8px) rotate(5deg);
+  }
+
+  75% {
+    transform: translateY(5px) rotate(-3deg);
+  }
+}
+
+.float-object {
+  animation: floatObject 4s ease-in-out infinite;
+}
+
+.float-object-delay-1 {
+  animation-delay: 0.5s;
+}
+
+.float-object-delay-2 {
+  animation-delay: 1s;
+}
+
+.float-object-delay-3 {
+  animation-delay: 1.5s;
 }
