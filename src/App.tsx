@@ -1,19 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, lazy, Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 
 import { Toaster } from 'react-hot-toast';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Navigation } from './components/Navigation';
-import { Dashboard } from './pages/Dashboard';
-import { Subjects } from './pages/Subjects';
-import { SubjectDetail } from './pages/SubjectDetail';
-import { Tasks } from './pages/Tasks';
-import { Timetable } from './pages/Timetable';
-import { PomodoroTimer } from './pages/PomodoroTimer';
-import { Results } from './pages/Results';
-import { Settings } from './pages/Settings';
-import { Profile } from './pages/Profile';
-import { Grades } from './pages/Grades';
 import { ThemeProvider, useTheme } from './context/ThemeContext';
 import { TaskProvider } from './context/TaskContext';
 import { SubjectProvider } from './context/SubjectContext';
@@ -28,6 +18,27 @@ import { DarkModeTransition } from './components/DarkModeTransition';
 import { Onboarding } from './components/Onboarding';
 import { ProfileSetup } from './components/ProfileSetup';
 import { ErrorBoundary } from './components/ErrorBoundary';
+
+// Lazy load pages for better initial performance
+const Dashboard = lazy(() => import('./pages/Dashboard').then(module => ({ default: module.Dashboard })));
+const Subjects = lazy(() => import('./pages/Subjects').then(module => ({ default: module.Subjects })));
+const SubjectDetail = lazy(() => import('./pages/SubjectDetail').then(module => ({ default: module.SubjectDetail })));
+const Tasks = lazy(() => import('./pages/Tasks').then(module => ({ default: module.Tasks })));
+const Timetable = lazy(() => import('./pages/Timetable').then(module => ({ default: module.Timetable })));
+const PomodoroTimer = lazy(() => import('./pages/PomodoroTimer').then(module => ({ default: module.PomodoroTimer })));
+const Results = lazy(() => import('./pages/Results').then(module => ({ default: module.Results })));
+const Settings = lazy(() => import('./pages/Settings').then(module => ({ default: module.Settings })));
+const Profile = lazy(() => import('./pages/Profile').then(module => ({ default: module.Profile })));
+const Grades = lazy(() => import('./pages/Grades').then(module => ({ default: module.Grades })));
+
+// Loading component for Suspense
+const PageLoader = () => {
+  return (
+    <div className={`flex items-center justify-center p-12 w-full h-full`}>
+      <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
+    </div>
+  );
+};
 
 const pageVariants = {
   initial: {
@@ -178,16 +189,16 @@ function AppContent() {
                 className="min-h-screen"
               >
                 <Routes location={location} key={location.pathname}>
-                  <Route path="/" element={<Dashboard />} />
-                  <Route path="/subjects" element={<Subjects />} />
-                  <Route path="/subjects/:id" element={<SubjectDetail />} />
-                  <Route path="/tasks" element={<Tasks />} />
-                  <Route path="/timetable" element={<Timetable />} />
-                  <Route path="/grades" element={<Grades />} />
-                  <Route path="/pomodoro" element={<PomodoroTimer />} />
-                  <Route path="/results" element={<Results />} />
-                  <Route path="/settings" element={<Settings />} />
-                  <Route path="/profile" element={<Profile />} />
+                  <Route path="/" element={<Suspense fallback={<PageLoader />}><Dashboard /></Suspense>} />
+                  <Route path="/subjects" element={<Suspense fallback={<PageLoader />}><Subjects /></Suspense>} />
+                  <Route path="/subjects/:id" element={<Suspense fallback={<PageLoader />}><SubjectDetail /></Suspense>} />
+                  <Route path="/tasks" element={<Suspense fallback={<PageLoader />}><Tasks /></Suspense>} />
+                  <Route path="/timetable" element={<Suspense fallback={<PageLoader />}><Timetable /></Suspense>} />
+                  <Route path="/grades" element={<Suspense fallback={<PageLoader />}><Grades /></Suspense>} />
+                  <Route path="/pomodoro" element={<Suspense fallback={<PageLoader />}><PomodoroTimer /></Suspense>} />
+                  <Route path="/results" element={<Suspense fallback={<PageLoader />}><Results /></Suspense>} />
+                  <Route path="/settings" element={<Suspense fallback={<PageLoader />}><Settings /></Suspense>} />
+                  <Route path="/profile" element={<Suspense fallback={<PageLoader />}><Profile /></Suspense>} />
                 </Routes>
               </motion.div>
             </AnimatePresence>
