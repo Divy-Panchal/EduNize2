@@ -87,61 +87,49 @@ export function Auth() {
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.3 }}
-            className="text-center"
+            className="text-center flex-1 flex flex-col justify-center"
           >
             {/* Logo Icon */}
-            <div className="relative mb-6">
-              <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center mx-auto shadow-lg shadow-blue-200">
-                <GraduationCap className="w-10 h-10 text-white" />
+            <div className="relative mb-8">
+              <div className="w-28 h-28 bg-gradient-to-br from-blue-500 to-blue-600 rounded-3xl flex items-center justify-center mx-auto shadow-xl shadow-blue-200">
+                <GraduationCap className="w-14 h-14 text-white" />
               </div>
               {/* Floating decorative elements */}
-              <div className="absolute -top-2 -right-2 w-4 h-4 bg-yellow-400 rounded-full float-object" />
-              <div className="absolute -bottom-1 -left-3 w-3 h-3 bg-green-400 rounded-full float-object float-object-delay-1" />
+              <div className="absolute -top-3 -right-3 w-5 h-5 bg-yellow-400 rounded-full float-object" />
+              <div className="absolute -bottom-2 -left-4 w-4 h-4 bg-green-400 rounded-full float-object float-object-delay-1" />
             </div>
 
-            <h2 className="text-2xl font-bold text-gray-800 mb-2">EduOrganize</h2>
-            <p className="text-gray-500 text-sm mb-8">Your intelligent study companion</p>
+            <h2 className="text-3xl font-bold text-gray-800 mb-3">EduOrganize</h2>
+            <p className="text-gray-500 text-base mb-10">Your intelligent study companion</p>
 
             {/* Feature Icons */}
-            <div className="flex justify-center gap-6 mb-8">
+            <div className="flex justify-center gap-8">
               <motion.div
                 whileHover={{ y: -5 }}
                 className="flex flex-col items-center"
               >
-                <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center mb-2 float-object">
-                  <BookOpen className="w-6 h-6 text-blue-600" />
+                <div className="w-14 h-14 bg-blue-100 rounded-2xl flex items-center justify-center mb-3 float-object">
+                  <BookOpen className="w-7 h-7 text-blue-600" />
                 </div>
-                <span className="text-xs text-gray-500">Study</span>
+                <span className="text-sm text-gray-500 font-medium">Study</span>
               </motion.div>
               <motion.div
                 whileHover={{ y: -5 }}
                 className="flex flex-col items-center"
               >
-                <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center mb-2 float-object float-object-delay-1">
-                  <TrendingUp className="w-6 h-6 text-green-600" />
+                <div className="w-14 h-14 bg-green-100 rounded-2xl flex items-center justify-center mb-3 float-object float-object-delay-1">
+                  <TrendingUp className="w-7 h-7 text-green-600" />
                 </div>
-                <span className="text-xs text-gray-500">Track</span>
+                <span className="text-sm text-gray-500 font-medium">Track</span>
               </motion.div>
               <motion.div
                 whileHover={{ y: -5 }}
                 className="flex flex-col items-center"
               >
-                <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center mb-2 float-object float-object-delay-2">
-                  <Target className="w-6 h-6 text-purple-600" />
+                <div className="w-14 h-14 bg-purple-100 rounded-2xl flex items-center justify-center mb-3 float-object float-object-delay-2">
+                  <Target className="w-7 h-7 text-purple-600" />
                 </div>
-                <span className="text-xs text-gray-500">Achieve</span>
-              </motion.div>
-            </div>
-
-            {/* Decorative illustration elements */}
-            <div className="relative w-48 h-32 mx-auto">
-              <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-32 h-1 bg-gray-200 rounded-full" />
-              <motion.div
-                animate={{ y: [0, -5, 0] }}
-                transition={{ duration: 3, repeat: Infinity }}
-                className="absolute bottom-2 left-1/2 -translate-x-1/2 w-24 h-16 bg-gradient-to-t from-gray-100 to-white rounded-lg border-2 border-gray-200 flex items-center justify-center"
-              >
-                <div className="w-16 h-10 bg-blue-500 rounded opacity-80" />
+                <span className="text-sm text-gray-500 font-medium">Achieve</span>
               </motion.div>
             </div>
           </motion.div>
