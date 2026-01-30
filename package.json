@@ -12,7 +12,7 @@
   },
   "dependencies": {
     "@capacitor/android": "^7.4.3",
-    "@capacitor/cli": "^7.4.3",
+    "@capacitor/cli": "^8.0.2",
     "@capacitor/core": "^7.4.3",
     "@google/generative-ai": "^0.21.0",
     "@supabase/supabase-js": "^2.57.0",
