@@ -275,56 +275,78 @@ export function Profile() {
     const checkAchievements = useCallback(() => {
         if (!user) return;
 
-        const now = new Date();
-        const hour = now.getHours();
+
 
         // Get stats from localStorage
         const completedTasks = parseInt(localStorage.getItem(`completedTasksCount_${user.uid}`) || '0');
         const studyStreak = parseInt(localStorage.getItem(`studyStreak_${user.uid}`) || '0');
+        const pomodoroSessions = parseInt(localStorage.getItem('pomodoroSessions') || '0');
+
+
 
         setAchievements((prev: any) => {
             const updated = [...prev];
             let hasChanges = false;
 
-            // Early Bird - Study before 8 AM
-            if (hour < 8) {
-                const earlyBird = updated.find((a: any) => a.id === 'early_bird');
-                if (earlyBird && !earlyBird.unlocked) {
-                    earlyBird.progress = 1;
-                    earlyBird.unlocked = true;
-                    hasChanges = true;
+            // Task Crusher - Update all levels
+            [
+                { id: 'task_crusher_1', max: 25 },
+                { id: 'task_crusher_2', max: 50 },
+                { id: 'task_crusher_3', max: 100 }
+            ].forEach(({ id, max }) => {
+                const achievement = updated.find((a: any) => a.id === id);
+                if (achievement) {
+                    const newProgress = Math.min(completedTasks, max);
+                    if (achievement.progress !== newProgress) {
+                        achievement.progress = newProgress;
+                        hasChanges = true;
+                    }
+                    if (completedTasks >= max && !achievement.unlocked) {
+                        achievement.unlocked = true;
+                        hasChanges = true;
+                    }
                 }
-            }
+            });
 
-            // Night Owl - Study after 10 PM
-            if (hour >= 22) {
-                const nightOwl = updated.find((a: any) => a.id === 'night_owl');
-                if (nightOwl && !nightOwl.unlocked) {
-                    nightOwl.progress = 1;
-                    nightOwl.unlocked = true;
-                    hasChanges = true;
+            // Focus Master - Update all levels
+            [
+                { id: 'focus_master_1', max: 10 },
+                { id: 'focus_master_2', max: 25 },
+                { id: 'focus_master_3', max: 50 }
+            ].forEach(({ id, max }) => {
+                const achievement = updated.find((a: any) => a.id === id);
+                if (achievement) {
+                    const newProgress = Math.min(pomodoroSessions, max);
+                    if (achievement.progress !== newProgress) {
+                        achievement.progress = newProgress;
+                        hasChanges = true;
+                    }
+                    if (pomodoroSessions >= max && !achievement.unlocked) {
+                        achievement.unlocked = true;
+                        hasChanges = true;
+                    }
                 }
-            }
+            });
 
-            // Streak Master - 7 day streak
-            const streakMaster = updated.find((a: any) => a.id === 'streak_master');
-            if (streakMaster) {
-                streakMaster.progress = Math.min(studyStreak, 7);
-                if (studyStreak >= 7 && !streakMaster.unlocked) {
-                    streakMaster.unlocked = true;
-                    hasChanges = true;
+            // Streak Master - Update all levels
+            [
+                { id: 'streak_master_1', max: 7 },
+                { id: 'streak_master_2', max: 30 },
+                { id: 'streak_master_3', max: 100 }
+            ].forEach(({ id, max }) => {
+                const achievement = updated.find((a: any) => a.id === id);
+                if (achievement) {
+                    const newProgress = Math.min(studyStreak, max);
+                    if (achievement.progress !== newProgress) {
+                        achievement.progress = newProgress;
+                        hasChanges = true;
+                    }
+                    if (studyStreak >= max && !achievement.unlocked) {
+                        achievement.unlocked = true;
+                        hasChanges = true;
+                    }
                 }
-            }
-
-            // Task Crusher - Complete 50 tasks
-            const taskCrusher = updated.find((a: any) => a.id === 'task_crusher');
-            if (taskCrusher) {
-                taskCrusher.progress = Math.min(completedTasks, 50);
-                if (completedTasks >= 50 && !taskCrusher.unlocked) {
-                    taskCrusher.unlocked = true;
-                    hasChanges = true;
-                }
-            }
+            });
 
             if (hasChanges) {
                 localStorage.setItem(`achievements_${user.uid}`, JSON.stringify(updated));
@@ -339,6 +361,14 @@ export function Profile() {
         if (user) {
             checkAchievements();
         }
+
+        // Listen for achievement check events
+        const handleCheckAchievements = () => {
+            checkAchievements();
+        };
+
+        window.addEventListener('checkAchievements', handleCheckAchievements);
+        return () => window.removeEventListener('checkAchievements', handleCheckAchievements);
     }, [user, checkAchievements]);
 
     // Recalculate profile completeness when userData changes - using useMemo for optimization
@@ -394,45 +424,33 @@ export function Profile() {
         }
     }, []);
 
-    const handleAddAchievement = useCallback(() => {
-        if (newAchievement.trim()) {
-            setUserData(prev => ({ ...prev, achievements: [...prev.achievements, newAchievement.trim()] }));
-            setNewAchievement('');
-        }
-    }, [newAchievement]);
 
-    const handleRemoveAchievement = useCallback((index: number) => {
-        setUserData(prev => ({
-            ...prev,
-            achievements: prev.achievements.filter((_: any, i: number) => i !== index)
-        }));
-    }, []);
 
     // Claim achievement and unlock next level
     const claimAchievement = useCallback((achievementId: string) => {
-        console.log('🎯 Claim clicked for:', achievementId);
+
 
         if (!user) {
-            console.log('❌ No user found');
+
             return;
         }
 
         setAchievements((prev: any) => {
-            console.log('📋 Current achievements:', prev);
+
             const updated = [...prev];
             const achievement = updated.find((a: any) => a.id === achievementId);
 
-            console.log('🔍 Found achievement:', achievement);
+
 
             if (achievement && achievement.unlocked && !achievement.claimed) {
-                console.log('✅ Achievement is claimable!');
+
 
                 // Mark as claimed
                 achievement.claimed = true;
 
                 // Award points (you can add points system later)
                 toast.success(`🎉 Claimed ${achievement.name}! +${achievement.points} points`);
-                console.log('🎉 Toast shown');
+
 
                 // Find and unlock next level
                 const baseName = achievementId.replace(/_\d+$/, ''); // Remove _1, _2, _3
@@ -440,26 +458,22 @@ export function Profile() {
                 const nextLevel = currentLevel + 1;
                 const nextLevelId = `${baseName}_${nextLevel}`;
 
-                console.log('🔎 Looking for next level:', nextLevelId);
+
 
                 const nextAchievement = updated.find((a: any) => a.id === nextLevelId);
                 if (nextAchievement && !nextAchievement.unlocked) {
                     // Don't auto-unlock, just make it visible
                     toast.success(`🔓 ${nextAchievement.name} is now available!`);
-                    console.log('🔓 Next level notification shown');
+
                 } else {
-                    console.log('ℹ️ No next level or already unlocked');
+
                 }
 
                 // Save to localStorage
                 localStorage.setItem(`achievements_${user.uid}`, JSON.stringify(updated));
-                console.log('💾 Saved to localStorage');
+
             } else {
-                console.log('❌ Cannot claim:', {
-                    exists: !!achievement,
-                    unlocked: achievement?.unlocked,
-                    claimed: achievement?.claimed
-                });
+
             }
 
             return updated;

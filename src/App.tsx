@@ -30,6 +30,7 @@ const Results = lazy(() => import('./pages/Results').then(module => ({ default: 
 const Settings = lazy(() => import('./pages/Settings').then(module => ({ default: module.Settings })));
 const Profile = lazy(() => import('./pages/Profile').then(module => ({ default: module.Profile })));
 const Grades = lazy(() => import('./pages/Grades').then(module => ({ default: module.Grades })));
+const EduAI = lazy(() => import('./pages/EduAI').then(module => ({ default: module.EduAI })));
 
 // Loading component for Suspense
 const PageLoader = () => {
@@ -199,6 +200,7 @@ function AppContent() {
                   <Route path="/results" element={<Suspense fallback={<PageLoader />}><Results /></Suspense>} />
                   <Route path="/settings" element={<Suspense fallback={<PageLoader />}><Settings /></Suspense>} />
                   <Route path="/profile" element={<Suspense fallback={<PageLoader />}><Profile /></Suspense>} />
+                  <Route path="/eduai" element={<Suspense fallback={<PageLoader />}><EduAI /></Suspense>} />
                 </Routes>
               </motion.div>
             </AnimatePresence>

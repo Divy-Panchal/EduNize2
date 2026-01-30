@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { useAuth } from './AuthContext';
 
 export interface Task {
   id: string;
@@ -23,6 +24,7 @@ interface TaskContextType {
 const TaskContext = createContext<TaskContextType | undefined>(undefined);
 
 export function TaskProvider({ children }: { children: React.ReactNode }) {
+  const { user } = useAuth();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [isInitialized, setIsInitialized] = useState(false);
 
@@ -108,9 +110,39 @@ export function TaskProvider({ children }: { children: React.ReactNode }) {
   };
 
   const toggleTask = (id: string) => {
-    setTasks(prev => prev.map(task =>
-      task.id === id ? { ...task, completed: !task.completed } : task
-    ));
+    setTasks(prev => {
+      const task = prev.find(t => t.id === id);
+      if (!task) return prev;
+
+      const wasCompleted = task.completed;
+      const willBeCompleted = !wasCompleted;
+
+      // Update completed tasks counter when marking as complete
+      if (willBeCompleted && !wasCompleted) {
+        // Use user from AuthContext
+        if (user?.uid) {
+          try {
+            const currentCount = parseInt(localStorage.getItem(`completedTasksCount_${user.uid}`) || '0');
+            localStorage.setItem(`completedTasksCount_${user.uid}`, (currentCount + 1).toString());
+
+
+
+            // Trigger achievement check after a short delay
+            setTimeout(() => {
+              window.dispatchEvent(new CustomEvent('checkAchievements'));
+            }, 100);
+          } catch (error) {
+            console.error('Failed to update completed tasks count:', error);
+          }
+        } else {
+          console.warn('⚠️ No user found, cannot track task completion');
+        }
+      }
+
+      return prev.map(task =>
+        task.id === id ? { ...task, completed: !task.completed } : task
+      );
+    });
   };
 
   return (

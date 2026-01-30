@@ -210,6 +210,16 @@ export function AchievementProvider({ children }: { children: React.ReactNode })
         });
     }, [user]);
 
+    // Listen for achievement check events
+    useEffect(() => {
+        const handleCheckAchievements = () => {
+            checkAchievements();
+        };
+
+        window.addEventListener('checkAchievements', handleCheckAchievements);
+        return () => window.removeEventListener('checkAchievements', handleCheckAchievements);
+    }, [checkAchievements]);
+
     // Claim achievement
     const claimAchievement = useCallback((achievementId: string) => {
         setAchievements(prev =>

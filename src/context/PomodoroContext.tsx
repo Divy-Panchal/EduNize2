@@ -304,6 +304,11 @@ export function PomodoroProvider({ children }: { children: React.ReactNode }) {
             // Increment focus session count
             incrementFocusSession();
 
+            // Trigger achievement check
+            setTimeout(() => {
+                window.dispatchEvent(new CustomEvent('checkAchievements'));
+            }, 100);
+
             switchMode(newSessions % 4 === 0 ? 'long' : 'short', true);
         } else {
             switchMode('work', true);
