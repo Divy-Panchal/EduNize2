@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import { useAuth } from './AuthContext';
 import { useDailyStats } from './DailyStatsContext';
+import { getTimeOfDay, updateTimeBasedAchievements } from '../utils/achievementHelpers';
 import toast from 'react-hot-toast';
 
 export type PomodoroMode = 'work' | 'short' | 'long';
@@ -49,7 +50,7 @@ const DEFAULT_DURATIONS = { work: 30 * 60, short: 5 * 60, long: 15 * 60 };
 const MAX_SECONDS = 60 * 60;
 
 export function PomodoroProvider({ children }: { children: React.ReactNode }) {
-    useAuth();
+    const { user } = useAuth();
     const { addStudyTime, incrementFocusSession } = useDailyStats();
 
     const alarmRef = useRef<HTMLAudioElement | null>(null);
@@ -304,6 +305,12 @@ export function PomodoroProvider({ children }: { children: React.ReactNode }) {
             // Increment focus session count
             incrementFocusSession();
 
+            // Track time-based achievements (Early Bird / Night Owl)
+            if (user?.uid) {
+                const timeOfDay = getTimeOfDay();
+                updateTimeBasedAchievements(user.uid, timeOfDay);
+            }
+
             // Trigger achievement check
             setTimeout(() => {
                 window.dispatchEvent(new CustomEvent('checkAchievements'));
@@ -313,7 +320,7 @@ export function PomodoroProvider({ children }: { children: React.ReactNode }) {
         } else {
             switchMode('work', true);
         }
-    }, [isActive, timeLeft, mode, sessions, switchMode, playAlarm, durations.work, addStudyTime, incrementFocusSession]);
+    }, [isActive, timeLeft, mode, sessions, switchMode, playAlarm, durations.work, addStudyTime, incrementFocusSession, user]);
 
     const toggleTimer = () => {
         setIsActive(!isActive);

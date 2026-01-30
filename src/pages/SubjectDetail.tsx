@@ -337,7 +337,7 @@ export function SubjectDetail() {
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
                         onClick={() => setShowTopicModal(true)}
-                        className={`w-full rounded-2xl p-6 border-2 border-dashed ${themeConfig.text === 'text-white' ? 'border-gray-600' : 'border-gray-300'} hover: border-blue - 400 transition-all`}
+                        className={`w-full rounded-2xl p-6 border-2 border-dashed ${themeConfig.text === 'text-white' ? 'border-gray-600' : 'border-gray-300'} hover:border-blue-400 transition-all`}
                     >
                         <div className="flex items-center justify-center gap-3">
                             <Plus className={`w-6 h-6 ${themeConfig.textSecondary} `} />
@@ -420,7 +420,7 @@ export function SubjectDetail() {
                                                                 Open
                                                             </button>
                                                             {/* Show URL as secondary info */}
-                                                            <span className={`text-xs ${themeConfig.textSecondary} self-center truncate max-w - [200px]`}>
+                                                            <span className={`text-xs ${themeConfig.textSecondary} self-center truncate max-w-[200px]`}>
                                                                 {resource.url}
                                                             </span>
                                                         </div>
@@ -444,7 +444,7 @@ export function SubjectDetail() {
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
                         onClick={() => setShowResourceModal(true)}
-                        className={`w-full rounded-2xl p-6 border-2 border-dashed ${themeConfig.text === 'text-white' ? 'border-gray-600' : 'border-gray-300'} hover: border-blue - 400 transition-all`}
+                        className={`w-full rounded-2xl p-6 border-2 border-dashed ${themeConfig.text === 'text-white' ? 'border-gray-600' : 'border-gray-300'} hover:border-blue-400 transition-all`}
                     >
                         <div className="flex items-center justify-center gap-3">
                             <Plus className={`w-6 h-6 ${themeConfig.textSecondary} `} />
@@ -480,13 +480,13 @@ export function SubjectDetail() {
                                 onChange={(e) => setTopicName(e.target.value)}
                                 onKeyPress={(e) => e.key === 'Enter' && handleAddTopic()}
                                 placeholder="Topic name"
-                                className={`w-full px-4 py-3 rounded-xl border-2 ${themeConfig.background} ${themeConfig.text} ${themeConfig.text === 'text-white' ? 'border-gray-600' : 'border-gray-300'} focus: border-blue - 500 focus: outline-none transition-colors mb-4`}
+                                className={`w-full px-4 py-3 rounded-xl border-2 ${themeConfig.background} ${themeConfig.text} ${themeConfig.text === 'text-white' ? 'border-gray-600' : 'border-gray-300'} focus:border-blue-500 focus:outline-none transition-colors mb-4`}
                                 autoFocus
                             />
                             <div className="flex gap-3">
                                 <button
                                     onClick={() => setShowTopicModal(false)}
-                                    className={`flex-1 px-4 py-3 rounded-xl font-semibold ${themeConfig.background} ${themeConfig.text} border-2 ${themeConfig.text === 'text-white' ? 'border-gray-600' : 'border-gray-300'} hover: bg-gray - 100 dark: hover: bg-gray - 700 transition-colors`}
+                                    className={`flex-1 px-4 py-3 rounded-xl font-semibold ${themeConfig.background} ${themeConfig.text} border-2 ${themeConfig.text === 'text-white' ? 'border-gray-600' : 'border-gray-300'} hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors`}
                                 >
                                     Cancel
                                 </button>
@@ -546,9 +546,9 @@ export function SubjectDetail() {
                                         value={resourceTitle}
                                         onChange={(e) => setResourceTitle(e.target.value)}
                                         placeholder="Resource title (optional)"
-                                        className={`w-full px-4 py-3 rounded-xl border-2 ${themeConfig.background} ${themeConfig.text} ${themeConfig.text === 'text-white' ? 'border-gray-600' : 'border-gray-300'} focus: border-blue - 500 focus: outline-none transition-colors mb-3`}
+                                        className={`w-full px-4 py-3 rounded-xl border-2 ${themeConfig.background} ${themeConfig.text} ${themeConfig.text === 'text-white' ? 'border-gray-600' : 'border-gray-300'} focus:border-blue-500 focus:outline-none transition-colors mb-3`}
                                     />
-                                    <div className={`w-full px-4 py-3 rounded-xl border-2 border-dashed ${themeConfig.text === 'text-white' ? 'border-gray-600' : 'border-gray-300'} hover: border-blue - 400 transition-all mb-3`}>
+                                    <div className={`w-full px-4 py-3 rounded-xl border-2 border-dashed ${themeConfig.text === 'text-white' ? 'border-gray-600' : 'border-gray-300'} hover:border-blue-400 transition-all mb-3`}>
                                         <input
                                             type="file"
                                             onChange={handleFileSelect}
@@ -567,7 +567,7 @@ export function SubjectDetail() {
                                         value={resourceTitle}
                                         onChange={(e) => setResourceTitle(e.target.value)}
                                         placeholder="Resource title"
-                                        className={`w-full px-4 py-3 rounded-xl border-2 ${themeConfig.background} ${themeConfig.text} ${themeConfig.text === 'text-white' ? 'border-gray-600' : 'border-gray-300'} focus: border-blue - 500 focus: outline-none transition-colors mb-3`}
+                                        className={`w-full px-4 py-3 rounded-xl border-2 ${themeConfig.background} ${themeConfig.text} ${themeConfig.text === 'text-white' ? 'border-gray-600' : 'border-gray-300'} focus:border-blue-500 focus:outline-none transition-colors mb-3`}
                                         autoFocus
                                     />
                                     <input
@@ -576,7 +576,7 @@ export function SubjectDetail() {
                                         onChange={(e) => setResourceUrl(e.target.value)}
                                         onKeyPress={(e) => e.key === 'Enter' && handleAddResource()}
                                         placeholder="URL (e.g., https://example.com)"
-                                        className={`w-full px-4 py-3 rounded-xl border-2 ${themeConfig.background} ${themeConfig.text} ${themeConfig.text === 'text-white' ? 'border-gray-600' : 'border-gray-300'} focus: border-blue - 500 focus: outline-none transition-colors mb-3`}
+                                        className={`w-full px-4 py-3 rounded-xl border-2 ${themeConfig.background} ${themeConfig.text} ${themeConfig.text === 'text-white' ? 'border-gray-600' : 'border-gray-300'} focus:border-blue-500 focus:outline-none transition-colors mb-3`}
                                     />
                                 </>
                             )}
@@ -584,7 +584,7 @@ export function SubjectDetail() {
                             <div className="flex gap-3">
                                 <button
                                     onClick={() => setShowResourceModal(false)}
-                                    className={`flex-1 px-4 py-3 rounded-xl font-semibold ${themeConfig.background} ${themeConfig.text} border-2 ${themeConfig.text === 'text-white' ? 'border-gray-600' : 'border-gray-300'} hover: bg-gray - 100 dark: hover: bg-gray - 700 transition-colors`}
+                                    className={`flex-1 px-4 py-3 rounded-xl font-semibold ${themeConfig.background} ${themeConfig.text} border-2 ${themeConfig.text === 'text-white' ? 'border-gray-600' : 'border-gray-300'} hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors`}
                                 >
                                     Cancel
                                 </button>

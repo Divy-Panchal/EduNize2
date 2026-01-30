@@ -120,7 +120,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signInWithGoogle = async () => {
     try {
-      clearUserData();
+      // Don't clear user data here - onAuthStateChanged will handle user switches properly
       const provider = new GoogleAuthProvider();
       await signInWithPopup(auth, provider);
       toast.success('Welcome! Signed in with Google successfully.');

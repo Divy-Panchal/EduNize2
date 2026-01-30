@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
+import { getTimeBasedAchievementCount, getDailyTaskCount } from '../utils/achievementHelpers';
 import { User } from 'firebase/auth';
 
 // User data structure (without skills and interests)
@@ -348,6 +349,69 @@ export function Profile() {
                 }
             });
 
+            // Early Bird - Update all levels
+            const earlyBirdCount = getTimeBasedAchievementCount(user.uid, 'earlyBird');
+            [
+                { id: 'early_bird_1', max: 5 },
+                { id: 'early_bird_2', max: 15 },
+                { id: 'early_bird_3', max: 30 }
+            ].forEach(({ id, max }) => {
+                const achievement = updated.find((a: any) => a.id === id);
+                if (achievement) {
+                    const newProgress = Math.min(earlyBirdCount, max);
+                    if (achievement.progress !== newProgress) {
+                        achievement.progress = newProgress;
+                        hasChanges = true;
+                    }
+                    if (earlyBirdCount >= max && !achievement.unlocked) {
+                        achievement.unlocked = true;
+                        hasChanges = true;
+                    }
+                }
+            });
+
+            // Night Owl - Update all levels
+            const nightOwlCount = getTimeBasedAchievementCount(user.uid, 'nightOwl');
+            [
+                { id: 'night_owl_1', max: 5 },
+                { id: 'night_owl_2', max: 15 },
+                { id: 'night_owl_3', max: 30 }
+            ].forEach(({ id, max }) => {
+                const achievement = updated.find((a: any) => a.id === id);
+                if (achievement) {
+                    const newProgress = Math.min(nightOwlCount, max);
+                    if (achievement.progress !== newProgress) {
+                        achievement.progress = newProgress;
+                        hasChanges = true;
+                    }
+                    if (nightOwlCount >= max && !achievement.unlocked) {
+                        achievement.unlocked = true;
+                        hasChanges = true;
+                    }
+                }
+            });
+
+            // Speed Demon - Update all levels
+            const dailyTaskCount = getDailyTaskCount(user.uid);
+            [
+                { id: 'speed_demon_1', max: 5 },
+                { id: 'speed_demon_2', max: 10 },
+                { id: 'speed_demon_3', max: 20 }
+            ].forEach(({ id, max }) => {
+                const achievement = updated.find((a: any) => a.id === id);
+                if (achievement) {
+                    const newProgress = Math.min(dailyTaskCount, max);
+                    if (achievement.progress !== newProgress) {
+                        achievement.progress = newProgress;
+                        hasChanges = true;
+                    }
+                    if (dailyTaskCount >= max && !achievement.unlocked) {
+                        achievement.unlocked = true;
+                        hasChanges = true;
+                    }
+                }
+            });
+
             if (hasChanges) {
                 localStorage.setItem(`achievements_${user.uid}`, JSON.stringify(updated));
             }
@@ -614,8 +678,10 @@ export function Profile() {
                                 <h4 className={`text-lg font-bold ${themeConfig.text} mb-3`}>Quick Stats</h4>
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="p-3 rounded-lg bg-transparent border border-gray-200 dark:border-gray-700">
-                                        <p className={`text-2xl font-bold ${themeConfig.text}`}>{userData.achievements.length}</p>
-                                        <p className={`text-sm ${themeConfig.textSecondary}`}>Achievements</p>
+                                        <p className={`text-2xl font-bold ${themeConfig.text}`}>
+                                            {achievements.filter((a: any) => a.claimed).length}
+                                        </p>
+                                        <p className={`text-sm ${themeConfig.textSecondary}`}>Claimed Badges</p>
                                     </div>
                                     <div className="p-3 rounded-lg bg-transparent border border-gray-200 dark:border-gray-700">
                                         <p className={`text-2xl font-bold ${themeConfig.text}`}>

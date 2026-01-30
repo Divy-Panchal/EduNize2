@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useAuth } from './AuthContext';
+import { getTimeOfDay, updateTimeBasedAchievements, updateDailyTaskCount } from '../utils/achievementHelpers';
 
 export interface Task {
   id: string;
@@ -117,26 +118,39 @@ export function TaskProvider({ children }: { children: React.ReactNode }) {
       const wasCompleted = task.completed;
       const willBeCompleted = !wasCompleted;
 
-      // Update completed tasks counter when marking as complete
-      if (willBeCompleted && !wasCompleted) {
-        // Use user from AuthContext
-        if (user?.uid) {
-          try {
-            const currentCount = parseInt(localStorage.getItem(`completedTasksCount_${user.uid}`) || '0');
+      // Update completed tasks counter
+      if (user?.uid) {
+        try {
+          const currentCount = parseInt(localStorage.getItem(`completedTasksCount_${user.uid}`) || '0');
+
+          if (willBeCompleted && !wasCompleted) {
+            // Incrementing when completing a task
             localStorage.setItem(`completedTasksCount_${user.uid}`, (currentCount + 1).toString());
 
+            // Track time-based achievements (Early Bird / Night Owl)
+            const timeOfDay = getTimeOfDay();
+            updateTimeBasedAchievements(user.uid, timeOfDay);
 
+            // Track daily task completion (Speed Demon)
+            updateDailyTaskCount(user.uid, true);
+          } else if (!willBeCompleted && wasCompleted) {
+            // Decrementing when uncompleting a task
+            const newCount = Math.max(0, currentCount - 1); // Prevent negative counts
+            localStorage.setItem(`completedTasksCount_${user.uid}`, newCount.toString());
 
-            // Trigger achievement check after a short delay
-            setTimeout(() => {
-              window.dispatchEvent(new CustomEvent('checkAchievements'));
-            }, 100);
-          } catch (error) {
-            console.error('Failed to update completed tasks count:', error);
+            // Decrement daily task count
+            updateDailyTaskCount(user.uid, false);
           }
-        } else {
-          console.warn('⚠️ No user found, cannot track task completion');
+
+          // Trigger achievement check after a short delay
+          setTimeout(() => {
+            window.dispatchEvent(new CustomEvent('checkAchievements'));
+          }, 100);
+        } catch (error) {
+          console.error('Failed to update completed tasks count:', error);
         }
+      } else {
+        console.warn('⚠️ No user found, cannot track task completion');
       }
 
       return prev.map(task =>
