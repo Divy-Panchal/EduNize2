@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
+import { useGrade } from '../context/GradeContext';
 import { getTimeBasedAchievementCount, getDailyTaskCount } from '../utils/achievementHelpers';
 import { User } from 'firebase/auth';
 
@@ -211,6 +212,7 @@ SectionCard.displayName = 'SectionCard';
 export function Profile() {
     const { themeConfig } = useTheme();
     const { user } = useAuth();
+    const { gradingSystem } = useGrade();
     const navigate = useNavigate();
     const [isFlipped, setIsFlipped] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
@@ -656,9 +658,9 @@ export function Profile() {
                                 <div className={`absolute w-full h-full p-6 rounded-2xl shadow-lg ${themeConfig.card} border dark:border-gray-700 [backface-visibility:hidden] [transform:rotateY(180deg)] flex flex-col justify-center`}>
                                     <h3 className={`text-xl font-bold mb-4 ${themeConfig.text} flex items-center gap-2`}><BookOpen size={20} />Education</h3>
                                     <div className="text-left">
-                                        <p className={`text-sm ${themeConfig.textSecondary}`}>Institution:</p>
+                                        <p className={`text-sm ${themeConfig.textSecondary}`}>{gradingSystem === 'college' ? 'College/University:' : 'School Name:'}</p>
                                         <input type="text" name="education.institution" value={userData.education.institution} onChange={handleInputChange} disabled={!isEditing} className={`font-semibold w-full bg-transparent ${themeConfig.text} ${isEditing ? 'border-b-2 border-blue-500' : ''}`} />
-                                        <p className={`text-sm mt-2 ${themeConfig.textSecondary}`}>Grade/Year:</p>
+                                        <p className={`text-sm mt-2 ${themeConfig.textSecondary}`}>{gradingSystem === 'college' ? 'Year/Semester:' : 'Class/Grade:'}</p>
                                         <input type="text" name="education.grade" value={userData.education.grade} onChange={handleInputChange} disabled={!isEditing} className={`font-semibold w-full bg-transparent ${themeConfig.text} ${isEditing ? 'border-b-2 border-blue-500' : ''}`} />
                                     </div>
                                     <p className={`mt-4 text-xs text-center ${themeConfig.textSecondary}`}>{isEditing ? 'Click save to apply' : 'Click to flip back'}</p>

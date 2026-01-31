@@ -5,11 +5,11 @@ import {
     TrendingDown,
     Minus,
     Plus,
-    X,
-    Trash2,
     Award,
     BarChart3,
     Calendar,
+    X,
+    Trash2
 } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import { useGrade } from '../context/GradeContext';
@@ -19,11 +19,11 @@ import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, R
 
 export function Grades() {
     const { themeConfig } = useTheme();
-    const { grades, addGrade, deleteGrade, getGradeStats } = useGrade();
+    const { grades, addGrade, deleteGrade, getGradeStats, gradingSystem } = useGrade();
     const { subjects } = useSubject();
     const [showAddModal, setShowAddModal] = useState(false);
 
-    const stats = useMemo(() => getGradeStats(), [grades]);
+    const stats = useMemo(() => getGradeStats(), [grades, getGradeStats]);
 
     // Form state
     const [formData, setFormData] = useState({
@@ -227,9 +227,13 @@ export function Grades() {
                             </svg>
                             <div className="absolute inset-0 flex flex-col items-center justify-center">
                                 <span className={`text-3xl md:text-4xl font-bold ${themeConfig.text}`}>
-                                    {grades.length > 0 ? stats.overallGPA.toFixed(1) : '--'}
+                                    {grades.length > 0
+                                        ? (gradingSystem === 'college' ? stats.overallGPA.toFixed(1) : `${Math.round(currentPercentage)}%`)
+                                        : '--'}
                                 </span>
-                                <span className={`text-sm ${themeConfig.textSecondary}`}>GPA</span>
+                                <span className={`text-sm ${themeConfig.textSecondary}`}>
+                                    {gradingSystem === 'college' ? 'CGPA' : 'Overall'}
+                                </span>
                             </div>
                         </div>
                     </div>
@@ -268,7 +272,7 @@ export function Grades() {
                                 <span className={`text-sm ${themeConfig.textSecondary}`}>Trend</span>
                             </div>
                             <span className={`text-lg font-semibold ${stats.trend === 'improving' ? 'text-green-500' :
-                                stats.trend === 'declining' ? 'text-red-500' : 'text-gray-500'
+                                    stats.trend === 'declining' ? 'text-red-500' : 'text-gray-500'
                                 }`}>
                                 {stats.trend.charAt(0).toUpperCase() + stats.trend.slice(1)}
                             </span>
@@ -494,7 +498,7 @@ export function Grades() {
                     >
                         <h3 className={`text-lg font-semibold ${themeConfig.text} mb-4 flex items-center gap-2`}>
                             <TrendingUp className="w-5 h-5 text-green-500" />
-                            GPA Calculator
+                            {gradingSystem === 'college' ? 'CGPA' : 'Grade'} Calculator
                         </h3>
                         <div className="space-y-3">
                             <p className={`text-sm ${themeConfig.textSecondary}`}>
@@ -502,9 +506,13 @@ export function Grades() {
                             </p>
                             <div className={`p-4 rounded-lg ${themeConfig.background}`}>
                                 <div className="flex items-center justify-between mb-2">
-                                    <span className={`text-sm ${themeConfig.textSecondary}`}>Overall GPA</span>
+                                    <span className={`text-sm ${themeConfig.textSecondary}`}>
+                                        {gradingSystem === 'college' ? 'Overall CGPA' : 'Overall Percentage'}
+                                    </span>
                                     <span className={`text-3xl font-bold ${themeConfig.text}`}>
-                                        {grades.length > 0 ? stats.overallGPA.toFixed(2) : 'N/A'}
+                                        {grades.length > 0
+                                            ? (gradingSystem === 'college' ? stats.overallGPA.toFixed(1) : `${Math.round(currentPercentage)}%`)
+                                            : 'N/A'}
                                     </span>
                                 </div>
                                 <div className="flex items-center justify-between">
@@ -627,20 +635,20 @@ export function Grades() {
                             onClick={(e) => e.stopPropagation()}
                             className={`${themeConfig.card} rounded-2xl shadow-2xl max-w-md w-full max-h-[85vh] overflow-y-auto`}
                         >
-                            <div className="p-4">
-                                <div className="flex items-center justify-between mb-4">
+                            <div className="p-4 md:p-6">
+                                <div className="flex items-center justify-between mb-6">
                                     <h2 id="modal-title" className={`text-2xl font-bold ${themeConfig.text}`}>
                                         Add New Grade
                                     </h2>
                                     <button
                                         onClick={() => setShowAddModal(false)}
-                                        className={`p-2 rounded-lg ${themeConfig.background} hover:bg-gray-200 dark:hover:bg-gray-700`}
+                                        className={`p-2 rounded-lg ${themeConfig.background} hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors`}
                                     >
                                         <X className="w-5 h-5" />
                                     </button>
                                 </div>
 
-                                <form onSubmit={handleSubmit} className="space-y-3">
+                                <form onSubmit={handleSubmit} className="space-y-4">
                                     {/* Subject */}
                                     <div>
                                         <label className={`block text-sm font-medium ${themeConfig.text} mb-2`}>
@@ -677,8 +685,8 @@ export function Grades() {
                                                     type="button"
                                                     onClick={() => setFormData({ ...formData, category: cat.value as Grade['category'] })}
                                                     className={`px-4 py-2 rounded-lg border-2 transition-all ${formData.category === cat.value
-                                                        ? `${cat.color} text-white border-transparent`
-                                                        : `${themeConfig.background} ${themeConfig.text} border-gray-300 dark:border-gray-600`
+                                                            ? `${cat.color} text-white border-transparent`
+                                                            : `${themeConfig.background} ${themeConfig.text} border-gray-300 dark:border-gray-600`
                                                         }`}
                                                 >
                                                     {cat.label}
@@ -775,7 +783,8 @@ export function Grades() {
                                                 </span>
                                                 <span className={`text-2xl font-bold ${getGradeColor(
                                                     (parseFloat(formData.score) / parseFloat(formData.maxScore)) * 100
-                                                )}`}>
+                                                )
+                                                    }`}>
                                                     {Math.round((parseFloat(formData.score) / parseFloat(formData.maxScore)) * 100)}%
                                                 </span>
                                             </div>
@@ -787,15 +796,15 @@ export function Grades() {
                                         <button
                                             type="button"
                                             onClick={() => setShowAddModal(false)}
-                                            className={`flex-1 px-4 py-2 rounded-lg ${themeConfig.background} ${themeConfig.text} border dark:border-gray-700`}
+                                            className={`flex-1 py-3 rounded-lg border dark:border-gray-700 ${themeConfig.text} font-medium hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors`}
                                         >
                                             Cancel
                                         </button>
                                         <button
                                             type="submit"
-                                            className={`flex-1 px-4 py-2 rounded-lg ${themeConfig.primary} text-white font-semibold`}
+                                            className={`flex-1 py-3 rounded-lg ${themeConfig.primary} text-white font-medium hover:opacity-90 transition-opacity`}
                                         >
-                                            Add Grade
+                                            Save Grade
                                         </button>
                                     </div>
                                 </form>

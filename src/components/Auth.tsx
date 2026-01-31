@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Eye, EyeOff, Mail, Lock, User, GraduationCap, ArrowRight, BookOpen, Target, TrendingUp } from 'lucide-react';
+import { Eye, EyeOff, Mail, Lock, User, GraduationCap, School, ArrowRight, BookOpen, Target, TrendingUp } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { useGrade } from '../context/GradeContext';
 import toast from 'react-hot-toast';
 
 export function Auth() {
   const { signIn, signUp, resetPassword, signInWithGoogle } = useAuth();
+  const { setGradingSystem } = useGrade();
   const [isLogin, setIsLogin] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -15,7 +17,8 @@ export function Auth() {
     name: '',
     email: '',
     password: '',
-    confirmPassword: ''
+    confirmPassword: '',
+    studentType: 'college' as 'college' | 'school'
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -32,6 +35,7 @@ export function Auth() {
           return;
         }
         await signUp(formData.email, formData.password);
+        setGradingSystem(formData.studentType);
       }
     } catch (error: any) {
       toast.error(error.message || 'An error occurred');
@@ -232,6 +236,46 @@ export function Auth() {
                 )}
               </AnimatePresence>
 
+              {/* Student Type Selection (Sign Up only) */}
+              <AnimatePresence>
+                {!isLogin && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    exit={{ opacity: 0, height: 0 }}
+                    className="space-y-3"
+                  >
+                    <label className="text-sm font-medium text-gray-700 block mb-1">
+                      I am a...
+                    </label>
+                    <div className="grid grid-cols-2 gap-3">
+                      <button
+                        type="button"
+                        onClick={() => setFormData({ ...formData, studentType: 'college' })}
+                        className={`flex items-center justify-center gap-2 p-3 rounded-xl border-2 transition-all ${formData.studentType === 'college'
+                            ? 'border-blue-500 bg-blue-50 text-blue-700'
+                            : 'border-gray-100 bg-gray-50 text-gray-500 hover:border-gray-200'
+                          }`}
+                      >
+                        <GraduationCap className="w-5 h-5" />
+                        <span className="font-medium">College Student</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setFormData({ ...formData, studentType: 'school' })}
+                        className={`flex items-center justify-center gap-2 p-3 rounded-xl border-2 transition-all ${formData.studentType === 'school'
+                            ? 'border-teal-500 bg-teal-50 text-teal-700'
+                            : 'border-gray-100 bg-gray-50 text-gray-500 hover:border-gray-200'
+                          }`}
+                      >
+                        <School className="w-5 h-5" />
+                        <span className="font-medium">School Student</span>
+                      </button>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
               {/* Forgot Password Link */}
               {isLogin && (
                 <div className="text-right">
@@ -307,7 +351,7 @@ export function Auth() {
               <button
                 onClick={() => {
                   setIsLogin(!isLogin);
-                  setFormData({ name: '', email: '', password: '', confirmPassword: '' });
+                  setFormData({ name: '', email: '', password: '', confirmPassword: '', studentType: 'college' });
                 }}
                 className="ml-1 text-blue-500 font-medium hover:text-blue-600"
               >

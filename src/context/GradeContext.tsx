@@ -11,6 +11,8 @@ interface GradeContextType {
     deleteGrade: (id: string) => void;
     getGradeStats: () => GradeStats;
     getSubjectGrades: (subjectId: string) => Grade[];
+    gradingSystem: 'college' | 'school';
+    setGradingSystem: (system: 'college' | 'school') => void;
 }
 
 const GradeContext = createContext<GradeContextType | undefined>(undefined);
@@ -18,12 +20,13 @@ const GradeContext = createContext<GradeContextType | undefined>(undefined);
 export function GradeProvider({ children }: { children: React.ReactNode }) {
     const { user } = useAuth();
     const [grades, setGrades] = useState<Grade[]>([]);
+    const [gradingSystem, setGradingSystemState] = useState<'college' | 'school'>('college');
 
-    // Load grades from localStorage on mount
+    // Load data from localStorage on mount
     useEffect(() => {
         if (user) {
-            const storageKey = `grades_${user.uid}`;
-            const savedGrades = localStorage.getItem(storageKey);
+            const gradesKey = `grades_${user.uid}`;
+            const savedGrades = localStorage.getItem(gradesKey);
             if (savedGrades) {
                 try {
                     setGrades(JSON.parse(savedGrades));
@@ -32,8 +35,21 @@ export function GradeProvider({ children }: { children: React.ReactNode }) {
                     setGrades([]);
                 }
             }
+
+            const systemKey = `gradingSystem_${user.uid}`;
+            const savedSystem = localStorage.getItem(systemKey);
+            if (savedSystem === 'college' || savedSystem === 'school') {
+                setGradingSystemState(savedSystem);
+            }
         }
     }, [user]);
+
+    const setGradingSystem = (system: 'college' | 'school') => {
+        setGradingSystemState(system);
+        if (user) {
+            localStorage.setItem(`gradingSystem_${user.uid}`, system);
+        }
+    };
 
     // Save grades to localStorage whenever they change
     useEffect(() => {
@@ -191,6 +207,8 @@ export function GradeProvider({ children }: { children: React.ReactNode }) {
                 deleteGrade,
                 getGradeStats,
                 getSubjectGrades,
+                gradingSystem,
+                setGradingSystem,
             }}
         >
             {children}
@@ -208,19 +226,22 @@ export function useGrade() {
 
 // Helper functions
 function percentageToGPA(percentage: number): number {
-    // More accurate GPA conversion using standard 4.0 scale
-    if (percentage >= 93) return 4.0;  // A (93-100)
-    if (percentage >= 90) return 3.7;  // A- (90-92)
-    if (percentage >= 87) return 3.3;  // B+ (87-89)
-    if (percentage >= 83) return 3.0;  // B (83-86)
-    if (percentage >= 80) return 2.7;  // B- (80-82)
-    if (percentage >= 77) return 2.3;  // C+ (77-79)
-    if (percentage >= 73) return 2.0;  // C (73-76)
-    if (percentage >= 70) return 1.7;  // C- (70-72)
-    if (percentage >= 67) return 1.3;  // D+ (67-69)
-    if (percentage >= 65) return 1.0;  // D (65-66)
-    if (percentage >= 60) return 0.7;  // D- (60-64)
-    return 0.0;  // F (below 60)
+    // CGPA conversion using international 10.0 scale
+    // Linear mapping: CGPA ≈ percentage / 10
+    if (percentage >= 95) return 10.0;  // Outstanding (95-100)
+    if (percentage >= 90) return 9.5;   // Excellent (90-94)
+    if (percentage >= 85) return 9.0;   // Very Good (85-89)
+    if (percentage >= 80) return 8.5;   // Good (80-84)
+    if (percentage >= 75) return 8.0;   // Above Average (75-79)
+    if (percentage >= 70) return 7.5;   // Average (70-74)
+    if (percentage >= 65) return 7.0;   // Satisfactory (65-69)
+    if (percentage >= 60) return 6.5;   // Pass (60-64)
+    if (percentage >= 55) return 6.0;   // Pass (55-59)
+    if (percentage >= 50) return 5.5;   // Pass (50-54)
+    if (percentage >= 45) return 5.0;   // Below Average (45-49)
+    if (percentage >= 40) return 4.5;   // Poor (40-44)
+    if (percentage >= 35) return 4.0;   // Very Poor (35-39)
+    return percentage / 10;  // Below 35: proportional to percentage
 }
 
 function getSubjectColor(average: number): string {

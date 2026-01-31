@@ -50,7 +50,7 @@ export function Dashboard() {
   const { tasks } = useTask();
   const { theme, themeConfig } = useTheme();
   const { getTodayClasses } = useTimetable();
-  const { getGradeStats } = useGrade();
+  const { getGradeStats, gradingSystem } = useGrade();
   const { studyMinutes, focusSessions, getStudyHours } = useDailyStats();
   const { notifications, addNotification } = useNotification();
   const { user } = useAuth();
@@ -124,11 +124,13 @@ export function Dashboard() {
       progress: focusProgress
     },
     {
-      title: 'Average Grade',
-      value: gradeStats.overallPercentage > 0 ? `${Math.round(gradeStats.overallPercentage)}%` : 'N/A',
+      title: gradingSystem === 'college' ? 'Average CGPA' : 'Average Grade',
+      value: gradeStats.overallPercentage > 0
+        ? (gradingSystem === 'college' ? gradeStats.overallGPA.toFixed(1) : `${Math.round(gradeStats.overallPercentage)}%`)
+        : 'N/A',
       icon: Award,
       color: 'bg-orange-500',
-      progress: gradeStats.overallPercentage || 0
+      progress: gradingSystem === 'college' ? (gradeStats.overallGPA * 10) : (gradeStats.overallPercentage || 0)
     }
   ];
 

@@ -1,13 +1,15 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Palette, Bell, User, Shield, HelpCircle, LogOut, Download, Trash2, AlertTriangle, Eye, EyeOff } from 'lucide-react';
+import { Palette, Bell, User, Shield, HelpCircle, LogOut, Download, Trash2, AlertTriangle, Eye, EyeOff, GraduationCap, School } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
+import { useGrade } from '../context/GradeContext';
 import toast from 'react-hot-toast';
 
 export function Settings() {
   const { theme, setTheme, themeConfig } = useTheme();
   const { signOut, deleteAccount, user } = useAuth();
+  const { gradingSystem, setGradingSystem } = useGrade();
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deletePassword, setDeletePassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -181,6 +183,76 @@ export function Settings() {
           })}
         </div>
       </motion.div>
+
+      {/* Grading System Section */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.15 }}
+        className={`${themeConfig.card} p-4 md:p-6 rounded-xl shadow-sm border dark:border-gray-700`}
+      >
+        <div className="flex items-center gap-3 mb-6">
+          <GraduationCap className={`w-6 h-6 ${themeConfig.primary.replace('bg-', 'text-')}`} />
+          <h2 className={`text-lg md:text-xl font-semibold ${themeConfig.text}`}>Grading System</h2>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <motion.div
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={() => setGradingSystem('college')}
+            className={`p-4 rounded-lg border-2 cursor-pointer transition-all duration-200 ${gradingSystem === 'college'
+                ? `border-blue-500 dark:border-blue-400 ${theme === 'dark' ? 'bg-blue-900/50' : 'bg-blue-50'}`
+                : `border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500 ${theme === 'dark' ? 'bg-gray-800/50' : 'bg-white'}`
+              }`}
+          >
+            <div className="flex items-center gap-3 mb-2">
+              <GraduationCap className={`w-5 h-5 ${gradingSystem === 'college' ? 'text-blue-500' : 'text-gray-400'}`} />
+              <span className={`font-medium ${themeConfig.text}`}>College Student</span>
+            </div>
+            <p className="text-xs text-gray-500 dark:text-gray-400">
+              International 10.0 scale (CGPA/SGPA) for university students.
+            </p>
+            {gradingSystem === 'college' && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="mt-2 text-xs text-blue-600 dark:text-blue-400 font-medium"
+              >
+                ✓ Currently active
+              </motion.div>
+            )}
+          </motion.div>
+
+          <motion.div
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={() => setGradingSystem('school')}
+            className={`p-4 rounded-lg border-2 cursor-pointer transition-all duration-200 ${gradingSystem === 'school'
+                ? `border-teal-500 dark:border-teal-400 ${theme === 'dark' ? 'bg-teal-900/20' : 'bg-teal-50'}`
+                : `border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500 ${theme === 'dark' ? 'bg-gray-800/50' : 'bg-white'}`
+              }`}
+          >
+            <div className="flex items-center gap-3 mb-2">
+              <School className={`w-5 h-5 ${gradingSystem === 'school' ? 'text-teal-500' : 'text-gray-400'}`} />
+              <span className={`font-medium ${themeConfig.text}`}>School Student</span>
+            </div>
+            <p className="text-xs text-gray-500 dark:text-gray-400">
+              Standard 100% scale (Percentage & Letter Grades) for school students.
+            </p>
+            {gradingSystem === 'school' && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="mt-2 text-xs text-teal-600 dark:text-teal-400 font-medium"
+              >
+                ✓ Currently active
+              </motion.div>
+            )}
+          </motion.div>
+        </div>
+      </motion.div>
+
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
         <motion.div
